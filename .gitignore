@@ -1,0 +1,10 @@
+.settings/
+.tmpBin/
+bin/
+logs/
+project/
+target/
+
+.cache-*
+.classpath
+.project

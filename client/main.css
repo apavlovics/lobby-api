@@ -1,0 +1,92 @@
+a, body, h1, h2, caption, p, table, tr, td, ul, li {
+    margin: 0;
+    padding: 0;
+    border-style: none;
+    line-height: 140%;
+}
+
+a {
+    color: #048;
+    text-decoration: underline;
+}
+
+a:hover {
+    color: #a11;
+}
+
+body {
+    margin-left: 4em;
+    margin-right: 4em;
+    color: #000;
+    font: 14px Helvetica, Arial, sans-serif;
+}
+
+div.error-message {
+    width: 100%;
+    background-color: #c51;
+    color: #fff;
+    text-align: center;
+    padding: .5em 0 .5em;
+    border-bottom-left-radius: .5em;
+    border-bottom-right-radius: .5em;
+}
+
+h1, h2, caption {
+    font-weight: bold;
+    padding-bottom: .4em;
+}
+
+h1 {
+    padding-top: 2em;
+    font-size: 25px;
+}
+
+h2, caption {
+    padding-top: 1.5em;
+    font-size: 16px;
+}
+
+button, input[type="submit"] {
+    margin: .5em 1em .5em 0;
+}
+
+input[type="text"] {
+    margin-right: 4em;
+}
+
+p {
+    padding-bottom: .5em;
+}
+
+table, tr, th, td {
+    border-collapse: collapse;
+    border-style: none;
+    text-align: left;
+}
+
+th, td {
+    min-width: 10em;
+}
+
+th {
+    background-color: #ddd;
+    font-weight: bold;
+}
+
+textarea {
+    width: 50em;
+    height: 10em;
+}
+
+ul {
+    list-style-position: outside;
+    list-style-type: square;
+}
+
+li {
+    padding-top: .5em;
+}
+
+.center {
+    text-align: center;
+}

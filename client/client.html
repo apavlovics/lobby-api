@@ -1,0 +1,72 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Andrejs Pavlovics">
+    <link type="text/css" rel="stylesheet" href="main.css">
+    <title>WebSocket Client</title>
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <textarea id="outgoing-message">{"id": 123, "content": "Weather is nice today"}</textarea>
+    <br>
+    <input type="radio" name="outgoing-message-type" value="text" checked>Text
+    <input type="radio" name="outgoing-message-type" value="binary">Binary
+    <br>
+    <button id="send">Send</button>
+    <br>
+    <ul id="incoming-messages"></ul>
+
+    <script>
+        var $outgoingMessage = $("#outgoing-message")
+        var $send = $("#send")
+        var $incomingMessages = $("#incoming-messages")
+
+        $send.prop("disabled", true)
+        var webSocket = new WebSocket("ws://admin:admin@localhost:9000/ws_api/echo")
+
+        webSocket.onopen = function() {
+            $send.prop("disabled", false)
+            $incomingMessages.prepend($("<li>Connected via WebSocket</li>"))
+
+            $send.on("click", function() {
+                switch($("input[name=outgoing-message-type]:checked").val()) {
+                case "text":
+
+                    // Send as text
+                    webSocket.send($outgoingMessage.val())
+                    break
+                case "binary":
+
+                    // Send as binary
+                    webSocket.send(new Blob([$outgoingMessage.val()]))
+                    break
+                default:
+                    console.log("Outgoing message type " + outgoingMessageType + " is invalid");
+                    break
+                }
+            })
+        }
+
+        webSocket.onerror = function(error) {
+            console.log("Issue with WebSocket connection", error)
+        }
+
+        webSocket.onmessage = function(event) {
+            if (typeof event.data === "string") {
+                try {
+                    var incomingMessage = JSON.parse(event.data);
+                    $incomingMessages.prepend($("<li>[" + incomingMessage.createdAt + "] " + incomingMessage.content + "</li>"))
+                } catch(e) {
+                    console.log("Cannot parse data " + event.data + ", will show it as string")
+                    $incomingMessages.prepend($("<li>" + event.data + "</li>"))
+                }
+            } else {
+                console.log("Data " + event.data + " is not supported")
+            }
+        }
+    </script>
+</body>
+</html>
