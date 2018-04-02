@@ -32,7 +32,7 @@ object FlowCreator {
   log.info(s"Parallelism is $parallelism");
 
   private val pushQueueBufferSize = 100
-  log.info(s"Push queue buffer size is $parallelism");
+  log.info(s"Push queue buffer size is $pushQueueBufferSize");
 
   /**
    * Creates a lobby flow.
