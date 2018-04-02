@@ -14,7 +14,6 @@ import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.parser.decode
 import io.circe.syntax._
 
-import lv.continuum.evolution.exception._
 import lv.continuum.evolution.model._
 
 import org.scalatest.{ WordSpec, Matchers }
@@ -29,19 +28,9 @@ class WebSocketServerSpec extends WordSpec with Matchers with ScalatestRouteTest
 
     "handle web socket connections in flow" in {
       val wsProbe = WSProbe()
-      WS("/ws_api/echo", wsProbe.flow) ~> route ~> check {
+      WS("/ws_api", wsProbe.flow) ~> route ~> check {
         isWebSocketUpgrade shouldEqual true
-
-        wsProbe.sendCompletion()
-        wsProbe.expectCompletion()
       }
     }
-  }
-
-  private def checkSampleOut(message: Message, content: String) {
-    message.asTextMessage.getStreamedText
-      .map(ByteString(_))
-      .via(CirceStreamSupport.decode[SampleOut])
-      .map(sampleOut => sampleOut.$type shouldEqual content)
   }
 }

@@ -33,7 +33,7 @@ object FlowCreator {
   /**
    * Creates a WebSocket communication flow.
    */
-  def createFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
+  def createLobbyFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
     Flow[Message]
       .filter(_ match {
         case tm: TextMessage => true
@@ -49,7 +49,7 @@ object FlowCreator {
       }
       .mapAsync(parallelism) {
         case tm: TextMessage => {
-          processTextMessage[SampleIn, SampleOut](tm, SampleProcessor(_), SampleIn($type = "Error")).runFold("")(_ ++ _)
+          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(_), WebSocketIn("error")).runFold("")(_ ++ _)
         }
       }
       .filter(!_.isEmpty())

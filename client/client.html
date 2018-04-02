@@ -10,7 +10,7 @@
 </head>
 <body>
     <h1>WebSocket Client</h1>
-    <textarea id="outgoing-message">{"id": 123, "content": "Weather is nice today"}</textarea>
+    <textarea id="outgoing-message">{"$type": "login", "username": "admin", "password": "admin"}</textarea>
     <br>
     <input type="radio" name="outgoing-message-type" value="text" checked>Text
     <input type="radio" name="outgoing-message-type" value="binary">Binary
@@ -25,7 +25,7 @@
         var $incomingMessages = $("#incoming-messages")
 
         $send.prop("disabled", true)
-        var webSocket = new WebSocket("ws://admin:admin@localhost:9000/ws_api/echo")
+        var webSocket = new WebSocket("ws://localhost:9000/ws_api")
 
         webSocket.onopen = function() {
             $send.prop("disabled", false)
@@ -56,13 +56,7 @@
 
         webSocket.onmessage = function(event) {
             if (typeof event.data === "string") {
-                try {
-                    var incomingMessage = JSON.parse(event.data);
-                    $incomingMessages.prepend($("<li>[" + incomingMessage.createdAt + "] " + incomingMessage.content + "</li>"))
-                } catch(e) {
-                    console.log("Cannot parse data " + event.data + ", will show it as string")
-                    $incomingMessages.prepend($("<li>" + event.data + "</li>"))
-                }
+                $incomingMessages.prepend($("<li>" + event.data + "</li>"))
             } else {
                 console.log("Data " + event.data + " is not supported")
             }
