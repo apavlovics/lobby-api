@@ -37,10 +37,11 @@ object LobbyProcessor {
       }
 
       // Ping
-      case PingIn("ping", seq) => PingOut(seq = seq)
+      case PingIn("ping", seq) if clientContext.isAuthenticated => PingOut(seq = seq)
 
       // Error
-      case _                   => ErrorOut()
+      case _ if clientContext.isAuthenticated => ErrorOut()
+      case _ => ErrorOut("unauthenticated")
     }
   }
 }
