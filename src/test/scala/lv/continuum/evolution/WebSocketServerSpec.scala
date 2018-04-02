@@ -26,7 +26,7 @@ class WebSocketServerSpec extends WordSpec with Matchers with ScalatestRouteTest
 
   "Web socket server" should {
 
-    "handle web socket connections in flow" in {
+    "handle web socket connections" in {
       val wsProbe = WSProbe()
       WS("/ws_api", wsProbe.flow) ~> route ~> check {
         isWebSocketUpgrade shouldEqual true

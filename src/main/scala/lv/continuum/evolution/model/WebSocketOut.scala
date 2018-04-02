@@ -27,7 +27,7 @@ case class PingOut(
 
 @ConfiguredJsonCodec
 case class ErrorOut(
-  $type: String = "error") extends WebSocketOut
+  $type: String = "unknown_error") extends WebSocketOut
 
 @ConfiguredJsonCodec
 case class Table(

@@ -32,7 +32,7 @@ object FlowCreator {
   log.info(s"Parallelism is $parallelism");
 
   /**
-   * Creates a WebSocket communication flow.
+   * Creates a lobby flow.
    */
   def createLobbyFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
     Flow[Message]
@@ -49,8 +49,10 @@ object FlowCreator {
         case tm: TextMessage => tm
       }
       .statefulMapConcat(() => {
+
+        // Add client context to store identity information
         val clientContext = new ClientContext
-        tm => clientContext -> tm :: Nil
+        tm => (clientContext -> tm) :: Nil
       })
       .mapAsync(parallelism) {
         case (clientContext, tm) => {
