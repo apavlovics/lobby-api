@@ -6,4 +6,6 @@ class ClientContext {
   @volatile var subscribed = false
 
   def isAuthenticated = userType.isDefined
+
+  def isAdmin = userType.contains("admin")
 }
