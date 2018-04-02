@@ -47,9 +47,13 @@ object FlowCreator {
       .collect {
         case tm: TextMessage => tm
       }
+      .statefulMapConcat(() => {
+        val clientContext = new ClientContext
+        tm => clientContext -> tm :: Nil
+      })
       .mapAsync(parallelism) {
-        case tm: TextMessage => {
-          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(_), WebSocketIn("error")).runFold("")(_ ++ _)
+        case (clientContext, tm) => {
+          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(clientContext, _), WebSocketIn("error")).runFold("")(_ ++ _)
         }
       }
       .filter(!_.isEmpty())

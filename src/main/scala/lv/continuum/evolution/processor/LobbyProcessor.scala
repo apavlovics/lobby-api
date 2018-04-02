@@ -2,20 +2,35 @@ package lv.continuum.evolution.processor
 
 import lv.continuum.evolution.model._
 
+import org.slf4j.LoggerFactory
+
 /**
  * Processes [[WebSocketIn]] instances into [[WebSocketOut]] instances.
  */
 object LobbyProcessor {
 
-  def apply(webSocketIn: WebSocketIn): WebSocketOut = {
+  private val log = LoggerFactory.getLogger(LobbyProcessor.getClass)
+
+  def apply(clientContext: ClientContext, webSocketIn: WebSocketIn): WebSocketOut = {
+    log.debug(s"Client context username is ${clientContext.username}")
+
     webSocketIn.$type match {
 
       // Login
       case "login" => {
         (webSocketIn.username, webSocketIn.password) match {
-          case (Some("admin"), Some("admin")) => WebSocketOut("login_successful", Some("admin"))
-          case (Some("user"), Some("user"))   => WebSocketOut("login_successful", Some("user"))
-          case _                              => WebSocketOut("login_failed")
+          case (Some("admin"), Some("admin")) => {
+            clientContext.username = webSocketIn.username
+            WebSocketOut("login_successful", Some("admin"))
+          }
+          case (Some("user"), Some("user")) => {
+            clientContext.username = webSocketIn.username
+            WebSocketOut("login_successful", Some("user"))
+          }
+          case _ => {
+            clientContext.username = None
+            WebSocketOut("login_failed")
+          }
         }
       }
 
