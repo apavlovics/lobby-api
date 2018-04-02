@@ -63,7 +63,7 @@ object FlowCreator {
       .map[Message](TextMessage(_))
   }
 
-  private def processTextMessage[A, B](textMessage: TextMessage, function: A => B, recoverWith: A)(implicit decoder: Decoder[A], encoder: Encoder[B]): Source[String, _] = {
+  private def processTextMessage[A, B](textMessage: TextMessage, function: A => Option[B], recoverWith: A)(implicit decoder: Decoder[A], encoder: Encoder[B]): Source[String, _] = {
     textMessage.textStream
       .map(ByteString(_))
       .via(CirceStreamSupport.decode[A])
@@ -74,6 +74,9 @@ object FlowCreator {
         }
       }
       .map(function)
+      .collect {
+        case Some(b) => b
+      }
       .via(CirceStreamSupport.encode[B])
   }
 }

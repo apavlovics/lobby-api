@@ -21,8 +21,8 @@ object LobbyProcessor {
   tables.put(1, Table(1, "table - James Bond", 7))
   tables.put(2, Table(1, "table - Mission Impossible", 4))
 
-  def apply(clientContext: ClientContext, webSocketIn: WebSocketIn): WebSocketOut = {
-    log.debug(s"Client context user type is ${clientContext.userType}")
+  def apply(clientContext: ClientContext, webSocketIn: WebSocketIn): Option[WebSocketOut] = {
+    log.debug(s"User type is ${clientContext.userType}, subscribed is ${clientContext.subscribed}")
 
     webSocketIn match {
 
@@ -32,29 +32,38 @@ object LobbyProcessor {
           case ("admin", "admin") => {
             val userType = "admin"
             clientContext.userType = Some(userType)
-            LoginOut("login_successful", userType)
+            Some(LoginOut("login_successful", userType))
           }
           case ("user", "user") => {
             val userType = "user"
             clientContext.userType = Some(userType)
-            LoginOut("login_successful", userType)
+            Some(LoginOut("login_successful", userType))
           }
           case _ => {
             clientContext.userType = None
-            ErrorOut("login_failed")
+            Some(ErrorOut("login_failed"))
           }
         }
       }
 
       // Ping
-      case PingIn("ping", seq) if clientContext.isAuthenticated => PingOut(seq = seq)
+      case PingIn("ping", seq) if clientContext.isAuthenticated => Some(PingOut(seq = seq))
 
-      // Subscribe tables
-      case TableListIn("subscribe_tables") if clientContext.isAuthenticated => TableListOut(tables = tables.values.toList)
+      // Subscribe
+      case TableListIn("subscribe_tables") if clientContext.isAuthenticated => {
+        clientContext.subscribed = true
+        Some(TableListOut(tables = tables.values.toList))
+      }
+
+      // Unsubscribe
+      case TableListIn("unsubscribe_tables") if clientContext.isAuthenticated => {
+        clientContext.subscribed = false
+        None
+      }
 
       // Error
-      case _ if clientContext.isAuthenticated => ErrorOut()
-      case _ => ErrorOut("unauthenticated")
+      case _ if clientContext.isAuthenticated => Some(ErrorOut())
+      case _                                  => Some(ErrorOut("unauthenticated"))
     }
   }
 }

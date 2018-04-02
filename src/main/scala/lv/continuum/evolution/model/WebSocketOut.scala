@@ -9,10 +9,10 @@ trait WebSocketOut
 object WebSocketOut {
 
   implicit val encoder: Encoder[WebSocketOut] = {
-    case loginOut: LoginOut         ⇒ loginOut.asJson
-    case pingOut: PingOut           ⇒ pingOut.asJson
-    case tableListOut: TableListOut ⇒ tableListOut.asJson
-    case errorOut: ErrorOut         ⇒ errorOut.asJson
+    case loginOut: LoginOut         => loginOut.asJson
+    case pingOut: PingOut           => pingOut.asJson
+    case tableListOut: TableListOut => tableListOut.asJson
+    case errorOut: ErrorOut         => errorOut.asJson
   }
 }
 
