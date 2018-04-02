@@ -11,7 +11,8 @@ object WebSocketIn {
   implicit val decoder: Decoder[WebSocketIn] =
     Decoder[LoginIn].map[WebSocketIn](identity)
       .or(Decoder[PingIn].map[WebSocketIn](identity)
-        .or(Decoder[ErrorIn].map[WebSocketIn](identity)))
+        .or(Decoder[TableListIn].map[WebSocketIn](identity)
+          .or(Decoder[ErrorIn].map[WebSocketIn](identity))))
 }
 
 @ConfiguredJsonCodec
@@ -26,8 +27,13 @@ case class PingIn(
   seq:   Long) extends WebSocketIn
 
 @ConfiguredJsonCodec
+case class TableListIn(
+  $type: String) extends WebSocketIn
+
+@ConfiguredJsonCodec
 case class ErrorIn() extends WebSocketIn
 
 object LoginIn extends CirceConfiguration
 object PingIn extends CirceConfiguration
+object TableListIn extends CirceConfiguration
 object ErrorIn extends CirceConfiguration
