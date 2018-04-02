@@ -31,10 +31,18 @@ object FlowCreator {
   private val parallelism = Runtime.getRuntime().availableProcessors() * 2 - 1;
   log.info(s"Parallelism is $parallelism");
 
+  private val pushQueueBufferSize = 100
+  log.info(s"Push queue buffer size is $parallelism");
+
   /**
    * Creates a lobby flow.
    */
   def createLobbyFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
+    val (pushQueue, broadcastSource) = Source
+      .queue(pushQueueBufferSize, OverflowStrategy.backpressure)
+      .via(CirceStreamSupport.encode[WebSocketOut])
+      .toMat(BroadcastHub.sink[String])(Keep.both).run()
+
     Flow[Message]
       .filter(_ match {
         case tm: TextMessage => true
@@ -56,9 +64,12 @@ object FlowCreator {
       })
       .mapAsync(parallelism) {
         case (clientContext, tm) => {
-          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(clientContext, _), ErrorIn()).runFold("")(_ ++ _)
+          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(pushQueue, clientContext, _), ErrorIn()).runFold("")(_ ++ _)
         }
       }
+
+      // TODO: Broadcast only to subscribed clients.
+      .merge(broadcastSource)
       .filter(!_.isEmpty())
       .map[Message](TextMessage(_))
   }

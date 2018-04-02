@@ -9,11 +9,12 @@ trait WebSocketOut
 object WebSocketOut {
 
   implicit val encoder: Encoder[WebSocketOut] = {
-    case wso: LoginOut      => wso.asJson
-    case wso: PingOut       => wso.asJson
-    case wso: TableListOut  => wso.asJson
-    case wso: ErrorTableOut => wso.asJson
-    case wso: ErrorOut      => wso.asJson
+    case wso: LoginOut       => wso.asJson
+    case wso: PingOut        => wso.asJson
+    case wso: RemoveTableOut => wso.asJson
+    case wso: TableListOut   => wso.asJson
+    case wso: ErrorTableOut  => wso.asJson
+    case wso: ErrorOut       => wso.asJson
   }
 }
 
@@ -26,6 +27,11 @@ case class LoginOut(
 case class PingOut(
   $type: String = "pong",
   seq:   Long) extends WebSocketOut
+
+@ConfiguredJsonCodec
+case class RemoveTableOut(
+  $type: String = "table_removed",
+  id:    Long) extends WebSocketOut
 
 @ConfiguredJsonCodec
 case class TableListOut(
@@ -49,6 +55,7 @@ case class Table(
 
 object LoginOut extends CirceConfiguration
 object PingOut extends CirceConfiguration
+object RemoveTableOut extends CirceConfiguration
 object TableListOut extends CirceConfiguration
 object ErrorTableOut extends CirceConfiguration
 object ErrorOut extends CirceConfiguration

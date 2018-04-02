@@ -1,5 +1,8 @@
 package lv.continuum.evolution.processor
 
+import akka.NotUsed
+import akka.stream.scaladsl._
+
 import java.util.concurrent.CopyOnWriteArrayList
 
 import lv.continuum.evolution.model._
@@ -21,7 +24,7 @@ object LobbyProcessor {
   tables.append(Table(1, "table - James Bond", 7))
   tables.append(Table(2, "table - Mission Impossible", 4))
 
-  def apply(clientContext: ClientContext, webSocketIn: WebSocketIn): Option[WebSocketOut] = {
+  def apply(pushQueue: SourceQueue[WebSocketOut], clientContext: ClientContext, webSocketIn: WebSocketIn): Option[WebSocketOut] = {
     log.debug(s"User type is ${clientContext.userType}, subscribed is ${clientContext.subscribed}")
     log.debug(s"Web socket in is $webSocketIn")
 
@@ -70,6 +73,7 @@ object LobbyProcessor {
             case 0 => Some(ErrorTableOut("removal_failed", id))
             case _ => {
               tables --= tablesToRemove
+              pushQueue.offer(RemoveTableOut(id = id))
               None
             }
           }
