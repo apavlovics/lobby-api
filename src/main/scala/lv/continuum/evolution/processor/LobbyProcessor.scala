@@ -12,33 +12,35 @@ object LobbyProcessor {
   private val log = LoggerFactory.getLogger(LobbyProcessor.getClass)
 
   def apply(clientContext: ClientContext, webSocketIn: WebSocketIn): WebSocketOut = {
-    log.debug(s"Client context username is ${clientContext.username}")
+    log.debug(s"Client context user type is ${clientContext.userType}")
 
-    webSocketIn.$type match {
+    webSocketIn match {
 
       // Login
-      case "login" => {
-        (webSocketIn.username, webSocketIn.password) match {
-          case (Some("admin"), Some("admin")) => {
-            clientContext.username = webSocketIn.username
-            WebSocketOut("login_successful", Some("admin"))
+      case LoginIn("login", username, password) => {
+        (username, password) match {
+          case ("admin", "admin") => {
+            val userType = "admin"
+            clientContext.userType = Some(userType)
+            LoginOut("login_successful", userType)
           }
-          case (Some("user"), Some("user")) => {
-            clientContext.username = webSocketIn.username
-            WebSocketOut("login_successful", Some("user"))
+          case ("user", "user") => {
+            val userType = "user"
+            clientContext.userType = Some(userType)
+            LoginOut("login_successful", userType)
           }
           case _ => {
-            clientContext.username = None
-            WebSocketOut("login_failed")
+            clientContext.userType = None
+            ErrorOut("login_failed")
           }
         }
       }
 
       // Ping
-      case "ping" => WebSocketOut("pong", seq = webSocketIn.seq)
+      case PingIn("ping", seq) => PingOut(seq = seq)
 
       // Error
-      case _      => WebSocketOut("error")
+      case _                   => ErrorOut()
     }
   }
 }

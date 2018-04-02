@@ -2,5 +2,5 @@ package lv.continuum.evolution.model
 
 class ClientContext {
 
-  @volatile var username: Option[String] = None
+  @volatile var userType: Option[String] = None
 }

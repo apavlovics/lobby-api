@@ -12,6 +12,7 @@ import de.knutwalker.akka.stream.support.CirceStreamSupport._
 import jawn.ParseException
 
 import io.circe._
+import io.circe.syntax._
 
 import java.time.LocalDateTime
 
@@ -53,7 +54,7 @@ object FlowCreator {
       })
       .mapAsync(parallelism) {
         case (clientContext, tm) => {
-          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(clientContext, _), WebSocketIn("error")).runFold("")(_ ++ _)
+          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(clientContext, _), ErrorIn()).runFold("")(_ ++ _)
         }
       }
       .filter(!_.isEmpty())
