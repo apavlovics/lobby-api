@@ -17,24 +17,14 @@ import scala.io.StdIn
 
 class WebSocketServer(implicit val system: ActorSystem, implicit val materializer: ActorMaterializer) {
 
-  // Create flows
-  val echoFlow = FlowCreator.createEchoFlow
-  val broadcastFlow = FlowCreator.createBroadcastFlow
-  val pushFlow = FlowCreator.createPushFlow
+  // Create flow
+  val flow = FlowCreator.createFlow
 
   // Define route
   val route =
     Route.seal {
-      authenticateBasicAsync(realm = "secure-realm", new AsyncBasicAuthenticator) { user =>
-        pathPrefix("ws_api") {
-          path("echo") {
-            handleWebSocketMessages(echoFlow)
-          } ~ path("broadcast") {
-            handleWebSocketMessages(broadcastFlow)
-          } ~ path("push") {
-            handleWebSocketMessages(pushFlow)
-          }
-        }
+      path("ws_api") {
+        handleWebSocketMessages(flow)
       }
     }
 

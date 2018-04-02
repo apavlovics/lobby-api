@@ -7,4 +7,4 @@ import io.circe.syntax._
 import java.time.LocalDateTime
 
 @JsonCodec
-case class SampleOut(createdAt: LocalDateTime = LocalDateTime.now(), content: String)
+case class SampleOut($type: String, seq: Option[Int] = None)

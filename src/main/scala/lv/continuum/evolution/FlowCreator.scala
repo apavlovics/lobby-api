@@ -31,14 +31,9 @@ object FlowCreator {
   log.info(s"Parallelism is $parallelism");
 
   /**
-   * Creates an echo flow.
-   *
-   * Incoming messages from a particular WebSocket client are passed through the server,
-   * then outgoing messages are sent back to that WebSocket client.
+   * Creates a WebSocket communication flow.
    */
-  def createEchoFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
-    implicit val flowName = "Echo"
-
+  def createFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
     Flow[Message]
       .filter(_ match {
         case tm: TextMessage => true
@@ -54,79 +49,11 @@ object FlowCreator {
       }
       .mapAsync(parallelism) {
         case tm: TextMessage => {
-          processTextMessage[SampleIn, SampleOut](tm, SampleProcessor(_, flowName), SampleIn(content = "Invalid message")).runFold("")(_ ++ _)
+          processTextMessage[SampleIn, SampleOut](tm, SampleProcessor(_), SampleIn($type = "Error")).runFold("")(_ ++ _)
         }
       }
       .filter(!_.isEmpty())
       .map[Message](TextMessage(_))
-  }
-
-  /**
-   * Creates a broadcast flow.
-   *
-   * Incoming messages from all WebSocket clients are passed through the merge
-   * and broadcast hubs, then outgoing messages are sent back to all WebSocket clients.
-   */
-  def createBroadcastFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
-    implicit val flowName = "Broadcast"
-
-    val (broadcastSink, broadcastSource) =
-      MergeHub.source[String].toMat(BroadcastHub.sink[String])(Keep.both).run()
-
-    Flow[Message]
-      .filter(_ match {
-        case tm: TextMessage => true
-        case bm: BinaryMessage => {
-
-          // Ignore binary messages, but drain data stream
-          bm.dataStream.runWith(Sink.ignore)
-          false
-        }
-      })
-      .collect {
-        case tm: TextMessage => tm
-      }
-      .mapAsync(parallelism) {
-        case tm: TextMessage => {
-          processTextMessage[SampleIn, SampleOut](tm, SampleProcessor(_, flowName), SampleIn(content = "Invalid message")).runFold("")(_ ++ _)
-        }
-      }
-      .via(Flow.fromSinkAndSource(broadcastSink, broadcastSource))
-      .filter(!_.isEmpty())
-      .map[Message](TextMessage(_))
-  }
-
-  /**
-   * Creates a push flow.
-   *
-   * Incoming messages from a particular WebSocket client are ignored, while
-   * outgoing messages are pushed by the server to that WebSocket client every second.
-   */
-  def createPushFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
-    val pushSource = Source
-      .tick(1.second, 1.second, () => Tick())
-      .map {
-        case _ => SampleOut(content = "Push message")
-      }
-      .via(CirceStreamSupport.encode[SampleOut])
-      .map(TextMessage(_))
-
-    Flow[Message]
-      .mapConcat {
-        case tm: TextMessage => {
-
-          // Ignore text messages, but drain data stream
-          tm.textStream.runWith(Sink.ignore)
-          Nil
-        }
-        case bm: BinaryMessage => {
-
-          // Ignore binary messages, but drain data stream
-          bm.dataStream.runWith(Sink.ignore)
-          Nil
-        }
-      }
-      .merge(pushSource)
   }
 
   private def processTextMessage[A, B](textMessage: TextMessage, function: A => B, recoverWith: A)(implicit decoder: Decoder[A], encoder: Encoder[B]): Source[String, _] = {

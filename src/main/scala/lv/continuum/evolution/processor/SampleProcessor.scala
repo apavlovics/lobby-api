@@ -7,7 +7,10 @@ import lv.continuum.evolution.model._
  */
 object SampleProcessor {
 
-  def apply(sampleIn: SampleIn, flowName: String): SampleOut = {
-    SampleOut(content = s"$flowName: ${sampleIn.content}")
+  def apply(sampleIn: SampleIn): SampleOut = {
+    sampleIn match {
+      case SampleIn("login", _) => SampleOut("error")
+      case _ => SampleOut("error")
+    }
   }
 }
