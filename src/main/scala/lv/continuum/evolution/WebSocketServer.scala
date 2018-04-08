@@ -15,14 +15,16 @@ import scala.io.StdIn
 
 class WebSocketServer(implicit val system: ActorSystem, implicit val materializer: ActorMaterializer) {
 
-  // Create flow
-  val lobbyFlow = FlowCreator.createLobbyFlow
+  // Create push flow
+  val (pushQueue, pushSource) = FlowCreator.createPushFlow
 
   // Define route
   val route =
     Route.seal {
       path("ws_api") {
-        handleWebSocketMessages(lobbyFlow)
+
+        // Create new lobby flow for each connection
+        handleWebSocketMessages(FlowCreator.createLobbyFlow(pushQueue, pushSource))
       }
     }
 

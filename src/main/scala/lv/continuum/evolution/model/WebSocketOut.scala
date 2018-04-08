@@ -5,6 +5,7 @@ import io.circe.generic.extras._
 import io.circe.syntax._
 
 trait WebSocketOut
+trait PushNotificationOut
 
 object WebSocketOut {
 
@@ -31,7 +32,7 @@ case class PingOut(
 @ConfiguredJsonCodec
 case class RemoveTableOut(
   $type: String = "table_removed",
-  id:    Long) extends WebSocketOut
+  id:    Long) extends WebSocketOut with PushNotificationOut
 
 @ConfiguredJsonCodec
 case class TableListOut(

@@ -24,20 +24,23 @@ import scala.concurrent.Future
 
 object FlowCreator extends Configurable with Loggable {
 
-  private val parallelism = Runtime.getRuntime().availableProcessors() * 2 - 1;
-  log.info(s"Parallelism is $parallelism");
-
   private val pushQueueBufferSize = config.getInt("flow-creator.push-queue-buffer-size")
   log.info(s"Push queue buffer size is $pushQueueBufferSize");
 
   /**
+   * Creates a flow for delivering push notifications to subscribed clients.
+   */
+  def createPushFlow(implicit materializer: ActorMaterializer) = {
+    Source
+      .queue(pushQueueBufferSize, OverflowStrategy.backpressure)
+      .toMat(BroadcastHub.sink[WebSocketOut])(Keep.both).run()
+  }
+
+  /**
    * Creates a lobby flow.
    */
-  def createLobbyFlow(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
-    val (pushQueue, broadcastSource) = Source
-      .queue(pushQueueBufferSize, OverflowStrategy.backpressure)
-      .via(CirceStreamSupport.encode[WebSocketOut])
-      .toMat(BroadcastHub.sink[String])(Keep.both).run()
+  def createLobbyFlow(pushQueue: SourceQueue[WebSocketOut], pushSource: Source[WebSocketOut, Any])(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
+    val clientContext = new ClientContext()
 
     Flow[Message]
       .filter(_ match {
@@ -52,25 +55,23 @@ object FlowCreator extends Configurable with Loggable {
       .collect {
         case tm: TextMessage => tm
       }
-      .statefulMapConcat(() => {
-
-        // Add client context to store identity information
-        val clientContext = new ClientContext
-        tm => (clientContext -> tm) :: Nil
-      })
-      .mapAsync(parallelism) {
-        case (clientContext, tm) => {
-          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(pushQueue, clientContext, _), ErrorIn()).runFold("")(_ ++ _)
+      .flatMapConcat {
+        case tm => {
+          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(pushQueue, clientContext, _), ErrorIn())
         }
       }
 
-      // TODO: Broadcast only to subscribed clients.
-      .merge(broadcastSource)
-      .filter(!_.isEmpty())
+      // TODO: Dynamically connect and disconnect push source.
+      .merge(pushSource)
+      .filter {
+        case _: PushNotificationOut if !clientContext.subscribed => false
+        case _ => true
+      }
+      .via(CirceStreamSupport.encode[WebSocketOut])
       .map[Message](TextMessage(_))
   }
 
-  private def processTextMessage[A, B](textMessage: TextMessage, function: A => Option[B], recoverWith: A)(implicit decoder: Decoder[A], encoder: Encoder[B]): Source[String, _] = {
+  private def processTextMessage[A, B](textMessage: TextMessage, function: A => Option[B], recoverWith: A)(implicit decoder: Decoder[A]) = {
     textMessage.textStream
       .map(ByteString(_))
       .via(CirceStreamSupport.decode[A])
@@ -84,6 +85,5 @@ object FlowCreator extends Configurable with Loggable {
       .collect {
         case Some(b) => b
       }
-      .via(CirceStreamSupport.encode[B])
   }
 }
