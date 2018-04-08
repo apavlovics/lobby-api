@@ -19,14 +19,10 @@ import java.time.LocalDateTime
 import lv.continuum.evolution.model._
 import lv.continuum.evolution.processor._
 
-import org.slf4j.LoggerFactory
-
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
-object FlowCreator {
-
-  private val log = LoggerFactory.getLogger(FlowCreator.getClass)
+object FlowCreator extends Loggable {
 
   private val parallelism = Runtime.getRuntime().availableProcessors() * 2 - 1;
   log.info(s"Parallelism is $parallelism");

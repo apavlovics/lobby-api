@@ -9,8 +9,6 @@ import akka.http.scaladsl.server.directives._
 import akka.stream._
 import akka.stream.Supervision._
 
-import org.slf4j.LoggerFactory
-
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 import scala.io.StdIn
@@ -33,12 +31,10 @@ class WebSocketServer(implicit val system: ActorSystem, implicit val materialize
   }
 }
 
-object WebSocketServer {
+object WebSocketServer extends Loggable {
 
-  private val log = LoggerFactory.getLogger(WebSocketServer.getClass)
-
+  private val address = "localhost"
   private val port = 9000;
-  log.info(s"Port is $port");
 
   def main(args: Array[String]): Unit = {
 
@@ -58,8 +54,8 @@ object WebSocketServer {
       ActorMaterializerSettings(system).withSupervisionStrategy(decider))
 
     // Start server
-    new WebSocketServer().start("localhost", port)
-    log.info(s"Server started at localhost:$port, press enter to terminate")
+    new WebSocketServer().start(address, port)
+    log.info(s"Server started at $address:$port, press enter to terminate")
 
     // Terminate server
     StdIn.readLine()

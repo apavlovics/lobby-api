@@ -5,9 +5,8 @@ import akka.stream.scaladsl._
 
 import java.util.concurrent.CopyOnWriteArrayList
 
+import lv.continuum.evolution.Loggable
 import lv.continuum.evolution.model._
-
-import org.slf4j.LoggerFactory
 
 import scala.collection.mutable._
 import scala.collection.JavaConverters._
@@ -15,9 +14,7 @@ import scala.collection.JavaConverters._
 /**
  * Processes [[WebSocketIn]] instances into [[WebSocketOut]] instances.
  */
-object LobbyProcessor {
-
-  private val log = LoggerFactory.getLogger(LobbyProcessor.getClass)
+object LobbyProcessor extends Loggable {
 
   // TODO: In-memory data source with mock tables, should be replaced with real data source.
   private val tables: Buffer[Table] = new CopyOnWriteArrayList().asScala
