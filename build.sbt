@@ -39,6 +39,9 @@ libraryDependencies ++= Seq(
   "de.knutwalker" %% "akka-stream-circe" % knutwalkerVersion
 )
 
+// Configuration
+libraryDependencies += "com.typesafe" % "config" % "1.3.2"
+
 // Logging
 libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.25",

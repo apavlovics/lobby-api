@@ -31,10 +31,10 @@ class WebSocketServer(implicit val system: ActorSystem, implicit val materialize
   }
 }
 
-object WebSocketServer extends Loggable {
+object WebSocketServer extends Configurable with Loggable {
 
-  private val address = "localhost"
-  private val port = 9000;
+  private val address = config.getString("web-socket-server.address")
+  private val port = config.getInt("web-socket-server.port")
 
   def main(args: Array[String]): Unit = {
 

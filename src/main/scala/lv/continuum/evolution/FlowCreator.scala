@@ -22,12 +22,12 @@ import lv.continuum.evolution.processor._
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
-object FlowCreator extends Loggable {
+object FlowCreator extends Configurable with Loggable {
 
   private val parallelism = Runtime.getRuntime().availableProcessors() * 2 - 1;
   log.info(s"Parallelism is $parallelism");
 
-  private val pushQueueBufferSize = 100
+  private val pushQueueBufferSize = config.getInt("flow-creator.push-queue-buffer-size")
   log.info(s"Push queue buffer size is $pushQueueBufferSize");
 
   /**
