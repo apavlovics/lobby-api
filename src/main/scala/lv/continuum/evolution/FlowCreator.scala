@@ -7,12 +7,8 @@ import akka.stream.scaladsl._
 import akka.util.ByteString
 
 import de.knutwalker.akka.stream.support.CirceStreamSupport
-import de.knutwalker.akka.stream.support.CirceStreamSupport._
 
-import jawn.ParseException
-
-import io.circe._
-import io.circe.syntax._
+import io.circe.parser._
 
 import java.time.LocalDateTime
 
@@ -23,6 +19,9 @@ import scala.concurrent.duration._
 import scala.concurrent.Future
 
 object FlowCreator extends Configurable with Loggable {
+
+  private val parallelism = Runtime.getRuntime().availableProcessors() * 2 - 1;
+  log.info(s"Parallelism is $parallelism");
 
   private val pushQueueBufferSize = config.getInt("flow-creator.push-queue-buffer-size")
   log.info(s"Push queue buffer size is $pushQueueBufferSize");
@@ -40,6 +39,8 @@ object FlowCreator extends Configurable with Loggable {
    * Creates a lobby flow.
    */
   def createLobbyFlow(pushQueue: SourceQueue[WebSocketOut], pushSource: Source[WebSocketOut, Any])(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
+
+    // TODO: Move client context into actor.
     val clientContext = new ClientContext()
 
     Flow[Message]
@@ -55,10 +56,19 @@ object FlowCreator extends Configurable with Loggable {
       .collect {
         case tm: TextMessage => tm
       }
-      .flatMapConcat {
-        case tm => {
-          processTextMessage[WebSocketIn, WebSocketOut](tm, LobbyProcessor(pushQueue, clientContext, _), ErrorIn())
+      .mapAsync(parallelism) {
+        case tm => tm.textStream.runFold("")(_ ++ _)
+      }
+      .map(decode[WebSocketIn](_))
+      .map(_ match {
+        case Right(webSocketIn) => LobbyProcessor(pushQueue, clientContext, webSocketIn)
+        case Left(error) => {
+          log.warn(s"Issue while parsing JSON: ${error.getMessage}")
+          Some(ErrorOut("invalid_message"))
         }
+      })
+      .collect {
+        case Some(b) => b
       }
 
       // TODO: Dynamically connect and disconnect push source.
@@ -69,21 +79,5 @@ object FlowCreator extends Configurable with Loggable {
       }
       .via(CirceStreamSupport.encode[WebSocketOut])
       .map[Message](TextMessage(_))
-  }
-
-  private def processTextMessage[A, B](textMessage: TextMessage, function: A => Option[B], recoverWith: A)(implicit decoder: Decoder[A]) = {
-    textMessage.textStream
-      .map(ByteString(_))
-      .via(CirceStreamSupport.decode[A])
-      .recover {
-        case e @ (_: JsonParsingException | _: ParseException) => {
-          log.warn(s"Issue while parsing JSON: ${e.getMessage}")
-          recoverWith
-        }
-      }
-      .map(function)
-      .collect {
-        case Some(b) => b
-      }
   }
 }

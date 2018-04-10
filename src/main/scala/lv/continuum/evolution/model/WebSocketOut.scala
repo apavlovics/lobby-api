@@ -4,8 +4,8 @@ import io.circe._
 import io.circe.generic.extras._
 import io.circe.syntax._
 
-trait WebSocketOut
-trait PushNotificationOut
+sealed trait WebSocketOut
+sealed trait PushNotificationOut
 
 object WebSocketOut {
 

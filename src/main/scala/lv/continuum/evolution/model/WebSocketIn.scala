@@ -1,20 +1,22 @@
 package lv.continuum.evolution.model
 
+import cats.syntax.functor._
+
 import io.circe._
 import io.circe.generic.extras._
 import io.circe.syntax._
 
-trait WebSocketIn
+sealed trait WebSocketIn
 
 object WebSocketIn {
 
   // Order complex case classes first
-  implicit val decoder: Decoder[WebSocketIn] =
-    Decoder[LoginIn].map[WebSocketIn](identity)
-      .or(Decoder[PingIn].map[WebSocketIn](identity)
-        .or(Decoder[RemoveTableIn].map[WebSocketIn](identity)
-          .or(Decoder[TableListIn].map[WebSocketIn](identity)
-            .or(Decoder[ErrorIn].map[WebSocketIn](identity)))))
+  implicit val decode: Decoder[WebSocketIn] = List[Decoder[WebSocketIn]](
+    Decoder[LoginIn].widen,
+    Decoder[PingIn].widen,
+    Decoder[RemoveTableIn].widen,
+    Decoder[TableListIn].widen,
+    Decoder[ErrorIn].widen).reduceLeft(_ or _)
 }
 
 @ConfiguredJsonCodec
