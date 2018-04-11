@@ -38,11 +38,7 @@ object FlowCreator extends Configurable with Loggable {
   /**
    * Creates a lobby flow.
    */
-  def createLobbyFlow(pushQueue: SourceQueue[WebSocketOut], pushSource: Source[WebSocketOut, Any])(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
-
-    // TODO: Move client context into actor.
-    val clientContext = new ClientContext()
-
+  def createLobbyFlow(pushQueue: SourceQueue[WebSocketOut], pushSource: Source[WebSocketOut, Any], clientContext: ClientContext)(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
     Flow[Message]
       .filter(_ match {
         case tm: TextMessage => true

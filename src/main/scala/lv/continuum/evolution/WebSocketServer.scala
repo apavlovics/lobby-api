@@ -9,11 +9,15 @@ import akka.http.scaladsl.server.directives._
 import akka.stream._
 import akka.stream.Supervision._
 
+import lv.continuum.evolution.model._
+
 import scala.concurrent.duration._
 import scala.concurrent.{ Await, Future }
 import scala.io.StdIn
+import scala.util.{ Success, Failure }
 
-class WebSocketServer(implicit val system: ActorSystem, implicit val materializer: ActorMaterializer) {
+class WebSocketServer(implicit val system: ActorSystem, implicit val materializer: ActorMaterializer) extends Loggable {
+  import system.dispatcher
 
   // Create push flow
   val (pushQueue, pushSource) = FlowCreator.createPushFlow
@@ -24,12 +28,18 @@ class WebSocketServer(implicit val system: ActorSystem, implicit val materialize
       path("ws_api") {
 
         // Create new lobby flow for each connection
-        handleWebSocketMessages(FlowCreator.createLobbyFlow(pushQueue, pushSource))
+        handleWebSocketMessages(FlowCreator.createLobbyFlow(pushQueue, pushSource, new ClientContext()))
       }
     }
 
   def start(address: String, port: Int) = {
-    Http().bindAndHandle(route, address, port)
+    Http().bindAndHandle(route, address, port).onComplete {
+      case Success(serverBinding) =>
+        val localAddress = serverBinding.localAddress
+        log.info(s"Server started at ${localAddress.getHostName}:${localAddress.getPort}, press enter to terminate")
+      case Failure(e) =>
+        log.error(s"Server failed to start, press enter to terminate")
+    }
   }
 }
 
@@ -57,7 +67,6 @@ object WebSocketServer extends Configurable with Loggable {
 
     // Start server
     new WebSocketServer().start(address, port)
-    log.info(s"Server started at $address:$port, press enter to terminate")
 
     // Terminate server
     StdIn.readLine()
