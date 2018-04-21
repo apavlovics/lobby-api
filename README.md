@@ -1,6 +1,6 @@
-# Evolution Gaming Test Assignment
+# Evolution Gaming Lobby API
 
-This sample application implements a server for a JSON-based protocol over WebSocket.
+This sample application implements a server for a JSON-based lobby API over WebSocket.
 
 ## System Requirements
 
