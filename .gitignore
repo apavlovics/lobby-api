@@ -1,10 +1,4 @@
-.settings/
-.tmpBin/
-bin/
+.idea/
 logs/
 project/
 target/
-
-.cache-*
-.classpath
-.project
