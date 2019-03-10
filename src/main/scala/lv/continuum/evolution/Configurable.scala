@@ -1,8 +1,8 @@
 package lv.continuum.evolution
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 
 trait Configurable {
 
-  protected val config = ConfigFactory.load()
+  protected val config: Config = ConfigFactory.load()
 }

@@ -1,68 +1,58 @@
 package lv.continuum.evolution
 
 import akka.NotUsed
-import akka.http.scaladsl.model.ws.{ Message, TextMessage, BinaryMessage }
+import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.stream._
 import akka.stream.scaladsl._
-import akka.util.ByteString
-
+import com.typesafe.scalalogging.LazyLogging
 import de.knutwalker.akka.stream.support.CirceStreamSupport
-
 import io.circe.parser._
-
-import java.time.LocalDateTime
-
 import lv.continuum.evolution.model._
 import lv.continuum.evolution.processor._
 
-import scala.concurrent.duration._
-import scala.concurrent.Future
+object FlowCreator extends Configurable with LazyLogging {
 
-object FlowCreator extends Configurable with Loggable {
-
-  private val parallelism = Runtime.getRuntime().availableProcessors() * 2 - 1;
-  log.info(s"Parallelism is $parallelism");
+  private val parallelism = Runtime.getRuntime.availableProcessors() * 2 - 1
+  logger.info(s"Parallelism is $parallelism")
 
   private val pushQueueBufferSize = config.getInt("flow-creator.push-queue-buffer-size")
-  log.info(s"Push queue buffer size is $pushQueueBufferSize");
+  logger.info(s"Push queue buffer size is $pushQueueBufferSize")
 
   /**
-   * Creates a flow for delivering push notifications to subscribed clients.
-   */
-  def createPushFlow(implicit materializer: ActorMaterializer) = {
+    * Creates a flow for delivering push notifications to subscribed clients.
+    */
+  def createPushFlow(implicit materializer: ActorMaterializer): (SourceQueueWithComplete[WebSocketOut], Source[WebSocketOut, NotUsed]) =
     Source
       .queue(pushQueueBufferSize, OverflowStrategy.backpressure)
       .toMat(BroadcastHub.sink[WebSocketOut])(Keep.both).run()
-  }
 
   /**
-   * Creates a lobby flow.
-   */
-  def createLobbyFlow(pushQueue: SourceQueue[WebSocketOut], pushSource: Source[WebSocketOut, Any], clientContext: ClientContext)(implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] = {
+    * Creates a lobby flow.
+    */
+  def createLobbyFlow(pushQueue: SourceQueue[WebSocketOut], pushSource: Source[WebSocketOut, Any], clientContext: ClientContext)
+                     (implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] =
     Flow[Message]
-      .filter(_ match {
-        case tm: TextMessage => true
-        case bm: BinaryMessage => {
+      .filter {
+        case _: TextMessage => true
+        case bm: BinaryMessage =>
 
           // Ignore binary messages, but drain data stream
           bm.dataStream.runWith(Sink.ignore)
           false
-        }
-      })
+      }
       .collect {
         case tm: TextMessage => tm
       }
       .mapAsync(parallelism) {
-        case tm => tm.textStream.runFold("")(_ ++ _)
+        tm => tm.textStream.runFold("")(_ ++ _)
       }
       .map(decode[WebSocketIn](_))
-      .map(_ match {
+      .map {
         case Right(webSocketIn) => LobbyProcessor(pushQueue, clientContext, webSocketIn)
-        case Left(error) => {
-          log.warn(s"Issue while parsing JSON: ${error.getMessage}")
+        case Left(error) =>
+          logger.warn(s"Issue while parsing JSON: ${error.getMessage}")
           Some(ErrorOut("invalid_message"))
-        }
-      })
+      }
       .collect {
         case Some(b) => b
       }
@@ -75,5 +65,4 @@ object FlowCreator extends Configurable with Loggable {
       }
       .via(CirceStreamSupport.encode[WebSocketOut])
       .map[Message](TextMessage(_))
-  }
 }
