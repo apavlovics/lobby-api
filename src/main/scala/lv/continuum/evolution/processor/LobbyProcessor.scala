@@ -6,8 +6,8 @@ import akka.stream.scaladsl._
 import com.typesafe.scalalogging.LazyLogging
 import lv.continuum.evolution.model._
 
-import scala.collection._
 import scala.collection.JavaConverters._
+import scala.collection._
 
 /** Processes [[lv.continuum.evolution.model.WebSocketIn WebSocketIn]] instances
   * into [[lv.continuum.evolution.model.WebSocketOut WebSocketOut]] instances.

@@ -4,8 +4,8 @@ import akka.actor._
 import akka.http.scaladsl._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream._
 import akka.stream.Supervision._
+import akka.stream._
 import com.typesafe.scalalogging.LazyLogging
 import lv.continuum.evolution.model._
 

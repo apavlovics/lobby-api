@@ -1,7 +1,7 @@
 package lv.continuum.evolution
 
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
-import org.scalatest.{WordSpec, Matchers}
+import org.scalatest.{Matchers, WordSpec}
 
 // TODO: Add more specific tests.
 class WebSocketServerSpec extends WordSpec with Matchers with ScalatestRouteTest {
