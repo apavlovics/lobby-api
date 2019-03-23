@@ -33,8 +33,8 @@ class WebSocketServer(implicit val system: ActorSystem, val materializer: ActorM
     Http().bindAndHandle(route, address, port).onComplete {
       case Success(serverBinding) =>
         val localAddress = serverBinding.localAddress
-        logger.info(s"Server started at ${localAddress.getHostName}:${localAddress.getPort}, press enter to terminate")
-      case Failure(e) =>
+        logger.info(s"Server started at ${ localAddress.getHostName }:${ localAddress.getPort }, press enter to terminate")
+      case Failure(e)             =>
         logger.error(s"Server failed to start, press enter to terminate")
     }
   }

@@ -26,4 +26,6 @@ To run this application, go to its root folder and execute:
 
     sbt run
 
-The server starts at http://localhost:9000/ws_api. It accepts either "admin", "admin" or "user", "user" credentials. There is a simple WebSocket client in the *client* folder that you can use to manually test the server.
+The server starts at http://localhost:9000/ws_api by default. It accepts either "admin", "admin" or
+"user", "user" credentials. There is a simple WebSocket client in the *client* folder that you can use to
+manually test the server.

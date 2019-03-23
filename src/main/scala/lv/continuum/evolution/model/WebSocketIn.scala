@@ -19,16 +19,28 @@ object WebSocketIn {
 }
 
 @ConfiguredJsonCodec
-case class LoginIn($type: String, username: String, password: String) extends WebSocketIn
+case class LoginIn(
+  $type: String,
+  username: String,
+  password: String,
+) extends WebSocketIn
 
 @ConfiguredJsonCodec
-case class PingIn($type: String, seq: Long) extends WebSocketIn
+case class PingIn(
+  $type: String,
+  seq: Long,
+) extends WebSocketIn
 
 @ConfiguredJsonCodec
-case class RemoveTableIn($type: String, id: Long) extends WebSocketIn
+case class RemoveTableIn(
+  $type: String,
+  id: Long,
+) extends WebSocketIn
 
 @ConfiguredJsonCodec
-case class TableListIn($type: String) extends WebSocketIn
+case class TableListIn(
+  $type: String,
+) extends WebSocketIn
 
 @ConfiguredJsonCodec
 case class ErrorIn() extends WebSocketIn

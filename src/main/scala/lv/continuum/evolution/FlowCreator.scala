@@ -18,22 +18,25 @@ object FlowCreator extends Configurable with LazyLogging {
   private val pushQueueBufferSize = config.getInt("flow-creator.push-queue-buffer-size")
   logger.info(s"Push queue buffer size is $pushQueueBufferSize")
 
-  /**
-    * Creates a flow for delivering push notifications to subscribed clients.
-    */
-  def createPushFlow(implicit materializer: ActorMaterializer): (SourceQueueWithComplete[WebSocketOut], Source[WebSocketOut, NotUsed]) =
+  /** Creates a flow for delivering push notifications to subscribed clients. */
+  def createPushFlow(implicit
+    materializer: ActorMaterializer,
+  ): (SourceQueueWithComplete[WebSocketOut], Source[WebSocketOut, NotUsed]) =
     Source
       .queue(pushQueueBufferSize, OverflowStrategy.backpressure)
       .toMat(BroadcastHub.sink[WebSocketOut])(Keep.both).run()
 
-  /**
-    * Creates a lobby flow.
-    */
-  def createLobbyFlow(pushQueue: SourceQueue[WebSocketOut], pushSource: Source[WebSocketOut, Any], clientContext: ClientContext)
-                     (implicit materializer: ActorMaterializer): Flow[Message, Message, NotUsed] =
+  /** Creates a lobby flow. */
+  def createLobbyFlow(
+    pushQueue: SourceQueue[WebSocketOut],
+    pushSource: Source[WebSocketOut, Any],
+    clientContext: ClientContext,
+  )(implicit
+    materializer: ActorMaterializer,
+  ): Flow[Message, Message, NotUsed] =
     Flow[Message]
       .filter {
-        case _: TextMessage => true
+        case _: TextMessage    => true
         case bm: BinaryMessage =>
 
           // Ignore binary messages, but drain data stream
@@ -49,8 +52,8 @@ object FlowCreator extends Configurable with LazyLogging {
       .map(decode[WebSocketIn](_))
       .map {
         case Right(webSocketIn) => LobbyProcessor(pushQueue, clientContext, webSocketIn)
-        case Left(error) =>
-          logger.warn(s"Issue while parsing JSON: ${error.getMessage}")
+        case Left(error)        =>
+          logger.warn(s"Issue while parsing JSON: ${ error.getMessage }")
           Some(ErrorOut("invalid_message"))
       }
       .collect {
@@ -61,7 +64,7 @@ object FlowCreator extends Configurable with LazyLogging {
       .merge(pushSource)
       .filter {
         case _: PushNotificationOut if !clientContext.subscribed => false
-        case _ => true
+        case _                                                   => true
       }
       .via(CirceStreamSupport.encode[WebSocketOut])
       .map[Message](TextMessage(_))

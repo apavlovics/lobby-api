@@ -1,16 +1,15 @@
 package lv.continuum.evolution.processor
 
-import akka.stream.scaladsl._
 import java.util.concurrent.CopyOnWriteArrayList
 
+import akka.stream.scaladsl._
 import com.typesafe.scalalogging.LazyLogging
 import lv.continuum.evolution.model._
 
 import scala.collection._
 import scala.collection.JavaConverters._
 
-/**
-  * Processes [[lv.continuum.evolution.model.WebSocketIn WebSocketIn]] instances
+/** Processes [[lv.continuum.evolution.model.WebSocketIn WebSocketIn]] instances
   * into [[lv.continuum.evolution.model.WebSocketOut WebSocketOut]] instances.
   */
 object LobbyProcessor extends LazyLogging {
@@ -21,7 +20,7 @@ object LobbyProcessor extends LazyLogging {
   tables.append(Table(2, "table - Mission Impossible", 4))
 
   def apply(pushQueue: SourceQueue[WebSocketOut], clientContext: ClientContext, webSocketIn: WebSocketIn): Option[WebSocketOut] = {
-    logger.debug(s"User type is ${clientContext.userType}, subscribed is ${clientContext.subscribed}")
+    logger.debug(s"User type is ${ clientContext.userType }, subscribed is ${ clientContext.subscribed }")
     logger.debug(s"Web socket in is $webSocketIn")
 
     webSocketIn match {
@@ -33,11 +32,11 @@ object LobbyProcessor extends LazyLogging {
             val userType = "admin"
             clientContext.userType = Some(userType)
             Some(LoginOut("login_successful", userType))
-          case ("user", "user") =>
+          case ("user", "user")   =>
             val userType = "user"
             clientContext.userType = Some(userType)
             Some(LoginOut("login_successful", userType))
-          case _ =>
+          case _                  =>
             clientContext.userType = None
             Some(ErrorOut("login_failed"))
         }
@@ -72,7 +71,7 @@ object LobbyProcessor extends LazyLogging {
 
       // Error
       case _ if clientContext.isAuthenticated => Some(ErrorOut())
-      case _ => Some(ErrorOut("not_authenticated"))
+      case _                                  => Some(ErrorOut("not_authenticated"))
     }
   }
 }
