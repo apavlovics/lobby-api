@@ -4,7 +4,7 @@ This sample application implements a server for a JSON-based lobby API over WebS
 
 ## System Requirements
 
-This application is tested to work with:
+The application is tested to work with:
 
 * Java 11
 * Scala 2.12
@@ -16,13 +16,13 @@ The default configuration is stored in the *src/main/resources/application.conf*
 
 ## Testing
 
-To test this application, go to its root folder and execute:
+To test the application, go to its root folder and execute:
 
     sbt test
 
 ## Running
 
-To run this application, go to its root folder and execute:
+To run the application, go to its root folder and execute:
 
     sbt run
 
