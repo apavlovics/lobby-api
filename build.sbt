@@ -1,19 +1,17 @@
-scalaVersion := "2.12.8"
+scalaVersion := "2.13.1"
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xfatal-warnings")
 
-// Enable @JsonCodec macro annotation
-addCompilerPlugin(
-  "org.scalamacros" % "paradise" % "2.1.1" cross CrossVersion.full,
-)
-
-val akkaVersion = "2.5.21"
-val akkaHttpVersion = "10.1.7"
-val circeVersion = "0.9.0"
-val typesafeConfigVersion = "1.3.3"
-val knutwalkerVersion = "3.5.0"
-val scalaTestVersion = "3.0.5"
+val akkaVersion = "2.6.1"
+val akkaHttpVersion = "10.1.11"
+val circeVersion = "0.12.1"
+val typesafeConfigVersion = "1.4.0"
+val enumeratumVersion = "1.5.14"
+val scalaTestVersion = "3.1.0"
+val catsScalaTestVersion = "3.0.4"
 
 // Akka
 libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
   "com.typesafe.akka" %% "akka-stream" % akkaVersion,
 )
@@ -21,18 +19,9 @@ libraryDependencies ++= Seq(
 // Circe
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % circeVersion,
-  "io.circe" %% "circe-java8" % circeVersion,
   "io.circe" %% "circe-generic" % circeVersion,
   "io.circe" %% "circe-generic-extras" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
-)
-
-// Glues Akka and Circe
-libraryDependencies ++= Seq(
-  "de.knutwalker" %% "akka-http-json" % knutwalkerVersion,
-  "de.knutwalker" %% "akka-stream-json" % knutwalkerVersion,
-  "de.knutwalker" %% "akka-http-circe" % knutwalkerVersion,
-  "de.knutwalker" %% "akka-stream-circe" % knutwalkerVersion,
 )
 
 // Configuration
@@ -40,17 +29,23 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % typesafeConfigVersion,
 )
 
+// Enumeratum
+libraryDependencies ++= Seq(
+  "com.beachape" %% "enumeratum" % enumeratumVersion,
+)
+
 // Logging
 libraryDependencies ++= Seq(
-  "org.slf4j" % "slf4j-api" % "1.7.25",
+  "org.slf4j" % "slf4j-api" % "1.7.29",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
 )
 
 // Testing
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % scalaTestVersion % Test,
+  "com.ironcorelabs" %% "cats-scalatest" % catsScalaTestVersion % Test,
+  "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
   "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion % Test,
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
 )

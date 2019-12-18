@@ -4,13 +4,16 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 import akka.stream.scaladsl._
 import com.typesafe.scalalogging.LazyLogging
-import lv.continuum.evolution.model._
+import lv.continuum.evolution.model.ClientContext
+import lv.continuum.evolution.model.Protocol.In._
+import lv.continuum.evolution.model.Protocol.Out._
+import lv.continuum.evolution.model.Protocol.{In, Out, OutType, Table, UserType}
 
-import scala.collection.JavaConverters._
 import scala.collection._
+import scala.jdk.CollectionConverters._
 
-/** Processes [[lv.continuum.evolution.model.WebSocketIn WebSocketIn]] instances
-  * into [[lv.continuum.evolution.model.WebSocketOut WebSocketOut]] instances.
+/** Processes [[lv.continuum.evolution.model.Protocol.In In]] instances
+  * into [[lv.continuum.evolution.model.Protocol.Out Out]] instances.
   */
 object LobbyProcessor extends LazyLogging {
 
@@ -19,59 +22,59 @@ object LobbyProcessor extends LazyLogging {
   tables.append(Table(1, "table - James Bond", 7))
   tables.append(Table(2, "table - Mission Impossible", 4))
 
-  def apply(pushQueue: SourceQueue[WebSocketOut], clientContext: ClientContext, webSocketIn: WebSocketIn): Option[WebSocketOut] = {
+  def apply(pushQueue: SourceQueue[Out], clientContext: ClientContext, in: In): Option[Out] = {
     logger.debug(s"User type is ${ clientContext.userType }, subscribed is ${ clientContext.subscribed }")
-    logger.debug(s"Web socket in is $webSocketIn")
+    logger.debug(s"In is $in")
 
-    webSocketIn match {
+    in match {
 
       // Login
-      case LoginIn("login", username, password) =>
+      case LoginIn(username, password) =>
         (username, password) match {
           case ("admin", "admin") =>
-            val userType = "admin"
+            val userType = UserType.Admin
             clientContext.userType = Some(userType)
-            Some(LoginOut("login_successful", userType))
+            Some(LoginSuccessfulOut(userType = userType))
           case ("user", "user")   =>
-            val userType = "user"
+            val userType = UserType.User
             clientContext.userType = Some(userType)
-            Some(LoginOut("login_successful", userType))
+            Some(LoginSuccessfulOut(userType = userType))
           case _                  =>
             clientContext.userType = None
-            Some(ErrorOut("login_failed"))
+            Some(ErrorOut(OutType.LoginFailed))
         }
 
       // Ping
-      case PingIn("ping", seq) if clientContext.isAuthenticated => Some(PingOut(seq = seq))
+      case PingIn(seq) if clientContext.isAuthenticated => Some(PingOut(seq = seq))
 
       // Subscribe tables
-      case TableListIn("subscribe_tables") if clientContext.isAuthenticated =>
+      case SubscribeTablesIn if clientContext.isAuthenticated =>
         clientContext.subscribed = true
-        Some(TableListOut(tables = tables))
+        Some(TableListOut(tables = tables.toList))
 
       // Unsubscribe tables
-      case TableListIn("unsubscribe_tables") if clientContext.isAuthenticated =>
+      case UnsubscribeTablesIn if clientContext.isAuthenticated =>
         clientContext.subscribed = false
         None
 
       // Remove table
-      case RemoveTableIn("remove_table", id) if clientContext.isAuthenticated =>
+      case RemoveTableIn(id) if clientContext.isAuthenticated =>
         if (clientContext.isAdmin) {
           val tablesToRemove = tables.filter(_.id == id)
           tablesToRemove.size match {
-            case 0 => Some(ErrorTableOut("removal_failed", id))
+            case 0 => Some(TableErrorOut(OutType.RemovalFailed, id))
             case _ =>
               tables --= tablesToRemove
-              pushQueue.offer(RemoveTableOut(id = id))
+              pushQueue.offer(TableRemovedOut(id = id))
               None
           }
         } else {
-          Some(ErrorOut("not_authorized"))
+          Some(ErrorOut(OutType.NotAuthorized))
         }
 
       // Error
-      case _ if clientContext.isAuthenticated => Some(ErrorOut())
-      case _                                  => Some(ErrorOut("not_authenticated"))
+      case _ if clientContext.isAuthenticated => Some(ErrorOut(OutType.UnknownError))
+      case _                                  => Some(ErrorOut(OutType.NotAuthenticated))
     }
   }
 }

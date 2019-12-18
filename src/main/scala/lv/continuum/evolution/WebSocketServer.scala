@@ -4,15 +4,15 @@ import akka.actor._
 import akka.http.scaladsl._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.stream.Supervision._
-import akka.stream._
 import com.typesafe.scalalogging.LazyLogging
 import lv.continuum.evolution.model._
 
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
-class WebSocketServer(implicit val system: ActorSystem, val materializer: ActorMaterializer) extends LazyLogging {
+class WebSocketServer(implicit
+  system: ActorSystem,
+) extends LazyLogging {
 
   import system.dispatcher
 
@@ -49,17 +49,6 @@ object WebSocketServer extends Configurable with LazyLogging {
 
     // Setup actor system
     implicit val system: ActorSystem = ActorSystem("web-socket-server")
-
-    // Decider can be configured to restart, resume or stop streams upon certain exceptions
-    val decider: Decider = {
-      e =>
-        logger.error("Issue while processing stream", e)
-        Supervision.Stop
-    }
-
-    // Setup actor materializer
-    implicit val materializer: ActorMaterializer = ActorMaterializer(
-      ActorMaterializerSettings(system).withSupervisionStrategy(decider))
 
     // Start server
     new WebSocketServer().start(address, port)

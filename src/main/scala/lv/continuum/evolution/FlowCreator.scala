@@ -5,12 +5,17 @@ import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.stream._
 import akka.stream.scaladsl._
 import com.typesafe.scalalogging.LazyLogging
-import de.knutwalker.akka.stream.support.CirceStreamSupport
 import io.circe.parser._
+import io.circe.syntax._
+import lv.continuum.evolution.model.Protocol.{In, Out, OutType, PushOut}
+import lv.continuum.evolution.model.Protocol.Out._
 import lv.continuum.evolution.model._
 import lv.continuum.evolution.processor._
 
-object FlowCreator extends Configurable with LazyLogging {
+object FlowCreator
+  extends Configurable
+    with ProtocolFormat
+    with LazyLogging {
 
   private val parallelism = Runtime.getRuntime.availableProcessors() * 2 - 1
   logger.info(s"Parallelism is $parallelism")
@@ -20,19 +25,19 @@ object FlowCreator extends Configurable with LazyLogging {
 
   /** Creates a flow for delivering push notifications to subscribed clients. */
   def createPushFlow(implicit
-    materializer: ActorMaterializer,
-  ): (SourceQueueWithComplete[WebSocketOut], Source[WebSocketOut, NotUsed]) =
+    materializer: Materializer,
+  ): (SourceQueueWithComplete[Out], Source[Out, NotUsed]) =
     Source
       .queue(pushQueueBufferSize, OverflowStrategy.backpressure)
-      .toMat(BroadcastHub.sink[WebSocketOut])(Keep.both).run()
+      .toMat(BroadcastHub.sink[Out])(Keep.both).run()
 
   /** Creates a lobby flow. */
   def createLobbyFlow(
-    pushQueue: SourceQueue[WebSocketOut],
-    pushSource: Source[WebSocketOut, Any],
+    pushQueue: SourceQueue[Out],
+    pushSource: Source[Out, Any],
     clientContext: ClientContext,
   )(implicit
-    materializer: ActorMaterializer,
+    materializer: Materializer,
   ): Flow[Message, Message, NotUsed] =
     Flow[Message]
       .filter {
@@ -49,12 +54,12 @@ object FlowCreator extends Configurable with LazyLogging {
       .mapAsync(parallelism) {
         tm => tm.textStream.runFold("")(_ ++ _)
       }
-      .map(decode[WebSocketIn](_))
+      .map(decode[In](_))
       .map {
         case Right(webSocketIn) => LobbyProcessor(pushQueue, clientContext, webSocketIn)
         case Left(error)        =>
           logger.warn(s"Issue while parsing JSON: ${ error.getMessage }")
-          Some(ErrorOut("invalid_message"))
+          Some(ErrorOut(OutType.InvalidMessage))
       }
       .collect {
         case Some(b) => b
@@ -63,9 +68,14 @@ object FlowCreator extends Configurable with LazyLogging {
       // TODO: Dynamically connect and disconnect push source.
       .merge(pushSource)
       .filter {
-        case _: PushNotificationOut if !clientContext.subscribed => false
+        case _: PushOut if !clientContext.subscribed => false
         case _                                                   => true
       }
-      .via(CirceStreamSupport.encode[WebSocketOut])
+      .map(e => e.asJson.noSpaces)
       .map[Message](TextMessage(_))
+      .withAttributes(ActorAttributes.supervisionStrategy({
+        e =>
+          logger.error("Issue while processing stream", e)
+          Supervision.Stop
+      }))
 }
