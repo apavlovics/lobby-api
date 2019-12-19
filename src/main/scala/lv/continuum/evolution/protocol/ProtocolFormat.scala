@@ -4,9 +4,9 @@ import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
-import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
+import lv.continuum.evolution.protocol.Protocol._
 
 import scala.util.Try
 
@@ -27,9 +27,9 @@ trait ProtocolFormat {
       in <- inType match {
         case InType.Login             => loginInDecoder.decodeJson(c.value)
         case InType.Ping              => pingInDecoder.decodeJson(c.value)
-        case InType.RemoveTable       => removeTableInDecoder.decodeJson(c.value)
         case InType.SubscribeTables   => Right(SubscribeTablesIn)
         case InType.UnsubscribeTables => Right(UnsubscribeTablesIn)
+        case InType.RemoveTable       => removeTableInDecoder.decodeJson(c.value)
       }
     } yield in
 

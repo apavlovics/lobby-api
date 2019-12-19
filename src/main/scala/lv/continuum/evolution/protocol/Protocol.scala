@@ -12,12 +12,13 @@ object Protocol {
 
     case object Login extends InType
     case object Ping extends InType
-    case object RemoveTable extends InType
     case object SubscribeTables extends InType
     case object UnsubscribeTables extends InType
+    case object RemoveTable extends InType
   }
 
   sealed trait In
+  sealed trait AdminIn extends In
   object In {
 
     case class LoginIn(
@@ -29,13 +30,13 @@ object Protocol {
       seq: Long,
     ) extends In
 
-    case class RemoveTableIn(
-      id: Long,
-    ) extends In
-
     case object SubscribeTablesIn extends In
 
     case object UnsubscribeTablesIn extends In
+
+    case class RemoveTableIn(
+      id: Long,
+    ) extends AdminIn
   }
 
   sealed trait OutType extends EnumEntry with Snakecase
@@ -70,10 +71,10 @@ object Protocol {
     participants: Long,
   )
 
-  sealed trait PushOut
   sealed trait Out {
     def $type: OutType
   }
+  sealed trait PushOut extends Out
   object Out {
 
     import OutType._
@@ -96,7 +97,7 @@ object Protocol {
     case class TableRemovedOut(
       $type: OutType = TableRemoved,
       id: Long,
-    ) extends Out with PushOut
+    ) extends PushOut
 
     case class TableErrorOut(
       $type: OutType,

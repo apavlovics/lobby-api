@@ -1,6 +1,9 @@
 package lv.continuum.evolution.akka
 
+import java.util.UUID
+
 import akka.actor._
+import akka.actor.typed.scaladsl.adapter._
 import akka.http.scaladsl._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
@@ -24,7 +27,11 @@ class WebSocketServer(implicit
       path("ws_api") {
 
         // Create new lobby flow for each connection
-        handleWebSocketMessages(FlowCreator.createLobbyFlow(pushQueue, pushSource, new ClientContext()))
+        handleWebSocketMessages(FlowCreator.createLobbyFlow(
+          pushQueue = pushQueue,
+          pushSource = pushSource,
+          sessionActorRef = system.spawn(SessionActor(), s"SessionActor-${ UUID.randomUUID() }"),
+        ))
       }
     }
 

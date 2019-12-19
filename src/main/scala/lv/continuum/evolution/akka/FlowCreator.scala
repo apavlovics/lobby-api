@@ -1,15 +1,20 @@
 package lv.continuum.evolution.akka
 
 import akka.NotUsed
+import akka.actor.typed.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.stream._
 import akka.stream.scaladsl._
+import akka.stream.typed.scaladsl.ActorFlow
+import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.parser._
 import io.circe.syntax._
-import lv.continuum.evolution.protocol._
+import lv.continuum.evolution.akka.SessionActor.Command
 import lv.continuum.evolution.protocol.Protocol._
-import lv.continuum.evolution.protocol.Protocol.Out._
+import lv.continuum.evolution.protocol._
+
+import scala.concurrent.duration._
 
 object FlowCreator
   extends Configurable
@@ -33,11 +38,14 @@ object FlowCreator
   /** Creates a lobby flow. */
   def createLobbyFlow(
     pushQueue: SourceQueue[Out],
-    pushSource: Source[Out, Any],
-    clientContext: ClientContext,
+    pushSource: Source[Out, NotUsed],
+    sessionActorRef: ActorRef[Command],
   )(implicit
     materializer: Materializer,
-  ): Flow[Message, Message, NotUsed] =
+  ): Flow[Message, Message, NotUsed] = {
+
+    implicit val timeout: Timeout = Timeout(5.seconds)
+
     Flow[Message]
       .filter {
         case _: TextMessage    => true
@@ -47,34 +55,16 @@ object FlowCreator
           bm.dataStream.runWith(Sink.ignore)
           false
       }
-      .collect {
-        case tm: TextMessage => tm
-      }
-      .mapAsync(parallelism) {
-        tm => tm.textStream.runFold("")(_ ++ _)
-      }
-      .map(decode[In](_))
-      .map {
-        case Right(webSocketIn) => LobbyProcessor(pushQueue, clientContext, webSocketIn)
-        case Left(error)        =>
-          logger.warn(s"Issue while parsing JSON: ${ error.getMessage }")
-          Some(ErrorOut(OutType.InvalidMessage))
-      }
-      .collect {
-        case Some(b) => b
-      }
-
-      // TODO: Dynamically connect and disconnect push source.
+      .collect { case tm: TextMessage => tm }
+      .mapAsync(parallelism)(_.textStream.runFold("")(_ ++ _))
+      .map(decode[In])
+      .via(ActorFlow.ask(sessionActorRef)((in, replyTo: ActorRef[Out]) => Command(in, replyTo)))
       .merge(pushSource)
-      .filter {
-        case _: PushOut if !clientContext.subscribed => false
-        case _                                       => true
-      }
-      .map(e => e.asJson.noSpaces)
+      .map(_.asJson.noSpaces)
       .map[Message](TextMessage(_))
-      .withAttributes(ActorAttributes.supervisionStrategy({
-        e =>
-          logger.error("Issue while processing stream", e)
-          Supervision.Stop
-      }))
+      .withAttributes(ActorAttributes.supervisionStrategy { e =>
+        logger.error("Issue while processing stream", e)
+        Supervision.Stop
+      })
+  }
 }
