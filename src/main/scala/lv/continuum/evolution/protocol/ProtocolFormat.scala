@@ -38,16 +38,16 @@ trait ProtocolFormat {
   implicit val tableEncoder: Encoder[Table] = deriveConfiguredEncoder
   implicit val loginSuccessfulOutEncoder: Encoder[LoginSuccessfulOut] = deriveConfiguredEncoder
   implicit val pongOutEncoder: Encoder[PongOut] = deriveConfiguredEncoder
-  implicit val tableRemovedOutEncoder: Encoder[TableRemovedOut] = deriveConfiguredEncoder
   implicit val tableListOutEncoder: Encoder[TableListOut] = deriveConfiguredEncoder
+  implicit val tableRemovedOutEncoder: Encoder[TableRemovedOut] = deriveConfiguredEncoder
   implicit val tableErrorOutEncoder: Encoder[TableErrorOut] = deriveConfiguredEncoder
   implicit val errorOutEncoder: Encoder[ErrorOut] = deriveConfiguredEncoder
 
   implicit val outEncoder: Encoder[Out] = Encoder.instance {
     case out: LoginSuccessfulOut => out.asJson
     case out: PongOut            => out.asJson
-    case out: TableRemovedOut    => out.asJson
     case out: TableListOut       => out.asJson
+    case out: TableRemovedOut    => out.asJson
     case out: TableErrorOut      => out.asJson
     case out: ErrorOut           => out.asJson
   }

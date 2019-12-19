@@ -56,9 +56,11 @@ object SessionActor {
 
         case (_, Right(SubscribeTablesIn)) |
              (_, Right(UnsubscribeTablesIn)) =>
+          // TODO Respond with ack and pass to TableActor
           Behaviors.same
 
         case (Admin, Right(_: AdminIn)) =>
+          // TODO Respond with ack and pass to TableActor
           Behaviors.same
 
         case (User, Right(_: AdminIn)) =>

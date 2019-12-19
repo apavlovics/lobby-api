@@ -47,8 +47,8 @@ object Protocol {
     case object LoginSuccessful extends OutType
     case object LoginFailed extends OutType
     case object Pong extends OutType
-    case object TableRemoved extends OutType
     case object TableList extends OutType
+    case object TableRemoved extends OutType
     case object RemovalFailed extends OutType
     case object NotAuthorized extends OutType
     case object NotAuthenticated extends OutType
