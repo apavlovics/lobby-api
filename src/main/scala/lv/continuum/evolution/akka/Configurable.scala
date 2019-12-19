@@ -1,4 +1,4 @@
-package lv.continuum.evolution
+package lv.continuum.evolution.akka
 
 import com.typesafe.config.{Config, ConfigFactory}
 

@@ -1,11 +1,10 @@
-package lv.continuum.evolution
+package lv.continuum.evolution.akka
 
 import akka.actor._
 import akka.http.scaladsl._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.typesafe.scalalogging.LazyLogging
-import lv.continuum.evolution.model._
 
 import scala.io.StdIn
 import scala.util.{Failure, Success}

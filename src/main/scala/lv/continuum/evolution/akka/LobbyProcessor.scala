@@ -1,19 +1,18 @@
-package lv.continuum.evolution.processor
+package lv.continuum.evolution.akka
 
 import java.util.concurrent.CopyOnWriteArrayList
 
 import akka.stream.scaladsl._
 import com.typesafe.scalalogging.LazyLogging
-import lv.continuum.evolution.model.ClientContext
-import lv.continuum.evolution.model.Protocol.In._
-import lv.continuum.evolution.model.Protocol.Out._
-import lv.continuum.evolution.model.Protocol.{In, Out, OutType, Table, UserType}
+import lv.continuum.evolution.protocol.Protocol._
+import lv.continuum.evolution.protocol.Protocol.In._
+import lv.continuum.evolution.protocol.Protocol.Out._
 
 import scala.collection._
 import scala.jdk.CollectionConverters._
 
-/** Processes [[lv.continuum.evolution.model.Protocol.In In]] instances
-  * into [[lv.continuum.evolution.model.Protocol.Out Out]] instances.
+/** Processes [[lv.continuum.evolution.protocol.Protocol.In In]] instances
+  * into [[lv.continuum.evolution.protocol.Protocol.Out Out]] instances.
   */
 object LobbyProcessor extends LazyLogging {
 

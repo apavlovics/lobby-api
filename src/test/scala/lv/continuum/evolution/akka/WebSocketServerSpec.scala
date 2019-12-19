@@ -1,4 +1,4 @@
-package lv.continuum.evolution
+package lv.continuum.evolution.akka
 
 import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import org.scalatest.matchers.should.Matchers

@@ -1,11 +1,11 @@
-package lv.continuum.evolution.model
+package lv.continuum.evolution.protocol
 
 import cats.scalatest.EitherValues
 import io.circe.parser._
 import io.circe.syntax._
-import lv.continuum.evolution.model.Protocol._
-import lv.continuum.evolution.model.Protocol.In._
-import lv.continuum.evolution.model.Protocol.Out._
+import lv.continuum.evolution.protocol.Protocol._
+import lv.continuum.evolution.protocol.Protocol.In._
+import lv.continuum.evolution.protocol.Protocol.Out._
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

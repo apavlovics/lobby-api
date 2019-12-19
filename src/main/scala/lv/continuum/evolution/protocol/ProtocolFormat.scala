@@ -1,12 +1,12 @@
-package lv.continuum.evolution.model
+package lv.continuum.evolution.protocol
 
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
-import lv.continuum.evolution.model.Protocol._
-import lv.continuum.evolution.model.Protocol.In._
-import lv.continuum.evolution.model.Protocol.Out._
+import lv.continuum.evolution.protocol.Protocol._
+import lv.continuum.evolution.protocol.Protocol.In._
+import lv.continuum.evolution.protocol.Protocol.Out._
 
 import scala.util.Try
 

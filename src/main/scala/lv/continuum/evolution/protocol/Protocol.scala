@@ -1,4 +1,4 @@
-package lv.continuum.evolution.model
+package lv.continuum.evolution.protocol
 
 import enumeratum.EnumEntry.Snakecase
 import enumeratum.{Enum, EnumEntry}

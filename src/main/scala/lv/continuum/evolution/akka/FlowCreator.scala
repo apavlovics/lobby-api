@@ -1,4 +1,4 @@
-package lv.continuum.evolution
+package lv.continuum.evolution.akka
 
 import akka.NotUsed
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
@@ -7,10 +7,9 @@ import akka.stream.scaladsl._
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.parser._
 import io.circe.syntax._
-import lv.continuum.evolution.model.Protocol.{In, Out, OutType, PushOut}
-import lv.continuum.evolution.model.Protocol.Out._
-import lv.continuum.evolution.model._
-import lv.continuum.evolution.processor._
+import lv.continuum.evolution.protocol._
+import lv.continuum.evolution.protocol.Protocol._
+import lv.continuum.evolution.protocol.Protocol.Out._
 
 object FlowCreator
   extends Configurable
@@ -69,7 +68,7 @@ object FlowCreator
       .merge(pushSource)
       .filter {
         case _: PushOut if !clientContext.subscribed => false
-        case _                                                   => true
+        case _                                       => true
       }
       .map(e => e.asJson.noSpaces)
       .map[Message](TextMessage(_))

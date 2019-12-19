@@ -1,6 +1,6 @@
-package lv.continuum.evolution.model
+package lv.continuum.evolution.akka
 
-import lv.continuum.evolution.model.Protocol.UserType
+import lv.continuum.evolution.protocol.Protocol.UserType
 
 class ClientContext {
 
