@@ -25,7 +25,7 @@
         var $incomingMessages = $("#incoming-messages")
 
         $send.prop("disabled", true)
-        var webSocket = new WebSocket("ws://localhost:9000/ws_api")
+        var webSocket = new WebSocket("ws://localhost:9000/lobby_api")
 
         webSocket.onopen = function() {
             $send.prop("disabled", false)

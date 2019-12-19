@@ -16,7 +16,7 @@ class WebSocketServerSpec
 
     "handle WebSocket connections" in {
       val wsProbe = WSProbe()
-      WS("/ws_api", wsProbe.flow) ~> route ~> check {
+      WS("/lobby_api", wsProbe.flow) ~> route ~> check {
         isWebSocketUpgrade shouldBe true
       }
     }

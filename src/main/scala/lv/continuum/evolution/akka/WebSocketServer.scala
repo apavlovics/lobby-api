@@ -24,7 +24,7 @@ class WebSocketServer(implicit
   // Define route
   val route: Route =
     Route.seal {
-      path("ws_api") {
+      path("lobby_api") {
 
         // Create new lobby flow for each connection
         handleWebSocketMessages(FlowCreator.createLobbyFlow(
@@ -40,7 +40,8 @@ class WebSocketServer(implicit
       case Success(serverBinding) =>
         val localAddress = serverBinding.localAddress
         logger.info(s"Server started at ${ localAddress.getHostName }:${ localAddress.getPort }, press enter to terminate")
-      case Failure(e)             =>
+
+      case Failure(_) =>
         logger.error(s"Server failed to start, press enter to terminate")
     }
   }
