@@ -10,11 +10,11 @@ import lv.continuum.evolution.protocol.Protocol._
 
 object SessionActor {
 
-  case class Command(in: Either[Error, In], replyTo: ActorRef[Out])
+  case class SessionCommand(in: Either[Error, In], replyTo: ActorRef[Out])
 
-  def apply(): Behavior[Command] = unauthenticated
+  def apply(): Behavior[SessionCommand] = unauthenticated
 
-  private def unauthenticated: Behavior[Command] =
+  private def unauthenticated: Behavior[SessionCommand] =
     Behaviors.receive { (context, command) =>
       command.in match {
         case Right(LoginIn(username, password)) =>
@@ -43,7 +43,7 @@ object SessionActor {
       }
     }
 
-  private def authenticated(userType: UserType): Behavior[Command] =
+  private def authenticated(userType: UserType): Behavior[SessionCommand] =
     Behaviors.receive { (context, command) =>
       (userType, command.in) match {
         case (_, Right(_: LoginIn)) =>

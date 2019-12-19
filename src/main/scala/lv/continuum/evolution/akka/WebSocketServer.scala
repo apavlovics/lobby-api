@@ -30,7 +30,7 @@ class WebSocketServer(implicit
         handleWebSocketMessages(FlowCreator.createLobbyFlow(
           pushQueue = pushQueue,
           pushSource = pushSource,
-          sessionActorRef = system.spawn(SessionActor(), s"SessionActor-${ UUID.randomUUID() }"),
+          sessionActor = system.spawn(SessionActor(), s"SessionActor-${ UUID.randomUUID() }"),
         ))
       }
     }

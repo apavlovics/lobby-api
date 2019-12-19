@@ -8,9 +8,10 @@ import akka.stream.scaladsl._
 import akka.stream.typed.scaladsl.ActorFlow
 import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
+import io.circe.Error
 import io.circe.parser._
 import io.circe.syntax._
-import lv.continuum.evolution.akka.SessionActor.Command
+import lv.continuum.evolution.akka.SessionActor.SessionCommand
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol._
 
@@ -39,7 +40,7 @@ object FlowCreator
   def createLobbyFlow(
     pushQueue: SourceQueue[Out],
     pushSource: Source[Out, NotUsed],
-    sessionActorRef: ActorRef[Command],
+    sessionActor: ActorRef[SessionCommand],
   )(implicit
     materializer: Materializer,
   ): Flow[Message, Message, NotUsed] = {
@@ -58,7 +59,7 @@ object FlowCreator
       .collect { case tm: TextMessage => tm }
       .mapAsync(parallelism)(_.textStream.runFold("")(_ ++ _))
       .map(decode[In])
-      .via(ActorFlow.ask(sessionActorRef)((in, replyTo: ActorRef[Out]) => Command(in, replyTo)))
+      .via(ActorFlow.ask[Either[Error, In], SessionCommand, Out](sessionActor)(SessionCommand))
       .merge(pushSource)
       .map(_.asJson.noSpaces)
       .map[Message](TextMessage(_))
