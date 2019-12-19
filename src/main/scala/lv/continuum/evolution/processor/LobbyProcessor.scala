@@ -45,7 +45,7 @@ object LobbyProcessor extends LazyLogging {
         }
 
       // Ping
-      case PingIn(seq) if clientContext.isAuthenticated => Some(PingOut(seq = seq))
+      case PingIn(seq) if clientContext.isAuthenticated => Some(PongOut(seq = seq))
 
       // Subscribe tables
       case SubscribeTablesIn if clientContext.isAuthenticated =>

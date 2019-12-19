@@ -83,7 +83,7 @@ object Protocol {
       userType: UserType,
     ) extends Out
 
-    case class PingOut(
+    case class PongOut(
       $type: OutType = Pong,
       seq: Long,
     ) extends Out

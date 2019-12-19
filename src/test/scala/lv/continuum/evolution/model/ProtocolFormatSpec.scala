@@ -3,9 +3,9 @@ package lv.continuum.evolution.model
 import cats.scalatest.EitherValues
 import io.circe.parser._
 import io.circe.syntax._
+import lv.continuum.evolution.model.Protocol._
 import lv.continuum.evolution.model.Protocol.In._
-import lv.continuum.evolution.model.Protocol.Out.LoginSuccessfulOut
-import lv.continuum.evolution.model.Protocol.{In, Out, UserType}
+import lv.continuum.evolution.model.Protocol.Out._
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -85,6 +85,87 @@ class ProtocolFormatSpec
             |{
             |  "$type": "login_successful",
             |  "user_type": "user"
+            |}""".stripMargin,
+      )
+      verifyEncodeOut(
+        out =
+          PongOut(
+            seq = 12345,
+          ),
+        json =
+          """
+            |{
+            |  "$type": "pong",
+            |  "seq": 12345
+            |}""".stripMargin,
+      )
+      verifyEncodeOut(
+        out =
+          TableListOut(
+            tables = List(
+              Table(
+                id = 1,
+                name = "table - James Bond",
+                participants = 7,
+              ),
+              Table(
+                id = 2,
+                name = "table - Mission Impossible",
+                participants = 4,
+              ),
+            ),
+          ),
+        json =
+          """
+            |{
+            |  "$type": "table_list",
+            |  "tables": [
+            |    {
+            |      "id": 1,
+            |      "name": "table - James Bond",
+            |      "participants": 7
+            |    }, {
+            |      "id": 2,
+            |      "name": "table - Mission Impossible",
+            |      "participants": 4
+            |    }
+            |  ]
+            |}""".stripMargin,
+      )
+      verifyEncodeOut(
+        out =
+          TableRemovedOut(
+            id = 3,
+          ),
+        json =
+          """
+            |{
+            |  "$type": "table_removed",
+            |  "id": 3
+            |}""".stripMargin,
+      )
+      verifyEncodeOut(
+        out =
+          TableErrorOut(
+            $type = OutType.RemovalFailed,
+            id = 3,
+          ),
+        json =
+          """
+            |{
+            |  "$type": "removal_failed",
+            |  "id": 3
+            |}""".stripMargin,
+      )
+      verifyEncodeOut(
+        out =
+          ErrorOut(
+            $type = OutType.UnknownError,
+          ),
+        json =
+          """
+            |{
+            |  "$type": "unknown_error"
             |}""".stripMargin,
       )
     }

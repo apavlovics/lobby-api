@@ -4,9 +4,9 @@ import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
+import lv.continuum.evolution.model.Protocol._
 import lv.continuum.evolution.model.Protocol.In._
 import lv.continuum.evolution.model.Protocol.Out._
-import lv.continuum.evolution.model.Protocol._
 
 import scala.util.Try
 
@@ -37,7 +37,7 @@ trait ProtocolFormat {
   implicit val userTypeEncoder: Encoder[UserType] = Encoder.encodeString.contramap(_.entryName)
   implicit val tableEncoder: Encoder[Table] = deriveConfiguredEncoder
   implicit val loginSuccessfulOutEncoder: Encoder[LoginSuccessfulOut] = deriveConfiguredEncoder
-  implicit val pingOutEncoder: Encoder[PingOut] = deriveConfiguredEncoder
+  implicit val pongOutEncoder: Encoder[PongOut] = deriveConfiguredEncoder
   implicit val tableRemovedOutEncoder: Encoder[TableRemovedOut] = deriveConfiguredEncoder
   implicit val tableListOutEncoder: Encoder[TableListOut] = deriveConfiguredEncoder
   implicit val tableErrorOutEncoder: Encoder[TableErrorOut] = deriveConfiguredEncoder
@@ -45,7 +45,7 @@ trait ProtocolFormat {
 
   implicit val outEncoder: Encoder[Out] = Encoder.instance {
     case out: LoginSuccessfulOut => out.asJson
-    case out: PingOut            => out.asJson
+    case out: PongOut            => out.asJson
     case out: TableRemovedOut    => out.asJson
     case out: TableListOut       => out.asJson
     case out: TableErrorOut      => out.asJson
