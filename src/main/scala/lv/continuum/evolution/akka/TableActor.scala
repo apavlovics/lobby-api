@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
-import lv.continuum.evolution.protocol.Protocol.{In, PushOut, Table}
+import lv.continuum.evolution.protocol.Protocol._
 
 object TableActor {
 
@@ -20,12 +20,12 @@ object TableActor {
     TableState(
       tables = List(
         Table(
-          id = 1,
+          id = TableId(1),
           name = "table - James Bond",
           participants = 7,
         ),
         Table(
-          id = 2,
+          id = TableId(2),
           name = "table - Mission Impossible",
           participants = 4,
         ),
@@ -45,8 +45,14 @@ object TableActor {
           process(state.copy(subscribers = state.subscribers - command.pushTo))
 
         case RemoveTableIn(id) =>
-          state.subscribers.foreach(_ ! TableRemovedOut(id = id))
-          process(state.copy(tables = state.tables.filterNot(_.id == id)))
+          val newTables = state.tables.filterNot(_.id == id)
+          if (newTables.size != state.tables.size) {
+            val tableRemovedOut = TableRemovedOut(id = id)
+            state.subscribers.foreach(_ ! tableRemovedOut)
+            process(state.copy(tables = newTables))
+          } else {
+            Behaviors.same
+          }
 
         case _ => Behaviors.same
       }

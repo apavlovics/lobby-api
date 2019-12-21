@@ -5,6 +5,8 @@ import enumeratum.{Enum, EnumEntry}
 
 object Protocol {
 
+  case class TableId(value: Long) extends AnyVal
+
   sealed trait InType extends EnumEntry with Snakecase
   object InType extends Enum[InType] {
 
@@ -35,7 +37,7 @@ object Protocol {
     case object UnsubscribeTablesIn extends In
 
     case class RemoveTableIn(
-      id: Long,
+      id: TableId,
     ) extends AdminIn
   }
 
@@ -66,7 +68,7 @@ object Protocol {
   }
 
   case class Table(
-    id: Long,
+    id: TableId,
     name: String,
     participants: Long,
   )
@@ -96,12 +98,12 @@ object Protocol {
 
     case class TableRemovedOut(
       $type: OutType = TableRemoved,
-      id: Long,
+      id: TableId,
     ) extends PushOut
 
     case class TableErrorOut(
       $type: OutType,
-      id: Long,
+      id: TableId,
     ) extends Out
 
     case class ErrorOut(

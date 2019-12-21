@@ -52,7 +52,7 @@ class ProtocolFormatSpec
             |}""".stripMargin,
         in =
           RemoveTableIn(
-            id = 3,
+            id = TableId(3),
           ),
       )
       verifyDecodeIn(
@@ -104,12 +104,12 @@ class ProtocolFormatSpec
           TableListOut(
             tables = List(
               Table(
-                id = 1,
+                id = TableId(1),
                 name = "table - James Bond",
                 participants = 7,
               ),
               Table(
-                id = 2,
+                id = TableId(2),
                 name = "table - Mission Impossible",
                 participants = 4,
               ),
@@ -135,7 +135,7 @@ class ProtocolFormatSpec
       verifyEncodeOut(
         out =
           TableRemovedOut(
-            id = 3,
+            id = TableId(3),
           ),
         json =
           """
@@ -148,7 +148,7 @@ class ProtocolFormatSpec
         out =
           TableErrorOut(
             $type = OutType.RemovalFailed,
-            id = 3,
+            id = TableId(3),
           ),
         json =
           """
