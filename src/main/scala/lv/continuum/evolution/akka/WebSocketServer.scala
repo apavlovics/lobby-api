@@ -7,6 +7,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.http.scaladsl._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.io.StdIn
@@ -47,16 +48,17 @@ class WebSocketServer(implicit
   }
 }
 
-object WebSocketServer extends Configurable with LazyLogging {
+object WebSocketServer extends LazyLogging {
 
-  private val address = config.getString("web-socket-server.address")
-  private val port = config.getInt("web-socket-server.port")
+  private val config: Config = ConfigFactory.load().getConfig("web-socket-server")
 
   def main(args: Array[String]): Unit = {
 
     implicit val system: ActorSystem = ActorSystem("web-socket-server")
 
     // Start server
+    val address = config.getString("address")
+    val port = config.getInt("port")
     new WebSocketServer().start(address, port)
 
     // Terminate server

@@ -44,9 +44,11 @@ object TableActor {
         case UnsubscribeTablesIn =>
           process(state.copy(subscribers = state.subscribers - command.pushTo))
 
-        case _ =>
-          // TODO Complete implementation
-          Behaviors.same
+        case RemoveTableIn(id) =>
+          state.subscribers.foreach(_ ! TableRemovedOut(id = id))
+          process(state.copy(tables = state.tables.filterNot(_.id == id)))
+
+        case _ => Behaviors.same
       }
     }
   }

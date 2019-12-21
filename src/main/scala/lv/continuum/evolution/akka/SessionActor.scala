@@ -1,6 +1,6 @@
 package lv.continuum.evolution.akka
 
-import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import io.circe.Error
 import lv.continuum.evolution.akka.TableActor.TableCommand
@@ -16,73 +16,81 @@ object SessionActor {
   def apply(
     tableActor: ActorRef[TableCommand],
     pushActor: ActorRef[PushOut],
-  ): Behavior[SessionCommand] = unauthenticated(tableActor, pushActor)
+  ): Behavior[SessionCommand] = {
 
-  private def unauthenticated(
-    tableActor: ActorRef[TableCommand],
-    pushActor: ActorRef[PushOut],
-  ): Behavior[SessionCommand] =
-    Behaviors.receive { (context, command) =>
-      command.in match {
-        case Right(LoginIn(username, password)) =>
-          (username, password) match {
-            case ("admin", "admin") =>
-              command.replyTo ! Some(LoginSuccessfulOut(userType = Admin))
-              authenticated(tableActor, pushActor, Admin)
+    def unauthenticated: Behavior[SessionCommand] =
+      Behaviors.receive { (context, command) =>
+        command.in match {
+          case Right(LoginIn(username, password)) =>
+            login(username, password, command.replyTo)
 
-            case ("user", "user") =>
-              command.replyTo ! Some(LoginSuccessfulOut(userType = User))
-              authenticated(tableActor, pushActor, User)
+          case Right(_) =>
+            command.replyTo ! Some(ErrorOut(OutType.NotAuthenticated))
+            Behaviors.same
 
-            case _ =>
-              command.replyTo ! Some(ErrorOut(OutType.LoginFailed))
-              Behaviors.same
-          }
-
-        case Right(_) =>
-          command.replyTo ! Some(ErrorOut(OutType.NotAuthenticated))
-          Behaviors.same
-
-        case Left(error) =>
-          context.log.warn(s"Issue while parsing JSON: ${ error.getMessage }")
-          command.replyTo ! Some(ErrorOut(OutType.InvalidMessage))
-          Behaviors.same
+          case Left(e) =>
+            error(context, e, command.replyTo)
+        }
       }
+
+    def authenticated(userType: UserType): Behavior[SessionCommand] =
+      Behaviors.receive { (context, command) =>
+        (userType, command.in) match {
+          case (_, Right(LoginIn(username, password))) =>
+            login(username, password, command.replyTo)
+
+          case (_, Right(PingIn(seq))) =>
+            command.replyTo ! Some(PongOut(seq = seq))
+            Behaviors.same
+
+          case (_, in @ Right(SubscribeTablesIn | UnsubscribeTablesIn)) =>
+            command.replyTo ! None
+            tableActor ! TableCommand(in.value, pushActor)
+            Behaviors.same
+
+          case (Admin, Right(in: AdminIn)) =>
+            command.replyTo ! None
+            tableActor ! TableCommand(in, pushActor)
+            Behaviors.same
+
+          case (User, Right(_: AdminIn)) =>
+            command.replyTo ! Some(ErrorOut(OutType.NotAuthorized))
+            Behaviors.same
+
+          case (_, Left(e)) =>
+            error(context, e, command.replyTo)
+        }
+      }
+
+    def login(
+      username: String,
+      password: String,
+      replyTo: ActorRef[Option[Out]],
+    ): Behavior[SessionCommand] = (username, password) match {
+      case ("admin", "admin") =>
+        replyTo ! Some(LoginSuccessfulOut(userType = Admin))
+        authenticated(Admin)
+
+      case ("user", "user") =>
+        replyTo ! Some(LoginSuccessfulOut(userType = User))
+        authenticated(User)
+
+      case _ =>
+        replyTo ! Some(ErrorOut(OutType.LoginFailed))
+        tableActor ! TableCommand(UnsubscribeTablesIn, pushActor)
+        unauthenticated
     }
 
-  private def authenticated(
-    tableActor: ActorRef[TableCommand],
-    pushActor: ActorRef[PushOut],
-    userType: UserType,
-  ): Behavior[SessionCommand] =
-    Behaviors.receive { (context, command) =>
-      (userType, command.in) match {
-        case (_, Right(_: LoginIn)) =>
-          command.replyTo ! Some(ErrorOut(OutType.UnknownError))
-          Behaviors.same
-
-        case (_, Right(PingIn(seq))) =>
-          command.replyTo ! Some(PongOut(seq = seq))
-          Behaviors.same
-
-        case (_, in @ Right(SubscribeTablesIn | UnsubscribeTablesIn)) =>
-          command.replyTo ! None
-          tableActor ! TableCommand(in.value, pushActor)
-          Behaviors.same
-
-        case (Admin, Right(in: AdminIn)) =>
-          command.replyTo ! None
-          tableActor ! TableCommand(in, pushActor)
-          Behaviors.same
-
-        case (User, Right(_: AdminIn)) =>
-          command.replyTo ! Some(ErrorOut(OutType.NotAuthorized))
-          Behaviors.same
-
-        case (_, Left(error)) =>
-          context.log.warn(s"Issue while parsing JSON: ${ error.getMessage }")
-          command.replyTo ! Some(ErrorOut(OutType.InvalidMessage))
-          Behaviors.same
-      }
+    def error(
+      context: ActorContext[SessionCommand],
+      error: Error,
+      replyTo: ActorRef[Option[Out]],
+    ): Behavior[SessionCommand] = {
+      context.log.warn(s"Issue while parsing JSON: ${ error.getMessage }")
+      replyTo ! Some(ErrorOut(OutType.InvalidMessage))
+      Behaviors.same
     }
+
+    unauthenticated
+  }
 }

@@ -18,18 +18,14 @@ import lv.continuum.evolution.protocol._
 import scala.concurrent.duration._
 
 object FlowCreator
-  extends Configurable
-    with ProtocolFormat
+  extends ProtocolFormat
     with LazyLogging {
 
   private val parallelism = Runtime.getRuntime.availableProcessors() * 2 - 1
   logger.info(s"Parallelism is $parallelism")
 
-  private val pushQueueBufferSize = config.getInt("flow-creator.push-queue-buffer-size")
-  logger.info(s"Push queue buffer size is $pushQueueBufferSize")
-
   private implicit val timeout: Timeout = Timeout(5.seconds)
-  logger.info(s"Timeout is $timeout")
+  logger.info(s"Timeout is ${ timeout.duration }")
 
   /** Creates a source for delivering push notifications to subscribed clients. */
   def createPushSource(implicit
@@ -39,7 +35,7 @@ object FlowCreator
     ActorSource.actorRef[PushOut](
       completionMatcher = Map.empty,
       failureMatcher = Map.empty,
-      bufferSize = pushQueueBufferSize,
+      bufferSize = 100,
       overflowStrategy = OverflowStrategy.fail,
     ).preMaterialize()
   }
