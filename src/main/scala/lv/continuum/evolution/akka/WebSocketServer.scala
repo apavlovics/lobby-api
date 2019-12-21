@@ -18,19 +18,19 @@ class WebSocketServer(implicit
 
   import system.dispatcher
 
-  // Create push flow
-  private val (pushQueue, pushSource) = FlowCreator.createPushFlow
+  // Create one TableActor per server
+  private val tableActor = system.spawn(TableActor(), s"TableActor")
 
-  // Define route
   val route: Route =
     Route.seal {
       path("lobby_api") {
 
-        // Create new lobby flow for each connection
+        // Create sources and flows per WebSocket connection
+        val (pushActor, pushSource) = FlowCreator.createPushSource
+        val sessionActor = system.spawn(SessionActor(tableActor, pushActor), s"SessionActor-${ UUID.randomUUID() }")
         handleWebSocketMessages(FlowCreator.createLobbyFlow(
-          pushQueue = pushQueue,
           pushSource = pushSource,
-          sessionActor = system.spawn(SessionActor(), s"SessionActor-${ UUID.randomUUID() }"),
+          sessionActor = sessionActor,
         ))
       }
     }
@@ -54,7 +54,6 @@ object WebSocketServer extends Configurable with LazyLogging {
 
   def main(args: Array[String]): Unit = {
 
-    // Setup actor system
     implicit val system: ActorSystem = ActorSystem("web-socket-server")
 
     // Start server

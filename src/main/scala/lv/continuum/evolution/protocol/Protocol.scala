@@ -92,7 +92,7 @@ object Protocol {
     case class TableListOut(
       $type: OutType = TableList,
       tables: List[Table],
-    ) extends Out
+    ) extends PushOut
 
     case class TableRemovedOut(
       $type: OutType = TableRemoved,

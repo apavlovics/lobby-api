@@ -5,7 +5,7 @@ import akka.actor.typed.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.stream._
 import akka.stream.scaladsl._
-import akka.stream.typed.scaladsl.ActorFlow
+import akka.stream.typed.scaladsl.{ActorFlow, ActorSource}
 import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.Error
@@ -28,30 +28,33 @@ object FlowCreator
   private val pushQueueBufferSize = config.getInt("flow-creator.push-queue-buffer-size")
   logger.info(s"Push queue buffer size is $pushQueueBufferSize")
 
-  /** Creates a flow for delivering push notifications to subscribed clients. */
-  def createPushFlow(implicit
+  private implicit val timeout: Timeout = Timeout(5.seconds)
+  logger.info(s"Timeout is $timeout")
+
+  /** Creates a source for delivering push notifications to subscribed clients. */
+  def createPushSource(implicit
     materializer: Materializer,
-  ): (SourceQueueWithComplete[Out], Source[Out, NotUsed]) =
-    Source
-      .queue(pushQueueBufferSize, OverflowStrategy.backpressure)
-      .toMat(BroadcastHub.sink[Out])(Keep.both).run()
+  ): (ActorRef[PushOut], Source[PushOut, NotUsed]) = {
+    // TODO Think about matchers and overflow strategy
+    ActorSource.actorRef[PushOut](
+      completionMatcher = Map.empty,
+      failureMatcher = Map.empty,
+      bufferSize = pushQueueBufferSize,
+      overflowStrategy = OverflowStrategy.fail,
+    ).preMaterialize()
+  }
 
   /** Creates a lobby flow. */
   def createLobbyFlow(
-    pushQueue: SourceQueue[Out],
-    pushSource: Source[Out, NotUsed],
+    pushSource: Source[PushOut, NotUsed],
     sessionActor: ActorRef[SessionCommand],
   )(implicit
     materializer: Materializer,
-  ): Flow[Message, Message, NotUsed] = {
-
-    implicit val timeout: Timeout = Timeout(5.seconds)
-
+  ): Flow[Message, Message, NotUsed] =
     Flow[Message]
       .filter {
         case _: TextMessage    => true
         case bm: BinaryMessage =>
-
           // Ignore binary messages, but drain data stream
           bm.dataStream.runWith(Sink.ignore)
           false
@@ -59,7 +62,8 @@ object FlowCreator
       .collect { case tm: TextMessage => tm }
       .mapAsync(parallelism)(_.textStream.runFold("")(_ ++ _))
       .map(decode[In])
-      .via(ActorFlow.ask[Either[Error, In], SessionCommand, Out](sessionActor)(SessionCommand))
+      .via(ActorFlow.ask[Either[Error, In], SessionCommand, Option[Out]](sessionActor)(SessionCommand))
+      .collect { case Some(out) => out }
       .merge(pushSource)
       .map(_.asJson.noSpaces)
       .map[Message](TextMessage(_))
@@ -67,5 +71,4 @@ object FlowCreator
         logger.error("Issue while processing stream", e)
         Supervision.Stop
       })
-  }
 }
