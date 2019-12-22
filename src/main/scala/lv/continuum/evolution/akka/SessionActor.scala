@@ -1,7 +1,7 @@
 package lv.continuum.evolution.akka
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.{ActorRef, Behavior, Terminated}
 import io.circe.Error
 import lv.continuum.evolution.akka.TableActor.TableCommand
 import lv.continuum.evolution.protocol.Protocol.In._
@@ -19,48 +19,52 @@ object SessionActor {
   ): Behavior[SessionCommand] = {
 
     def unauthenticated: Behavior[SessionCommand] =
-      Behaviors.receive { (context, command) =>
-        command.in match {
-          case Right(LoginIn(username, password)) =>
-            login(username, password, command.replyTo)
+      Behaviors
+        .receive[SessionCommand] { (context, command) =>
+          command.in match {
+            case Right(LoginIn(username, password)) =>
+              login(username, password, command.replyTo)
 
-          case Right(_) =>
-            command.replyTo ! Some(ErrorOut(OutType.NotAuthenticated))
-            Behaviors.same
+            case Right(_) =>
+              command.replyTo ! Some(ErrorOut(OutType.NotAuthenticated))
+              Behaviors.same
 
-          case Left(e) =>
-            error(context, e, command.replyTo)
+            case Left(e) =>
+              error(context, e, command.replyTo)
+          }
         }
-      }
+        .stopWhenWatchedActorTerminates
 
     def authenticated(userType: UserType): Behavior[SessionCommand] =
-      Behaviors.receive { (context, command) =>
-        (userType, command.in) match {
-          case (_, Right(LoginIn(username, password))) =>
-            login(username, password, command.replyTo)
+      Behaviors
+        .receive[SessionCommand] { (context, command) =>
+          (userType, command.in) match {
+            case (_, Right(LoginIn(username, password))) =>
+              login(username, password, command.replyTo)
 
-          case (_, Right(PingIn(seq))) =>
-            command.replyTo ! Some(PongOut(seq = seq))
-            Behaviors.same
+            case (_, Right(PingIn(seq))) =>
+              command.replyTo ! Some(PongOut(seq = seq))
+              Behaviors.same
 
-          case (_, in @ Right(SubscribeTablesIn | UnsubscribeTablesIn)) =>
-            command.replyTo ! None
-            tableActor ! TableCommand(in.value, pushActor)
-            Behaviors.same
+            case (_, in @ Right(SubscribeTablesIn | UnsubscribeTablesIn)) =>
+              command.replyTo ! None
+              tableActor ! TableCommand(in.value, pushActor)
+              Behaviors.same
 
-          case (Admin, Right(in: AdminIn)) =>
-            command.replyTo ! None
-            tableActor ! TableCommand(in, pushActor)
-            Behaviors.same
+            case (Admin, Right(in: AdminIn)) =>
+              command.replyTo ! None
+              tableActor ! TableCommand(in, pushActor)
+              Behaviors.same
 
-          case (User, Right(_: AdminIn)) =>
-            command.replyTo ! Some(ErrorOut(OutType.NotAuthorized))
-            Behaviors.same
+            case (User, Right(_: AdminIn)) =>
+              command.replyTo ! Some(ErrorOut(OutType.NotAuthorized))
+              Behaviors.same
 
-          case (_, Left(e)) =>
-            error(context, e, command.replyTo)
+            case (_, Left(e)) =>
+              error(context, e, command.replyTo)
+          }
         }
-      }
+        .stopWhenWatchedActorTerminates
 
     def login(
       username: Username,
@@ -91,6 +95,18 @@ object SessionActor {
       Behaviors.same
     }
 
-    unauthenticated
+    Behaviors.setup { context =>
+      context.watch(pushActor)
+      unauthenticated
+    }
+  }
+
+  private implicit class Stopper(behavior: Behaviors.Receive[SessionCommand]) {
+    def stopWhenWatchedActorTerminates: Behavior[SessionCommand] =
+      behavior.receiveSignal {
+        case (context, Terminated(_)) =>
+          context.log.info("Watched actor terminated, will stop now")
+          Behaviors.stopped
+      }
   }
 }

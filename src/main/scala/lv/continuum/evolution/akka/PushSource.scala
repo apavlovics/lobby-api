@@ -10,7 +10,6 @@ import lv.continuum.evolution.protocol.Protocol.PushOut
 /** An actor and a source for delivering push notifications to subscribed clients. */
 object PushSource {
 
-  // TODO Complete matchers and overflow strategy
   def apply()(implicit
     materializer: Materializer,
   ): (ActorRef[PushOut], Source[PushOut, NotUsed]) =
