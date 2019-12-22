@@ -11,6 +11,16 @@ object Protocol {
   case class TableId(value: Long) extends AnyVal
   case class TableName(value: String) extends AnyVal
 
+  case class Table(
+    id: TableId,
+    name: TableName,
+    participants: Long,
+  )
+  case class TableToAdd(
+    name: TableName,
+    participants: Long,
+  )
+
   sealed trait InType extends EnumEntry with Snakecase
   object InType extends Enum[InType] {
 
@@ -20,6 +30,8 @@ object Protocol {
     case object Ping extends InType
     case object SubscribeTables extends InType
     case object UnsubscribeTables extends InType
+    case object AddTable extends InType
+    case object UpdateTable extends InType
     case object RemoveTable extends InType
   }
 
@@ -40,6 +52,15 @@ object Protocol {
 
     case object UnsubscribeTablesIn extends In
 
+    case class AddTableIn(
+      afterId: TableId,
+      table: TableToAdd,
+    ) extends AdminIn
+
+    case class UpdateTableIn(
+      table: Table,
+    ) extends AdminIn
+
     case class RemoveTableIn(
       id: TableId,
     ) extends AdminIn
@@ -54,8 +75,12 @@ object Protocol {
     case object LoginFailed extends OutType
     case object Pong extends OutType
     case object TableList extends OutType
+    case object TableAdded extends OutType
+    case object TableUpdated extends OutType
     case object TableRemoved extends OutType
-    case object RemovalFailed extends OutType
+    case object TableAddFailed extends OutType
+    case object TableUpdateFailed extends OutType
+    case object TableRemoveFailed extends OutType
     case object NotAuthorized extends OutType
     case object NotAuthenticated extends OutType
     case object InvalidMessage extends OutType
@@ -70,12 +95,6 @@ object Protocol {
     case object User extends UserType
     case object Admin extends UserType
   }
-
-  case class Table(
-    id: TableId,
-    name: TableName,
-    participants: Long,
-  )
 
   sealed trait Out {
     def $type: OutType
@@ -98,6 +117,17 @@ object Protocol {
     case class TableListOut(
       $type: OutType = TableList,
       tables: List[Table],
+    ) extends PushOut
+
+    case class TableAddedOut(
+      $type: OutType = TableAdded,
+      afterId: TableId,
+      table: Table,
+    ) extends PushOut
+
+    case class TableUpdatedOut(
+      $type: OutType = TableUpdated,
+      table: Table,
     ) extends PushOut
 
     case class TableRemovedOut(

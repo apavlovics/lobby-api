@@ -3,9 +3,9 @@ package lv.continuum.evolution.protocol
 import cats.scalatest.EitherValues
 import io.circe.parser._
 import io.circe.syntax._
-import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
+import lv.continuum.evolution.protocol.Protocol._
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -17,6 +17,7 @@ class ProtocolFormatSpec
     with ProtocolFormat {
 
   "ProtocolFormat" should {
+
     "provide correct decoders for In ADTs" in {
       verifyDecodeIn(
         json =
@@ -47,18 +48,6 @@ class ProtocolFormatSpec
         json =
           """
             |{
-            |  "$type": "remove_table",
-            |  "id": 3
-            |}""".stripMargin,
-        in =
-          RemoveTableIn(
-            id = TableId(3),
-          ),
-      )
-      verifyDecodeIn(
-        json =
-          """
-            |{
             |  "$type": "subscribe_tables"
             |}""".stripMargin,
         in =
@@ -73,7 +62,56 @@ class ProtocolFormatSpec
         in =
           UnsubscribeTablesIn,
       )
+      verifyDecodeIn(
+        json =
+          """
+            |{
+            |  "$type": "add_table",
+            |  "after_id": 1,
+            |  "table": {
+            |    "name": "table - Foo Fighters",
+            |    "participants": 4
+            |  }
+            |}""".stripMargin,
+        in =
+          AddTableIn(
+            afterId = TableId(1),
+            table = TableToAdd(
+              name = TableName("table - Foo Fighters"),
+              participants = 4,
+            ),
+          ),
+      )
+      verifyDecodeIn(
+        json =
+          """
+            |{
+            |  "$type": "update_table",
+            |  "table": {
+            |    "id": 3,
+            |    "name": "table - Foo Fighters",
+            |    "participants": 4
+            |  }
+            |}""".stripMargin,
+        in =
+          UpdateTableIn(
+            table = tableFooFighters,
+          ),
+      )
+      verifyDecodeIn(
+        json =
+          """
+            |{
+            |  "$type": "remove_table",
+            |  "id": 3
+            |}""".stripMargin,
+        in =
+          RemoveTableIn(
+            id = TableId(3),
+          ),
+      )
     }
+
     "provide correct encoders for Out ADTs" in {
       verifyEncodeOut(
         out =
@@ -103,16 +141,8 @@ class ProtocolFormatSpec
         out =
           TableListOut(
             tables = List(
-              Table(
-                id = TableId(1),
-                name = TableName("table - James Bond"),
-                participants = 7,
-              ),
-              Table(
-                id = TableId(2),
-                name = TableName("table - Mission Impossible"),
-                participants = 4,
-              ),
+              tableJamesBond,
+              tableMissionImpossible,
             ),
           ),
         json =
@@ -127,9 +157,43 @@ class ProtocolFormatSpec
             |    }, {
             |      "id": 2,
             |      "name": "table - Mission Impossible",
-            |      "participants": 4
+            |      "participants": 9
             |    }
             |  ]
+            |}""".stripMargin,
+      )
+      verifyEncodeOut(
+        out =
+          TableAddedOut(
+            afterId = TableId(1),
+            table = tableFooFighters,
+          ),
+        json =
+          """
+            |{
+            |  "$type": "table_added",
+            |  "after_id": 1,
+            |  "table": {
+            |    "id": 3,
+            |    "name": "table - Foo Fighters",
+            |    "participants": 4
+            |  }
+            |}""".stripMargin,
+      )
+      verifyEncodeOut(
+        out =
+          TableUpdatedOut(
+            table = tableFooFighters,
+          ),
+        json =
+          """
+            |{
+            |  "$type": "table_updated",
+            |  "table": {
+            |    "id": 3,
+            |    "name": "table - Foo Fighters",
+            |    "participants": 4
+            |  }
             |}""".stripMargin,
       )
       verifyEncodeOut(
@@ -147,13 +211,13 @@ class ProtocolFormatSpec
       verifyEncodeOut(
         out =
           TableErrorOut(
-            $type = OutType.RemovalFailed,
+            $type = OutType.TableRemoveFailed,
             id = TableId(3),
           ),
         json =
           """
             |{
-            |  "$type": "removal_failed",
+            |  "$type": "table_remove_failed",
             |  "id": 3
             |}""".stripMargin,
       )
@@ -176,4 +240,22 @@ class ProtocolFormatSpec
 
   private def verifyEncodeOut(out: Out, json: String): Assertion =
     out.asJson shouldBe parse(json).value
+
+  // Test data
+
+  private val tableJamesBond = Table(
+    id = TableId(1),
+    name = TableName("table - James Bond"),
+    participants = 7,
+  )
+  private val tableMissionImpossible = Table(
+    id = TableId(2),
+    name = TableName("table - Mission Impossible"),
+    participants = 9,
+  )
+  private val tableFooFighters = Table(
+    id = TableId(3),
+    name = TableName("table - Foo Fighters"),
+    participants = 4,
+  )
 }
