@@ -16,10 +16,11 @@ trait ProtocolFormat {
     Configuration.default
       .withSnakeCaseMemberNames
 
-  implicit val usernameDecoder: Codec[Username] = deriveUnwrappedCodec
-  implicit val passwordDecoder: Codec[Password] = deriveUnwrappedCodec
-  implicit val seqDecoder: Codec[Seq] = deriveUnwrappedCodec
-  implicit val tableIdDecoder: Codec[TableId] = deriveUnwrappedCodec
+  implicit val usernameCodec: Codec[Username] = deriveUnwrappedCodec
+  implicit val passwordCodec: Codec[Password] = deriveUnwrappedCodec
+  implicit val seqCodec: Codec[Seq] = deriveUnwrappedCodec
+  implicit val tableIdCodec: Codec[TableId] = deriveUnwrappedCodec
+  implicit val tableNameCodec: Codec[TableName] = deriveUnwrappedCodec
 
   implicit val inTypeDecoder: Decoder[InType] = Decoder.decodeString.emapTry { s => Try(InType.withName(s)) }
   implicit val loginInDecoder: Decoder[LoginIn] = deriveConfiguredDecoder

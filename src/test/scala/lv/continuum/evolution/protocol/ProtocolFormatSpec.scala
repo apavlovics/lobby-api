@@ -105,12 +105,12 @@ class ProtocolFormatSpec
             tables = List(
               Table(
                 id = TableId(1),
-                name = "table - James Bond",
+                name = TableName("table - James Bond"),
                 participants = 7,
               ),
               Table(
                 id = TableId(2),
-                name = "table - Mission Impossible",
+                name = TableName("table - Mission Impossible"),
                 participants = 4,
               ),
             ),

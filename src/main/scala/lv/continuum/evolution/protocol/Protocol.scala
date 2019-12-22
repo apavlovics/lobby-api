@@ -9,6 +9,7 @@ object Protocol {
   case class Password(value: String) extends AnyVal
   case class Seq(value: Long) extends AnyVal
   case class TableId(value: Long) extends AnyVal
+  case class TableName(value: String) extends AnyVal
 
   sealed trait InType extends EnumEntry with Snakecase
   object InType extends Enum[InType] {
@@ -72,7 +73,7 @@ object Protocol {
 
   case class Table(
     id: TableId,
-    name: String,
+    name: TableName,
     participants: Long,
   )
 

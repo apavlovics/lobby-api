@@ -5,7 +5,7 @@ import akka.actor.typed.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
 import akka.stream._
 import akka.stream.scaladsl._
-import akka.stream.typed.scaladsl.{ActorFlow, ActorSource}
+import akka.stream.typed.scaladsl.ActorFlow
 import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.Error
@@ -17,7 +17,8 @@ import lv.continuum.evolution.protocol._
 
 import scala.concurrent.duration._
 
-object FlowCreator
+/** A complete lobby flow. */
+object LobbyFlow
   extends ProtocolFormat
     with LazyLogging {
 
@@ -27,21 +28,7 @@ object FlowCreator
   private implicit val timeout: Timeout = Timeout(5.seconds)
   logger.info(s"Timeout is ${ timeout.duration }")
 
-  /** Creates a source for delivering push notifications to subscribed clients. */
-  def createPushSource(implicit
-    materializer: Materializer,
-  ): (ActorRef[PushOut], Source[PushOut, NotUsed]) = {
-    // TODO Complete matchers and overflow strategy
-    ActorSource.actorRef[PushOut](
-      completionMatcher = Map.empty,
-      failureMatcher = Map.empty,
-      bufferSize = 100,
-      overflowStrategy = OverflowStrategy.fail,
-    ).preMaterialize()
-  }
-
-  /** Creates a lobby flow. */
-  def createLobbyFlow(
+  def apply(
     pushSource: Source[PushOut, NotUsed],
     sessionActor: ActorRef[SessionCommand],
   )(implicit

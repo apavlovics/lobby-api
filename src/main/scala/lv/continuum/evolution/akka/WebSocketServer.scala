@@ -26,13 +26,10 @@ class WebSocketServer(implicit
     Route.seal {
       path("lobby_api") {
 
-        // Create sources and flows per WebSocket connection
-        val (pushActor, pushSource) = FlowCreator.createPushSource
+        // Initialize actors, sources and flows per WebSocket connection
+        val (pushActor, pushSource) = PushSource()
         val sessionActor = system.spawn(SessionActor(tableActor, pushActor), s"SessionActor-${ UUID.randomUUID() }")
-        handleWebSocketMessages(FlowCreator.createLobbyFlow(
-          pushSource = pushSource,
-          sessionActor = sessionActor,
-        ))
+        handleWebSocketMessages(LobbyFlow(pushSource, sessionActor))
       }
     }
 
