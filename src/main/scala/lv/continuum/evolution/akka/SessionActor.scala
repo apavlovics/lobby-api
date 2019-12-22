@@ -63,15 +63,15 @@ object SessionActor {
       }
 
     def login(
-      username: String,
-      password: String,
+      username: Username,
+      password: Password,
       replyTo: ActorRef[Option[Out]],
     ): Behavior[SessionCommand] = (username, password) match {
-      case ("admin", "admin") =>
+      case (Username("admin"), Password("admin")) =>
         replyTo ! Some(LoginSuccessfulOut(userType = Admin))
         authenticated(Admin)
 
-      case ("user", "user") =>
+      case (Username("user"), Password("user")) =>
         replyTo ! Some(LoginSuccessfulOut(userType = User))
         authenticated(User)
 

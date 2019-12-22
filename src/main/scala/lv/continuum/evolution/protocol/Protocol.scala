@@ -5,6 +5,9 @@ import enumeratum.{Enum, EnumEntry}
 
 object Protocol {
 
+  case class Username(value: String) extends AnyVal
+  case class Password(value: String) extends AnyVal
+  case class Seq(value: Long) extends AnyVal
   case class TableId(value: Long) extends AnyVal
 
   sealed trait InType extends EnumEntry with Snakecase
@@ -24,12 +27,12 @@ object Protocol {
   object In {
 
     case class LoginIn(
-      username: String,
-      password: String,
+      username: Username,
+      password: Password,
     ) extends In
 
     case class PingIn(
-      seq: Long,
+      seq: Seq,
     ) extends In
 
     case object SubscribeTablesIn extends In
@@ -88,7 +91,7 @@ object Protocol {
 
     case class PongOut(
       $type: OutType = Pong,
-      seq: Long,
+      seq: Seq,
     ) extends Out
 
     case class TableListOut(

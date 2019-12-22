@@ -3,7 +3,7 @@ package lv.continuum.evolution.protocol
 import io.circe.generic.extras.Configuration
 import io.circe.generic.extras.semiauto._
 import io.circe.syntax._
-import io.circe.{Decoder, Encoder}
+import io.circe.{Codec, Decoder, Encoder}
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol._
@@ -15,6 +15,11 @@ trait ProtocolFormat {
   implicit val configuration: Configuration =
     Configuration.default
       .withSnakeCaseMemberNames
+
+  implicit val usernameDecoder: Codec[Username] = deriveUnwrappedCodec
+  implicit val passwordDecoder: Codec[Password] = deriveUnwrappedCodec
+  implicit val seqDecoder: Codec[Seq] = deriveUnwrappedCodec
+  implicit val tableIdDecoder: Codec[TableId] = deriveUnwrappedCodec
 
   implicit val inTypeDecoder: Decoder[InType] = Decoder.decodeString.emapTry { s => Try(InType.withName(s)) }
   implicit val loginInDecoder: Decoder[LoginIn] = deriveConfiguredDecoder
@@ -36,6 +41,7 @@ trait ProtocolFormat {
   implicit val outTypeEncoder: Encoder[OutType] = Encoder.encodeString.contramap(_.entryName)
   implicit val userTypeEncoder: Encoder[UserType] = Encoder.encodeString.contramap(_.entryName)
   implicit val tableEncoder: Encoder[Table] = deriveConfiguredEncoder
+
   implicit val loginSuccessfulOutEncoder: Encoder[LoginSuccessfulOut] = deriveConfiguredEncoder
   implicit val pongOutEncoder: Encoder[PongOut] = deriveConfiguredEncoder
   implicit val tableListOutEncoder: Encoder[TableListOut] = deriveConfiguredEncoder

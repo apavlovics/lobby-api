@@ -7,7 +7,7 @@ This sample application implements a server for a JSON-based lobby API over WebS
 The application is tested to work with:
 
 * Java 11
-* Scala 2.12
+* Scala 2.13
 * sbt 1.2.8
 
 ## Configuration

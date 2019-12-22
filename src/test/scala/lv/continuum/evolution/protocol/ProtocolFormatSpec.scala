@@ -22,13 +22,13 @@ class ProtocolFormatSpec
         json =
           """|{
              |  "$type": "login",
-             |  "username": "user1234",
-             |  "password": "password1234"
+             |  "username": "user",
+             |  "password": "pass"
              |}""".stripMargin,
         in =
           LoginIn(
-            username = "user1234",
-            password = "password1234",
+            username = Username("user"),
+            password = Password("pass"),
           ),
       )
       verifyDecodeIn(
@@ -40,7 +40,7 @@ class ProtocolFormatSpec
             |}""".stripMargin,
         in =
           PingIn(
-            seq = 12345,
+            seq = Seq(12345),
           ),
       )
       verifyDecodeIn(
@@ -90,7 +90,7 @@ class ProtocolFormatSpec
       verifyEncodeOut(
         out =
           PongOut(
-            seq = 12345,
+            seq = Seq(12345),
           ),
         json =
           """
