@@ -36,7 +36,8 @@ object Protocol {
   }
 
   sealed trait In
-  sealed trait AdminIn extends In
+  sealed trait TableIn extends In
+  sealed trait AdminTableIn extends TableIn
   object In {
 
     case class LoginIn(
@@ -48,22 +49,22 @@ object Protocol {
       seq: Seq,
     ) extends In
 
-    case object SubscribeTablesIn extends In
+    case object SubscribeTablesIn extends TableIn
 
-    case object UnsubscribeTablesIn extends In
+    case object UnsubscribeTablesIn extends TableIn
 
     case class AddTableIn(
       afterId: TableId,
       table: TableToAdd,
-    ) extends AdminIn
+    ) extends AdminTableIn
 
     case class UpdateTableIn(
       table: Table,
-    ) extends AdminIn
+    ) extends AdminTableIn
 
     case class RemoveTableIn(
       id: TableId,
-    ) extends AdminIn
+    ) extends AdminTableIn
   }
 
   sealed trait OutType extends EnumEntry with Snakecase
@@ -116,7 +117,7 @@ object Protocol {
 
     case class TableListOut(
       $type: OutType = TableList,
-      tables: List[Table],
+      tables: Vector[Table],
     ) extends PushOut
 
     case class TableAddedOut(
@@ -138,7 +139,7 @@ object Protocol {
     case class TableErrorOut(
       $type: OutType,
       id: TableId,
-    ) extends Out
+    ) extends PushOut
 
     case class ErrorOut(
       $type: OutType,

@@ -8,17 +8,17 @@ import lv.continuum.evolution.protocol.Protocol._
 
 object TableActor {
 
-  case class TableCommand(in: In, pushTo: ActorRef[PushOut])
+  case class TableCommand(in: TableIn, pushTo: ActorRef[PushOut])
 
   private case class TableState(
-    tables: List[Table],
+    tables: Vector[Table],
     subscribers: Set[ActorRef[PushOut]],
   )
 
   def apply(): Behavior[TableCommand] = process(
     // Initial TableState that holds some sample data
     TableState(
-      tables = List(
+      tables = Vector(
         Table(
           id = TableId(1),
           name = TableName("table - James Bond"),
@@ -27,7 +27,7 @@ object TableActor {
         Table(
           id = TableId(2),
           name = TableName("table - Mission Impossible"),
-          participants = 4,
+          participants = 9,
         ),
       ),
       subscribers = Set.empty,
@@ -44,17 +44,44 @@ object TableActor {
         case UnsubscribeTablesIn =>
           process(state.copy(subscribers = state.subscribers - command.pushTo))
 
-        case RemoveTableIn(id) =>
-          val newTables = state.tables.filterNot(_.id == id)
-          if (newTables.size != state.tables.size) {
-            val tableRemovedOut = TableRemovedOut(id = id)
-            state.subscribers.foreach(_ ! tableRemovedOut)
+        case AddTableIn(afterId, tableToAdd) =>
+          // TODO Complete implementation
+          Behaviors.same
+
+        case UpdateTableIn(tableToUpdate) =>
+          var updated = false
+          val newTables = state.tables.map { table =>
+            if (table.id == tableToUpdate.id) {
+              updated = true
+              tableToUpdate
+            }
+            else table
+          }
+          if (updated) {
+            val tableUpdatedOut = TableUpdatedOut(table = tableToUpdate)
+            state.subscribers.foreach(_ ! tableUpdatedOut)
             process(state.copy(tables = newTables))
           } else {
+            command.pushTo ! TableErrorOut(
+              $type = OutType.TableUpdateFailed,
+              id = tableToUpdate.id,
+            )
             Behaviors.same
           }
 
-        case _ => Behaviors.same
+        case RemoveTableIn(tableIdToRemove) =>
+          val newTables = state.tables.filterNot(_.id == tableIdToRemove)
+          if (newTables.size != state.tables.size) {
+            val tableRemovedOut = TableRemovedOut(id = tableIdToRemove)
+            state.subscribers.foreach(_ ! tableRemovedOut)
+            process(state.copy(tables = newTables))
+          } else {
+            command.pushTo ! TableErrorOut(
+              $type = OutType.TableRemoveFailed,
+              id = tableIdToRemove,
+            )
+            Behaviors.same
+          }
       }
     }
   }

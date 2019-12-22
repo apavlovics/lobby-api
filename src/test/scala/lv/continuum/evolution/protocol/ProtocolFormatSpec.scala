@@ -16,6 +16,24 @@ class ProtocolFormatSpec
     with EitherValues
     with ProtocolFormat {
 
+  // Test data
+
+  private val tableJamesBond = Table(
+    id = TableId(1),
+    name = TableName("table - James Bond"),
+    participants = 7,
+  )
+  private val tableMissionImpossible = Table(
+    id = TableId(2),
+    name = TableName("table - Mission Impossible"),
+    participants = 9,
+  )
+  private val tableFooFighters = Table(
+    id = TableId(3),
+    name = TableName("table - Foo Fighters"),
+    participants = 4,
+  )
+
   "ProtocolFormat" should {
 
     "provide correct decoders for In ADTs" in {
@@ -140,7 +158,7 @@ class ProtocolFormatSpec
       verifyEncodeOut(
         out =
           TableListOut(
-            tables = List(
+            tables = Vector(
               tableJamesBond,
               tableMissionImpossible,
             ),
@@ -240,22 +258,4 @@ class ProtocolFormatSpec
 
   private def verifyEncodeOut(out: Out, json: String): Assertion =
     out.asJson shouldBe parse(json).value
-
-  // Test data
-
-  private val tableJamesBond = Table(
-    id = TableId(1),
-    name = TableName("table - James Bond"),
-    participants = 7,
-  )
-  private val tableMissionImpossible = Table(
-    id = TableId(2),
-    name = TableName("table - Mission Impossible"),
-    participants = 9,
-  )
-  private val tableFooFighters = Table(
-    id = TableId(3),
-    name = TableName("table - Foo Fighters"),
-    participants = 4,
-  )
 }

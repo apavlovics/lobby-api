@@ -46,18 +46,13 @@ object SessionActor {
               command.replyTo ! Some(PongOut(seq = seq))
               Behaviors.same
 
-            case (_, in @ Right(SubscribeTablesIn | UnsubscribeTablesIn)) =>
-              command.replyTo ! None
-              tableActor ! TableCommand(in.value, pushActor)
-              Behaviors.same
-
-            case (Admin, Right(in: AdminIn)) =>
-              command.replyTo ! None
-              tableActor ! TableCommand(in, pushActor)
-              Behaviors.same
-
-            case (User, Right(_: AdminIn)) =>
+            case (User, Right(_: AdminTableIn)) =>
               command.replyTo ! Some(ErrorOut(OutType.NotAuthorized))
+              Behaviors.same
+
+            case (_, Right(tableIn: TableIn)) =>
+              command.replyTo ! None
+              tableActor ! TableCommand(tableIn, pushActor)
               Behaviors.same
 
             case (_, Left(e)) =>
