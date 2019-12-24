@@ -32,7 +32,7 @@ manually test the server.
 
 ### Sample Messages
 
-The following sample messages can be sent from the client to the server, while both are running:
+The following sample messages can be sent from the client to the server while both are running:
 
 ```json
 {
