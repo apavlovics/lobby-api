@@ -8,7 +8,7 @@ import lv.continuum.evolution.protocol.Protocol._
 
 object TableActor {
 
-  case class TableCommand(in: TableIn, pushTo: ActorRef[PushOut])
+  case class TableCommand(in: TableIn, replyTo: ActorRef[PushOut])
 
   private case class TableState(
     tables: List[Table],
@@ -48,20 +48,20 @@ object TableActor {
     Behaviors.receive { (_, command) =>
       command.in match {
         case SubscribeTablesIn =>
-          command.pushTo ! TableListOut(tables = state.tables)
-          process(state.copy(subscribers = state.subscribers + command.pushTo))
+          command.replyTo ! TableListOut(tables = state.tables)
+          process(state.copy(subscribers = state.subscribers + command.replyTo))
 
         case UnsubscribeTablesIn =>
-          process(state.copy(subscribers = state.subscribers - command.pushTo))
+          process(state.copy(subscribers = state.subscribers - command.replyTo))
 
         case in: AddTableIn =>
-          addTable(state, in, command.pushTo)
+          addTable(state, in, command.replyTo)
 
         case in: UpdateTableIn =>
-          updateTable(state, in, command.pushTo)
+          updateTable(state, in, command.replyTo)
 
         case in: RemoveTableIn =>
-          removeTable(state, in, command.pushTo)
+          removeTable(state, in, command.replyTo)
       }
     }
   }
@@ -69,7 +69,7 @@ object TableActor {
   private def addTable(
     state: TableState,
     in: AddTableIn,
-    pushTo: ActorRef[PushOut],
+    replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] = {
 
     def tableToAdd: Table = in.table.toTable(state.nextId)
@@ -94,7 +94,7 @@ object TableActor {
         tables = newTables,
       ))
     } else {
-      pushTo ! ErrorOut(
+      replyTo ! ErrorOut(
         $type = OutType.TableAddFailed,
       )
       Behaviors.same
@@ -104,7 +104,7 @@ object TableActor {
   private def updateTable(
     state: TableState,
     in: UpdateTableIn,
-    pushTo: ActorRef[PushOut],
+    replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] = {
     var updated = false
     val newTables = state.tables.map { table =>
@@ -119,7 +119,7 @@ object TableActor {
       state.subscribers.foreach(_ ! tableUpdatedOut)
       process(state.copy(tables = newTables))
     } else {
-      pushTo ! TableErrorOut(
+      replyTo ! TableErrorOut(
         $type = OutType.TableUpdateFailed,
         id = in.table.id,
       )
@@ -130,7 +130,7 @@ object TableActor {
   private def removeTable(
     state: TableState,
     in: RemoveTableIn,
-    pushTo: ActorRef[PushOut],
+    replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] = {
     val newTables = state.tables.filterNot(_.id == in.id)
     if (newTables.size != state.tables.size) {
@@ -138,7 +138,7 @@ object TableActor {
       state.subscribers.foreach(_ ! tableRemovedOut)
       process(state.copy(tables = newTables))
     } else {
-      pushTo ! TableErrorOut(
+      replyTo ! TableErrorOut(
         $type = OutType.TableRemoveFailed,
         id = in.id,
       )
