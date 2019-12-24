@@ -8,7 +8,9 @@ object Protocol {
   case class Username(value: String) extends AnyVal
   case class Password(value: String) extends AnyVal
   case class Seq(value: Long) extends AnyVal
-  case class TableId(value: Long) extends AnyVal
+  case class TableId(value: Long) extends AnyVal {
+    def inc: TableId = TableId(value + 1)
+  }
   case class TableName(value: String) extends AnyVal
 
   case class Table(
@@ -19,7 +21,9 @@ object Protocol {
   case class TableToAdd(
     name: TableName,
     participants: Long,
-  )
+  ) {
+    def toTable(id: TableId): Table = Table(id, name, participants)
+  }
 
   sealed trait InType extends EnumEntry with Snakecase
   object InType extends Enum[InType] {
@@ -117,7 +121,7 @@ object Protocol {
 
     case class TableListOut(
       $type: OutType = TableList,
-      tables: Vector[Table],
+      tables: List[Table],
     ) extends PushOut
 
     case class TableAddedOut(
@@ -143,6 +147,6 @@ object Protocol {
 
     case class ErrorOut(
       $type: OutType,
-    ) extends Out
+    ) extends PushOut
   }
 }

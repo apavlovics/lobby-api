@@ -158,7 +158,7 @@ class ProtocolFormatSpec
       verifyEncodeOut(
         out =
           TableListOut(
-            tables = Vector(
+            tables = List(
               tableJamesBond,
               tableMissionImpossible,
             ),

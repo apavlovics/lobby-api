@@ -11,14 +11,24 @@ object TableActor {
   case class TableCommand(in: TableIn, pushTo: ActorRef[PushOut])
 
   private case class TableState(
-    tables: Vector[Table],
+    tables: List[Table],
     subscribers: Set[ActorRef[PushOut]],
+    nextId: TableId,
   )
+  private object TableState {
+    def apply(
+      tables: List[Table],
+      subscribers: Set[ActorRef[PushOut]],
+    ): TableState = {
+      val nextId = tables.map(_.id).maxByOption(_.value).map(_.inc).getOrElse(TableId(0))
+      TableState(tables, subscribers, nextId)
+    }
+  }
 
   def apply(): Behavior[TableCommand] = process(
     // Initial TableState that holds some sample data
     TableState(
-      tables = Vector(
+      tables = List(
         Table(
           id = TableId(1),
           name = TableName("table - James Bond"),
@@ -45,8 +55,34 @@ object TableActor {
           process(state.copy(subscribers = state.subscribers - command.pushTo))
 
         case AddTableIn(afterId, tableToAdd) =>
-          // TODO Complete implementation
-          Behaviors.same
+
+          def table: Table = tableToAdd.toTable(state.nextId)
+
+          val newTables = {
+            if (afterId == TableId(-1)) {
+              table :: state.tables
+            } else {
+              state.tables.flatMap { t =>
+                if (t.id == afterId) List(t, table) else List(t)
+              }
+            }
+          }
+          if (newTables.size != state.tables.size) {
+            val tableAddedOut = TableAddedOut(
+              afterId = afterId,
+              table = table,
+            )
+            state.subscribers.foreach(_ ! tableAddedOut)
+            process(state.copy(
+              nextId = state.nextId.inc,
+              tables = newTables,
+            ))
+          } else {
+            command.pushTo ! ErrorOut(
+              $type = OutType.TableAddFailed,
+            )
+            Behaviors.same
+          }
 
         case UpdateTableIn(tableToUpdate) =>
           var updated = false
