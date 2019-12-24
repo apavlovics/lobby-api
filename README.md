@@ -44,6 +44,13 @@ The following sample messages can be sent from the client to the server, while b
 
 ```json
 {
+  "$type": "ping",
+  "seq": 12345
+}
+```
+
+```json
+{
   "$type": "subscribe_tables"
 }
 ```
