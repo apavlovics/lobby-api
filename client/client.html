@@ -10,6 +10,16 @@
 </head>
 <body>
     <h1>WebSocket Client</h1>
+    <select id="message-type">
+      <option value="login">Login</option>
+      <option value="ping">Ping</option>
+      <option value="subscribe_tables">Subscribe Tables</option>
+      <option value="unsubscribe_tables">Unsubscribe Tables</option>
+      <option value="add_table">Add Table</option>
+      <option value="update_table">Update Table</option>
+      <option value="remove_table">Remove Table</option>
+    </select>
+    <br>
     <textarea id="outgoing-message">{"$type": "login", "username": "admin", "password": "admin"}</textarea>
     <br>
     <input type="radio" name="outgoing-message-type" value="text" checked>Text
@@ -23,6 +33,70 @@
         var $outgoingMessage = $("#outgoing-message")
         var $send = $("#send")
         var $incomingMessages = $("#incoming-messages")
+
+        $("#message-type").change(function() {
+            var messageType = $(this).children("option:selected").val();
+            var message;
+            switch(messageType) {
+                case "login":
+                    message =
+`{
+  "$type": "login",
+  "username": "admin",
+  "password": "admin"
+}`
+                  break
+                case "ping":
+                    message =
+`{
+  "$type": "ping",
+  "seq": 12345
+}`
+                  break
+                case "subscribe_tables":
+                    message =
+`{
+  "$type": "subscribe_tables"
+}`
+                  break
+                case "unsubscribe_tables":
+                    message =
+`{
+  "$type": "unsubscribe_tables"
+}`
+                  break
+                case "add_table":
+                    message =
+`{
+  "$type": "add_table",
+  "after_id": 2,
+  "table": {
+    "name": "table - Foo Fighters",
+    "participants": 4
+  }
+}`
+                  break
+                case "update_table":
+                    message =
+`{
+  "$type": "update_table",
+  "table": {
+    "id": 1,
+    "name": "table - Pink Floyd",
+    "participants": 4
+  }
+}`
+                  break
+                case "remove_table":
+                    message =
+`{
+  "$type": "remove_table",
+  "id": 2
+}`
+                  break
+            }
+            $outgoingMessage.val(message)
+        });
 
         $send.prop("disabled", true)
         var webSocket = new WebSocket("ws://localhost:9000/lobby_api")

@@ -46,7 +46,7 @@ h2, caption {
     font-size: 16px;
 }
 
-button, input[type="submit"] {
+button, select, input[type="submit"] {
     margin: .5em 1em .5em 0;
 }
 
@@ -76,6 +76,7 @@ th {
 textarea {
     width: 50em;
     height: 10em;
+    font-family: monospace;
 }
 
 ul {
