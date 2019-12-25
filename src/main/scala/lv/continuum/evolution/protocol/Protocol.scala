@@ -15,6 +15,9 @@ object Protocol {
 
     /** `TableId` that determines that a `Table` should be inserted at the beginning of the list. */
     val BeforeAll: TableId = TableId(-1)
+
+    /** `TableId` to use as the initial value. */
+    val Initial: TableId = TableId(0)
   }
   case class TableName(value: String) extends AnyVal
 

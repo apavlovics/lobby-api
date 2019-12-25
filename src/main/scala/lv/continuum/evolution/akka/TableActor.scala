@@ -20,7 +20,7 @@ object TableActor {
       tables: List[Table],
       subscribers: Set[ActorRef[PushOut]],
     ): TableState = {
-      val nextId = tables.map(_.id).maxByOption(_.value).map(_.inc).getOrElse(TableId(0))
+      val nextId = tables.map(_.id).maxByOption(_.value).map(_.inc).getOrElse(TableId.Initial)
       TableState(tables, subscribers, nextId)
     }
   }
