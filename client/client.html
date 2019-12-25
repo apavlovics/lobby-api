@@ -30,14 +30,14 @@
     <ul id="incoming-messages"></ul>
 
     <script>
+        var $outgoingMessageType = $("#outgoing-message-type")
         var $outgoingMessage = $("#outgoing-message")
         var $send = $("#send")
         var $incomingMessages = $("#incoming-messages")
-        var $outgoingMessageType = $("#outgoing-message-type")
 
         function updateOutgoingMessage() {
-            var outgoingMessageType = $outgoingMessageType.children("option:selected").val();
-            var message;
+            var outgoingMessageType = $outgoingMessageType.children("option:selected").val()
+            var message
             switch(outgoingMessageType) {
             case "login":
                 message =
@@ -96,7 +96,7 @@
 }`
                 break
             default:
-                console.log("Outgoing message type " + outgoingMessageType + " is invalid");
+                console.log("Outgoing message type " + outgoingMessageType + " is invalid")
                 break
             }
             $outgoingMessage.val(message)
@@ -125,7 +125,7 @@
                     webSocket.send(new Blob([$outgoingMessage.val()]))
                     break
                 default:
-                    console.log("Outgoing message format " + outgoingMessageFormat + " is invalid");
+                    console.log("Outgoing message format " + outgoingMessageFormat + " is invalid")
                     break
                 }
             })
