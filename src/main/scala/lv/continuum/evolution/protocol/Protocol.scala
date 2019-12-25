@@ -13,8 +13,8 @@ object Protocol {
   }
   object TableId {
 
-    /** `TableId` that determines that a `Table` should be inserted at the beginning of the list. */
-    val BeforeAll: TableId = TableId(-1)
+    /** `TableId` to use as an absent (special, nonexistent) value. */
+    val Absent: TableId = TableId(-1)
 
     /** `TableId` to use as the initial value. */
     val Initial: TableId = TableId(0)

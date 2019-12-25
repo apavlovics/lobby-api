@@ -75,7 +75,7 @@ object TableActor {
     def tableToAdd: Table = in.table.toTable(state.nextId)
 
     val newTables = {
-      if (in.afterId == TableId.BeforeAll) {
+      if (in.afterId == TableId.Absent) {
         tableToAdd :: state.tables
       } else {
         state.tables.flatMap { t =>
