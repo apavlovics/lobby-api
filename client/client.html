@@ -10,7 +10,7 @@
 </head>
 <body>
     <h1>WebSocket Client</h1>
-    <select id="message-type">
+    <select id="outgoing-message-type">
       <option value="login" selected>Login</option>
       <option value="ping">Ping</option>
       <option value="subscribe_tables">Subscribe Tables</option>
@@ -22,8 +22,8 @@
     <br>
     <textarea id="outgoing-message"></textarea>
     <br>
-    <input type="radio" name="outgoing-message-type" value="text" checked>Text
-    <input type="radio" name="outgoing-message-type" value="binary">Binary
+    <input type="radio" name="outgoing-message-format" value="text" checked>Text
+    <input type="radio" name="outgoing-message-format" value="binary">Binary
     <br>
     <button id="send">Send</button>
     <br>
@@ -33,41 +33,41 @@
         var $outgoingMessage = $("#outgoing-message")
         var $send = $("#send")
         var $incomingMessages = $("#incoming-messages")
-        var $messageType = $("#message-type")
+        var $outgoingMessageType = $("#outgoing-message-type")
 
         function updateOutgoingMessage() {
-            var messageType = $messageType.children("option:selected").val();
+            var outgoingMessageType = $outgoingMessageType.children("option:selected").val();
             var message;
-            switch(messageType) {
-                case "login":
-                    message =
+            switch(outgoingMessageType) {
+            case "login":
+                message =
 `{
   "$type": "login",
   "username": "admin",
   "password": "admin"
 }`
-                  break
-                case "ping":
-                    message =
+                break
+            case "ping":
+                message =
 `{
   "$type": "ping",
   "seq": 12345
 }`
-                  break
-                case "subscribe_tables":
-                    message =
+                break
+            case "subscribe_tables":
+                message =
 `{
   "$type": "subscribe_tables"
 }`
-                  break
-                case "unsubscribe_tables":
-                    message =
+                break
+            case "unsubscribe_tables":
+                message =
 `{
   "$type": "unsubscribe_tables"
 }`
-                  break
-                case "add_table":
-                    message =
+                break
+            case "add_table":
+                message =
 `{
   "$type": "add_table",
   "after_id": 2,
@@ -76,9 +76,9 @@
     "participants": 4
   }
 }`
-                  break
-                case "update_table":
-                    message =
+                break
+            case "update_table":
+                message =
 `{
   "$type": "update_table",
   "table": {
@@ -87,18 +87,21 @@
     "participants": 4
   }
 }`
-                  break
-                case "remove_table":
-                    message =
+                break
+            case "remove_table":
+                message =
 `{
   "$type": "remove_table",
   "id": 2
 }`
-                  break
+                break
+            default:
+                console.log("Outgoing message type " + outgoingMessageType + " is invalid");
+                break
             }
             $outgoingMessage.val(message)
         }
-        $messageType.change(updateOutgoingMessage)
+        $outgoingMessageType.change(updateOutgoingMessage)
         $(updateOutgoingMessage)
 
         $send.prop("disabled", true)
@@ -109,7 +112,8 @@
             $incomingMessages.prepend($("<li>Connected via WebSocket</li>"))
 
             $send.on("click", function() {
-                switch($("input[name=outgoing-message-type]:checked").val()) {
+                var outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
+                switch(outgoingMessageFormat) {
                 case "text":
 
                     // Send as text
@@ -121,7 +125,7 @@
                     webSocket.send(new Blob([$outgoingMessage.val()]))
                     break
                 default:
-                    console.log("Outgoing message type " + outgoingMessageType + " is invalid");
+                    console.log("Outgoing message format " + outgoingMessageFormat + " is invalid");
                     break
                 }
             })
