@@ -11,6 +11,11 @@ object Protocol {
   case class TableId(value: Long) extends AnyVal {
     def inc: TableId = TableId(value + 1)
   }
+  object TableId {
+
+    /** `TableId` that determines that a `Table` should be inserted at the beginning of the list. */
+    val BeforeAll: TableId = TableId(-1)
+  }
   case class TableName(value: String) extends AnyVal
 
   case class Table(

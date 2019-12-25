@@ -115,13 +115,9 @@
                 var outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
                 switch(outgoingMessageFormat) {
                 case "text":
-
-                    // Send as text
                     webSocket.send($outgoingMessage.val())
                     break
                 case "binary":
-
-                    // Send as binary
                     webSocket.send(new Blob([$outgoingMessage.val()]))
                     break
                 default:
