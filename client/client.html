@@ -11,7 +11,7 @@
 <body>
     <h1>WebSocket Client</h1>
     <select id="message-type">
-      <option value="login">Login</option>
+      <option value="login" selected>Login</option>
       <option value="ping">Ping</option>
       <option value="subscribe_tables">Subscribe Tables</option>
       <option value="unsubscribe_tables">Unsubscribe Tables</option>
@@ -20,7 +20,7 @@
       <option value="remove_table">Remove Table</option>
     </select>
     <br>
-    <textarea id="outgoing-message">{"$type": "login", "username": "admin", "password": "admin"}</textarea>
+    <textarea id="outgoing-message"></textarea>
     <br>
     <input type="radio" name="outgoing-message-type" value="text" checked>Text
     <input type="radio" name="outgoing-message-type" value="binary">Binary
@@ -33,9 +33,10 @@
         var $outgoingMessage = $("#outgoing-message")
         var $send = $("#send")
         var $incomingMessages = $("#incoming-messages")
+        var $messageType = $("#message-type")
 
-        $("#message-type").change(function() {
-            var messageType = $(this).children("option:selected").val();
+        function updateOutgoingMessage() {
+            var messageType = $messageType.children("option:selected").val();
             var message;
             switch(messageType) {
                 case "login":
@@ -96,7 +97,9 @@
                   break
             }
             $outgoingMessage.val(message)
-        });
+        }
+        $messageType.change(updateOutgoingMessage)
+        $(updateOutgoingMessage)
 
         $send.prop("disabled", true)
         var webSocket = new WebSocket("ws://localhost:9000/lobby_api")
