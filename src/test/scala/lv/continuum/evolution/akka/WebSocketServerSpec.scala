@@ -4,7 +4,6 @@ import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-// TODO Add more specific tests
 class WebSocketServerSpec
   extends AnyWordSpec
     with Matchers
