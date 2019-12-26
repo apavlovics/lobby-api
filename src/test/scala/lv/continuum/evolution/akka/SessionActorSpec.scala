@@ -72,6 +72,10 @@ class SessionActorSpec
         verifyReplyTo(subscribeTablesIn._2, Some(errorOutNotAuthenticated._2))
         tableActorInbox.hasMessages shouldBe false
       }
+      "decline forwarding AdminTableIn messages to TableActor" in new NotAuthenticated {
+        verifyReplyTo(addTableIn._2, Some(errorOutNotAuthenticated._2))
+        tableActorInbox.hasMessages shouldBe false
+      }
       "report parsing errors" in new NotAuthenticated {
         verifyReportParsingErrors()
       }

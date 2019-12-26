@@ -9,6 +9,7 @@ trait TestData {
 
   // Common
 
+  val invalidTableId: TableId = TableId(99999)
   val tableJamesBond: Table = Table(
     id = TableId(1),
     name = TableName("table - James Bond"),
@@ -79,7 +80,7 @@ trait TestData {
       """
         |{
         |  "$type": "add_table",
-        |  "after_id": 1,
+        |  "after_id": -1,
         |  "table": {
         |    "name": "table - Foo Fighters",
         |    "participants": 4
@@ -87,7 +88,7 @@ trait TestData {
         |}""".stripMargin
     val in =
       AddTableIn(
-        afterId = TableId(1),
+        afterId = TableId.Absent,
         table = TableToAdd(
           name = TableName("table - Foo Fighters"),
           participants = 4,
@@ -95,6 +96,9 @@ trait TestData {
       )
     (json, in)
   }
+
+  val addTableInInvalid: AddTableIn =
+    addTableIn._2.copy(afterId = invalidTableId)
 
   val updateTableIn: (String, UpdateTableIn) = {
     val json =
@@ -114,6 +118,9 @@ trait TestData {
     (json, in)
   }
 
+  val updateTableInInvalid: UpdateTableIn =
+    updateTableIn._2.copy(table = updateTableIn._2.table.copy(id = invalidTableId))
+
   val removeTableIn: (String, RemoveTableIn) = {
     val json =
       """
@@ -127,6 +134,9 @@ trait TestData {
       )
     (json, in)
   }
+
+  val removeTableInInvalid: RemoveTableIn =
+    removeTableIn._2.copy(id = invalidTableId)
 
   // Out
 
@@ -204,7 +214,7 @@ trait TestData {
       """
         |{
         |  "$type": "table_added",
-        |  "after_id": 1,
+        |  "after_id": -1,
         |  "table": {
         |    "id": 3,
         |    "name": "table - Foo Fighters",
@@ -213,7 +223,7 @@ trait TestData {
         |}""".stripMargin
     val out =
       TableAddedOut(
-        afterId = TableId(1),
+        afterId = TableId.Absent,
         table = tableFooFighters,
       )
     (json, out)
@@ -251,17 +261,32 @@ trait TestData {
     (json, out)
   }
 
-  val tableErrorOut: (String, TableErrorOut) = {
+  val tableErrorOutTableUpdateFailed: (String, TableErrorOut) = {
+    val json =
+      """
+        |{
+        |  "$type": "table_update_failed",
+        |  "id": 99999
+        |}""".stripMargin
+    val out =
+      TableErrorOut(
+        $type = OutType.TableUpdateFailed,
+        id = invalidTableId,
+      )
+    (json, out)
+  }
+
+  val tableErrorOutTableRemoveFailed: (String, TableErrorOut) = {
     val json =
       """
         |{
         |  "$type": "table_remove_failed",
-        |  "id": 3
+        |  "id": 99999
         |}""".stripMargin
     val out =
       TableErrorOut(
         $type = OutType.TableRemoveFailed,
-        id = TableId(3),
+        id = invalidTableId,
       )
     (json, out)
   }
@@ -275,6 +300,19 @@ trait TestData {
     val out =
       ErrorOut(
         $type = OutType.LoginFailed,
+      )
+    (json, out)
+  }
+
+  val errorOutTableAddFailed: (String, ErrorOut) = {
+    val json =
+      """
+        |{
+        |  "$type": "table_add_failed"
+        |}""".stripMargin
+    val out =
+      ErrorOut(
+        $type = OutType.TableAddFailed,
       )
     (json, out)
   }
