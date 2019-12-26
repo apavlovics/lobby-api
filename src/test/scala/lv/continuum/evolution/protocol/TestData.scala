@@ -266,15 +266,28 @@ trait TestData {
     (json, out)
   }
 
-  val errorOut: (String, ErrorOut) = {
+  val errorOutLoginFailed: (String, ErrorOut) = {
     val json =
       """
         |{
-        |  "$type": "unknown_error"
+        |  "$type": "login_failed"
         |}""".stripMargin
     val out =
       ErrorOut(
-        $type = OutType.UnknownError,
+        $type = OutType.LoginFailed,
+      )
+    (json, out)
+  }
+
+  val errorOutNotAuthenticated: (String, ErrorOut) = {
+    val json =
+      """
+        |{
+        |  "$type": "not_authenticated"
+        |}""".stripMargin
+    val out =
+      ErrorOut(
+        $type = OutType.NotAuthenticated,
       )
     (json, out)
   }

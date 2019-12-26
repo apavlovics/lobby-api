@@ -23,8 +23,16 @@ class SessionActorSpec
     val testKit: BehaviorTestKit[SessionCommand] =
       BehaviorTestKit(SessionActor(tableActorInbox.ref, pushActorInbox.ref))
 
-    protected def authenticate(username: Username, password: Password, out: Out): Unit =
+    protected def verifyLogin(username: Username, password: Password, out: Out): Unit =
       verifyReplyTo(LoginIn(username, password), out)
+
+    protected def verifyReportParsingErrors(): Unit = {
+      testKit.run(SessionCommand(
+        in = Left(ParsingFailure("Parsing failed", new Exception("BANG!"))),
+        replyTo = replyToInbox.ref,
+      ))
+      replyToInbox.expectMessage(Some(ErrorOut(OutType.InvalidMessage)))
+    }
 
     protected def verifyReplyTo(in: In, out: Out): Unit = {
       testKit.run(SessionCommand(
@@ -36,46 +44,46 @@ class SessionActorSpec
   }
 
   trait AuthenticatedAsUser extends NotAuthenticated {
-    authenticate(Username("user"), Password("user"), loginSuccessfulOutUser._2)
+    verifyLogin(Username("user"), Password("user"), loginSuccessfulOutUser._2)
+  }
+
+  trait AuthenticatedAsAdmin extends NotAuthenticated {
+    verifyLogin(Username("admin"), Password("admin"), loginSuccessfulOutAdmin._2)
   }
 
   "SessionActor" when {
     "not authenticated" should {
-      "authenticate a user upon valid credentials" in new NotAuthenticated {
-        authenticate(Username("user"), Password("user"), loginSuccessfulOutUser._2)
-      }
-      "authenticate an admin upon valid credentials" in new NotAuthenticated {
-        authenticate(Username("admin"), Password("admin"), loginSuccessfulOutAdmin._2)
-      }
       "decline authentication upon invalid credentials" in new NotAuthenticated {
-        authenticate(Username("invalid"), Password("invalid"), ErrorOut(OutType.LoginFailed))
+        verifyLogin(Username("invalid"), Password("invalid"), errorOutLoginFailed._2)
       }
       "not respond to pings" in new NotAuthenticated {
-        verifyReplyTo(pingIn._2, ErrorOut(OutType.NotAuthenticated))
+        verifyReplyTo(pingIn._2, errorOutNotAuthenticated._2)
       }
       "decline forwarding messages to TableActor when not authenticated" in new NotAuthenticated {
-        verifyReplyTo(SubscribeTablesIn, ErrorOut(OutType.NotAuthenticated))
+        verifyReplyTo(SubscribeTablesIn, errorOutNotAuthenticated._2)
         tableActorInbox.hasMessages shouldBe false
       }
       "report parsing errors" in new NotAuthenticated {
-        testKit.run(SessionCommand(
-          in = Left(ParsingFailure("Parsing failed", new Exception("BANG!"))),
-          replyTo = replyToInbox.ref,
-        ))
-        replyToInbox.expectMessage(Some(ErrorOut(OutType.InvalidMessage)))
+        verifyReportParsingErrors()
       }
     }
-    "authenticated as user" should {
+    "authenticated as User" should {
       "respond to pings" in new AuthenticatedAsUser {
         verifyReplyTo(pingIn._2, pongOut._2)
       }
       // TODO Complete implementation
+      "report parsing errors" in new AuthenticatedAsUser {
+        verifyReportParsingErrors()
+      }
     }
-    "authenticated as admin" should {
-      "respond to pings" in new AuthenticatedAsUser {
+    "authenticated as Admin" should {
+      "respond to pings" in new AuthenticatedAsAdmin {
         verifyReplyTo(pingIn._2, pongOut._2)
       }
       // TODO Complete implementation
+      "report parsing errors" in new AuthenticatedAsAdmin {
+        verifyReportParsingErrors()
+      }
     }
   }
 }

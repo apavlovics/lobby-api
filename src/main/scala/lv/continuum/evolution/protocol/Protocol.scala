@@ -97,7 +97,6 @@ object Protocol {
     case object NotAuthorized extends OutType
     case object NotAuthenticated extends OutType
     case object InvalidMessage extends OutType
-    case object UnknownError extends OutType
   }
 
   sealed trait UserType extends EnumEntry with Snakecase
