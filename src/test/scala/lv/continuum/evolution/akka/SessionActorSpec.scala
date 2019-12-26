@@ -61,6 +61,7 @@ class SessionActorSpec
   }
 
   "SessionActor" when {
+
     "not authenticated" should {
       "decline authentication upon invalid credentials" in new NotAuthenticated {
         verifyLogin(Username("invalid"), Password("invalid"), errorOutLoginFailed._2)
@@ -83,6 +84,7 @@ class SessionActorSpec
         verifyStop()
       }
     }
+
     "authenticated as User" should {
       "respond to pings" in new AuthenticatedAsUser {
         verifyReplyTo(pingIn._2, Some(pongOut._2))
@@ -102,6 +104,7 @@ class SessionActorSpec
         verifyStop()
       }
     }
+
     "authenticated as Admin" should {
       "respond to pings" in new AuthenticatedAsAdmin {
         verifyReplyTo(pingIn._2, Some(pongOut._2))

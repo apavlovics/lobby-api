@@ -16,7 +16,6 @@ class ProtocolFormatSpec
     with TestData {
 
   "ProtocolFormat" should {
-
     "provide correct decoders for In ADTs" in {
       List(
         loginIn,
@@ -28,7 +27,6 @@ class ProtocolFormatSpec
         removeTableIn,
       ).map(verifyDecodeIn)
     }
-
     "provide correct encoders for Out ADTs" in {
       List(
         loginSuccessfulOutUser,

@@ -12,7 +12,6 @@ class WebSocketServerSpec
   private val route = new WebSocketServer().route
 
   "WebSocketServer" should {
-
     "handle WebSocket connections" in {
       val wsProbe = WSProbe()
       WS("/lobby_api", wsProbe.flow) ~> route ~> check {
