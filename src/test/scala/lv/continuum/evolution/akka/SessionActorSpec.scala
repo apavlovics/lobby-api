@@ -5,7 +5,6 @@ import io.circe.ParsingFailure
 import lv.continuum.evolution.akka.SessionActor.SessionCommand
 import lv.continuum.evolution.akka.TableActor.TableCommand
 import lv.continuum.evolution.protocol.Protocol.In._
-import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.TestData
 import org.scalatest.matchers.should.Matchers
@@ -24,22 +23,22 @@ class SessionActorSpec
       BehaviorTestKit(SessionActor(tableActorInbox.ref, pushActorInbox.ref))
 
     protected def verifyLogin(username: Username, password: Password, out: Out): Unit =
-      verifyReplyTo(LoginIn(username, password), out)
+      verifyReplyTo(LoginIn(username, password), Some(out))
 
     protected def verifyReportParsingErrors(): Unit = {
       testKit.run(SessionCommand(
         in = Left(ParsingFailure("Parsing failed", new Exception("BANG!"))),
         replyTo = replyToInbox.ref,
       ))
-      replyToInbox.expectMessage(Some(ErrorOut(OutType.InvalidMessage)))
+      replyToInbox.expectMessage(Some(errorOutInvalidMessage._2))
     }
 
-    protected def verifyReplyTo(in: In, out: Out): Unit = {
+    protected def verifyReplyTo(in: In, out: Option[Out]): Unit = {
       testKit.run(SessionCommand(
         in = Right(in),
         replyTo = replyToInbox.ref,
       ))
-      replyToInbox.expectMessage(Some(out))
+      replyToInbox.expectMessage(out)
     }
   }
 
@@ -57,10 +56,10 @@ class SessionActorSpec
         verifyLogin(Username("invalid"), Password("invalid"), errorOutLoginFailed._2)
       }
       "not respond to pings" in new NotAuthenticated {
-        verifyReplyTo(pingIn._2, errorOutNotAuthenticated._2)
+        verifyReplyTo(pingIn._2, Some(errorOutNotAuthenticated._2))
       }
-      "decline forwarding messages to TableActor when not authenticated" in new NotAuthenticated {
-        verifyReplyTo(SubscribeTablesIn, errorOutNotAuthenticated._2)
+      "decline forwarding TableIn messages to TableActor" in new NotAuthenticated {
+        verifyReplyTo(subscribeTablesIn._2, Some(errorOutNotAuthenticated._2))
         tableActorInbox.hasMessages shouldBe false
       }
       "report parsing errors" in new NotAuthenticated {
@@ -69,18 +68,32 @@ class SessionActorSpec
     }
     "authenticated as User" should {
       "respond to pings" in new AuthenticatedAsUser {
-        verifyReplyTo(pingIn._2, pongOut._2)
+        verifyReplyTo(pingIn._2, Some(pongOut._2))
       }
-      // TODO Complete implementation
+      "forward TableIn messages to TableActor" in new AuthenticatedAsUser {
+        verifyReplyTo(subscribeTablesIn._2, None)
+        tableActorInbox.expectMessage(TableCommand(subscribeTablesIn._2, pushActorInbox.ref))
+      }
+      "decline forwarding AdminTableIn messages to TableActor" in new AuthenticatedAsUser {
+        verifyReplyTo(addTableIn._2, Some(errorOutNotAuthorized._2))
+        tableActorInbox.hasMessages shouldBe false
+      }
       "report parsing errors" in new AuthenticatedAsUser {
         verifyReportParsingErrors()
       }
     }
     "authenticated as Admin" should {
       "respond to pings" in new AuthenticatedAsAdmin {
-        verifyReplyTo(pingIn._2, pongOut._2)
+        verifyReplyTo(pingIn._2, Some(pongOut._2))
       }
-      // TODO Complete implementation
+      "forward TableIn messages to TableActor" in new AuthenticatedAsAdmin {
+        verifyReplyTo(subscribeTablesIn._2, None)
+        tableActorInbox.expectMessage(TableCommand(subscribeTablesIn._2, pushActorInbox.ref))
+      }
+      "forward AdminTableIn messages to TableActor" in new AuthenticatedAsAdmin {
+        verifyReplyTo(addTableIn._2, None)
+        tableActorInbox.expectMessage(TableCommand(addTableIn._2, pushActorInbox.ref))
+      }
       "report parsing errors" in new AuthenticatedAsAdmin {
         verifyReportParsingErrors()
       }

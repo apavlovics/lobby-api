@@ -40,7 +40,9 @@ class ProtocolFormatSpec
         tableRemovedOut,
         tableErrorOut,
         errorOutLoginFailed,
+        errorOutNotAuthorized,
         errorOutNotAuthenticated,
+        errorOutInvalidMessage,
       ).map(verifyEncodeOut)
     }
   }

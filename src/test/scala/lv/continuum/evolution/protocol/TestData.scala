@@ -279,6 +279,19 @@ trait TestData {
     (json, out)
   }
 
+  val errorOutNotAuthorized: (String, ErrorOut) = {
+    val json =
+      """
+        |{
+        |  "$type": "not_authorized"
+        |}""".stripMargin
+    val out =
+      ErrorOut(
+        $type = OutType.NotAuthorized,
+      )
+    (json, out)
+  }
+
   val errorOutNotAuthenticated: (String, ErrorOut) = {
     val json =
       """
@@ -288,6 +301,19 @@ trait TestData {
     val out =
       ErrorOut(
         $type = OutType.NotAuthenticated,
+      )
+    (json, out)
+  }
+
+  val errorOutInvalidMessage: (String, ErrorOut) = {
+    val json =
+      """
+        |{
+        |  "$type": "invalid_message"
+        |}""".stripMargin
+    val out =
+      ErrorOut(
+        $type = OutType.InvalidMessage,
       )
     (json, out)
   }
