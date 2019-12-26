@@ -1,6 +1,8 @@
 package lv.continuum.evolution.akka
 
+import akka.actor.testkit.typed.Effect.Watched
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox}
+import akka.actor.typed.Terminated
 import io.circe.ParsingFailure
 import lv.continuum.evolution.akka.SessionActor.SessionCommand
 import lv.continuum.evolution.akka.TableActor.TableCommand
@@ -22,6 +24,9 @@ class SessionActorSpec
     val testKit: BehaviorTestKit[SessionCommand] =
       BehaviorTestKit(SessionActor(tableActorInbox.ref, pushActorInbox.ref))
 
+    // Verify that PushActor is being watched
+    testKit.expectEffect(Watched(pushActorInbox.ref))
+
     protected def verifyLogin(username: Username, password: Password, out: Out): Unit =
       verifyReplyTo(LoginIn(username, password), Some(out))
 
@@ -39,6 +44,11 @@ class SessionActorSpec
         replyTo = replyToInbox.ref,
       ))
       replyToInbox.expectMessage(out)
+    }
+
+    protected def verifyStop(): Unit = {
+      testKit.signal(Terminated(pushActorInbox.ref))
+      testKit.isAlive shouldBe false
     }
   }
 
@@ -65,6 +75,9 @@ class SessionActorSpec
       "report parsing errors" in new NotAuthenticated {
         verifyReportParsingErrors()
       }
+      "stop when PushActor terminates" in new NotAuthenticated {
+        verifyStop()
+      }
     }
     "authenticated as User" should {
       "respond to pings" in new AuthenticatedAsUser {
@@ -81,6 +94,9 @@ class SessionActorSpec
       "report parsing errors" in new AuthenticatedAsUser {
         verifyReportParsingErrors()
       }
+      "stop when PushActor terminates" in new AuthenticatedAsUser {
+        verifyStop()
+      }
     }
     "authenticated as Admin" should {
       "respond to pings" in new AuthenticatedAsAdmin {
@@ -96,6 +112,9 @@ class SessionActorSpec
       }
       "report parsing errors" in new AuthenticatedAsAdmin {
         verifyReportParsingErrors()
+      }
+      "stop when PushActor terminates" in new AuthenticatedAsAdmin {
+        verifyStop()
       }
     }
   }
