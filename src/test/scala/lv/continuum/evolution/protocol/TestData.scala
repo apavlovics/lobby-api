@@ -9,7 +9,7 @@ trait TestData {
 
   // Common
 
-  val invalidTableId: TableId = TableId(99999)
+  val tableIdInvalid: TableId = TableId(99999)
   val tableJamesBond: Table = Table(
     id = TableId(1),
     name = TableName("table - James Bond"),
@@ -98,7 +98,7 @@ trait TestData {
   }
 
   val addTableInInvalid: AddTableIn =
-    addTableIn._2.copy(afterId = invalidTableId)
+    addTableIn._2.copy(afterId = tableIdInvalid)
 
   val updateTableIn: (String, UpdateTableIn) = {
     val json =
@@ -119,7 +119,7 @@ trait TestData {
   }
 
   val updateTableInInvalid: UpdateTableIn =
-    updateTableIn._2.copy(table = updateTableIn._2.table.copy(id = invalidTableId))
+    updateTableIn._2.copy(table = updateTableIn._2.table.copy(id = tableIdInvalid))
 
   val removeTableIn: (String, RemoveTableIn) = {
     val json =
@@ -136,7 +136,7 @@ trait TestData {
   }
 
   val removeTableInInvalid: RemoveTableIn =
-    removeTableIn._2.copy(id = invalidTableId)
+    removeTableIn._2.copy(id = tableIdInvalid)
 
   // Out
 
@@ -271,7 +271,7 @@ trait TestData {
     val out =
       TableErrorOut(
         $type = OutType.TableUpdateFailed,
-        id = invalidTableId,
+        id = tableIdInvalid,
       )
     (json, out)
   }
@@ -286,7 +286,7 @@ trait TestData {
     val out =
       TableErrorOut(
         $type = OutType.TableRemoveFailed,
-        id = invalidTableId,
+        id = tableIdInvalid,
       )
     (json, out)
   }
