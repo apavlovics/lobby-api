@@ -47,7 +47,7 @@ class ProtocolFormatSpec
     }
   }
 
-  private def verifyDecodeIn[A <: In](tuple: (String, A)): Assertion =
+  private def verifyDecodeIn(tuple: (String, In)): Assertion =
     decode[In](tuple._1).value shouldBe tuple._2
 
   private def verifyEncodeOut(tuple: (String, Out)): Assertion =
