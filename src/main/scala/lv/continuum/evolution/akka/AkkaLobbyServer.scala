@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
-class WebSocketServer(implicit
+class AkkaLobbyServer(implicit
   system: ActorSystem,
 ) extends LazyLogging {
 
@@ -45,17 +45,17 @@ class WebSocketServer(implicit
   }
 }
 
-object WebSocketServer extends App {
+object AkkaLobbyServer extends App {
 
   private def start(): Unit = {
 
-    implicit val system: ActorSystem = ActorSystem("web-socket-server")
+    implicit val system: ActorSystem = ActorSystem("akka-lobby-server")
 
     // Start server
-    val config = ConfigFactory.load().getConfig("web-socket-server")
+    val config = ConfigFactory.load().getConfig("akka-lobby-server")
     val address = config.getString("address")
     val port = config.getInt("port")
-    new WebSocketServer().start(address, port)
+    new AkkaLobbyServer().start(address, port)
 
     // Terminate server
     StdIn.readLine()

@@ -4,14 +4,14 @@ import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class WebSocketServerSpec
+class AkkaLobbyServerSpec
   extends AnyWordSpec
     with Matchers
     with ScalatestRouteTest {
 
-  private val route = new WebSocketServer().route
+  private val route = new AkkaLobbyServer().route
 
-  "WebSocketServer" should {
+  "AkkaLobbyServer" should {
     "handle WebSocket connections" in {
       val wsProbe = WSProbe()
       WS("/lobby_api", wsProbe.flow) ~> route ~> check {
