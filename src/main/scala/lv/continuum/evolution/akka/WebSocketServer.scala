@@ -7,7 +7,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.http.scaladsl._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.io.StdIn
@@ -45,9 +45,9 @@ class WebSocketServer(implicit
   }
 }
 
-object WebSocketServer {
+object WebSocketServer extends App {
 
-  def main(args: Array[String]): Unit = {
+  private def start(): Unit = {
 
     implicit val system: ActorSystem = ActorSystem("web-socket-server")
 
@@ -61,4 +61,6 @@ object WebSocketServer {
     StdIn.readLine()
     system.terminate()
   }
+
+  start()
 }
