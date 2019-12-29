@@ -22,7 +22,7 @@ class WebSocketServer(implicit
   // Create one TableActor per server
   private val tableActor = system.spawn(TableActor(), s"TableActor")
 
-  val route: Route =
+  private[akka] val route: Route =
     Route.seal {
       path("lobby_api") {
 
@@ -45,15 +45,14 @@ class WebSocketServer(implicit
   }
 }
 
-object WebSocketServer extends LazyLogging {
-
-  private val config: Config = ConfigFactory.load().getConfig("web-socket-server")
+object WebSocketServer {
 
   def main(args: Array[String]): Unit = {
 
     implicit val system: ActorSystem = ActorSystem("web-socket-server")
 
     // Start server
+    val config = ConfigFactory.load().getConfig("web-socket-server")
     val address = config.getString("address")
     val port = config.getInt("port")
     new WebSocketServer().start(address, port)
