@@ -9,6 +9,8 @@ val enumeratumVersion = "1.5.14"
 val scalaTestVersion = "3.1.0"
 val catsScalaTestVersion = "3.0.4"
 
+val http4sVersion = "0.21.0-M6"
+
 // Akka
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
@@ -40,6 +42,12 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % "1.7.29",
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
+)
+
+// Http4s
+libraryDependencies ++= Seq(
+  "org.http4s" %% "http4s-blaze-server" % http4sVersion,
+  "org.http4s" %% "http4s-dsl" % http4sVersion,
 )
 
 // Testing
