@@ -1,5 +1,11 @@
 scalaVersion := "2.13.1"
-scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xfatal-warnings")
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-feature",
+  "-language:higherKinds",
+  "-unchecked",
+  "-Xfatal-warnings",
+)
 
 val akkaVersion = "2.6.1"
 val akkaHttpVersion = "10.1.11"

@@ -9,7 +9,7 @@ object IOLobbyServer extends IOApp {
   override def run(args: List[String]): IO[ExitCode] =
     BlazeServerBuilder[IO]
       .bindHttp(9000, "0.0.0.0")
-      .withHttpApp(LobbyHttpApp.app)
+      .withHttpApp(LobbyHttpApp[IO].app)
       .serve
       .compile
       .drain
