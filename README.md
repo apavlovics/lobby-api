@@ -8,7 +8,7 @@ The application is tested to work with:
 
 * Java 11
 * Scala 2.13
-* sbt 1.3.0
+* sbt 1.3
 
 ## Configuration
 
