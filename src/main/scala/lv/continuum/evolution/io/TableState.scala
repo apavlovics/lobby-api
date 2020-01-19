@@ -4,6 +4,7 @@ import fs2.concurrent.Queue
 import lv.continuum.evolution.protocol.Protocol._
 import org.http4s.websocket.WebSocketFrame
 
+// TODO Split tables and subscribers into separate refs
 case class TableState[F[_]](
   tables: List[Table],
   subscribers: Set[Queue[F, WebSocketFrame]],
