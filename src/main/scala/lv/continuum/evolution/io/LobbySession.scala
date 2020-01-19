@@ -3,15 +3,18 @@ package lv.continuum.evolution.io
 import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.implicits._
+import fs2.concurrent.Queue
 import io.circe.Error
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
+import org.http4s.websocket.WebSocketFrame
 
 class LobbySession[F[_] : Monad](
-  tableState: Ref[F, TableState],
+  tableState: Ref[F, TableState[F]],
   sessionParams: Ref[F, SessionParams],
+  queue: Queue[F, WebSocketFrame],
 ) {
 
   def process(
@@ -34,9 +37,7 @@ class LobbySession[F[_] : Monad](
       case Right(_) =>
         F.pure(ErrorOut(OutType.NotAuthenticated).some)
 
-      // TODO Add logging framework
-      case Left(_) =>
-        F.pure(ErrorOut(OutType.InvalidMessage).some)
+      case Left(e) => error(e)
     }
   }
 
@@ -50,8 +51,17 @@ class LobbySession[F[_] : Monad](
     case Right(PingIn(seq)) =>
       F.pure(PongOut(seq = seq).some)
 
+    case Right(SubscribeTablesIn) => for {
+      tables <- tableState.modify(t => (t.copy(subscribers = t.subscribers + queue), t.tables))
+    } yield TableListOut(tables = tables).some
+
+    case Right(UnsubscribeTablesIn) =>
+      tableState.update(t => t.copy(subscribers = t.subscribers - queue)).as(None)
+
     // TODO Complete implementation
-    case _ => F.pure(None)
+    case Right(_) => F.pure(None)
+
+    case Left(e) => error(e)
   }
 
   private def login(
@@ -70,11 +80,16 @@ class LobbySession[F[_] : Monad](
       sessionParams.update(_.copy(userType = None))
         .as(ErrorOut(OutType.LoginFailed).some)
   }
+
+  // TODO Add logging framework
+  private def error(error: Error): F[Option[Out]] =
+    F.pure(ErrorOut(OutType.InvalidMessage).some)
 }
 
 object LobbySession {
   def apply[F[_] : Monad](
-    tableState: Ref[F, TableState],
+    tableState: Ref[F, TableState[F]],
     sessionParams: Ref[F, SessionParams],
-  ): LobbySession[F] = new LobbySession(tableState, sessionParams)
+    queue: Queue[F, WebSocketFrame],
+  ): LobbySession[F] = new LobbySession(tableState, sessionParams, queue)
 }

@@ -1,13 +1,18 @@
 package lv.continuum.evolution.io
 
+import fs2.concurrent.Queue
 import lv.continuum.evolution.protocol.Protocol._
+import org.http4s.websocket.WebSocketFrame
 
-case class TableState(tables: List[Table])
+case class TableState[F[_]](
+  tables: List[Table],
+  subscribers: Set[Queue[F, WebSocketFrame]],
+)
 
 object TableState {
 
   /** Initial `TableState` that holds some sample data. */
-  val initial: TableState = TableState(
+  def initial[F[_]]: TableState[F] = TableState(
     tables = List(
       Table(
         id = TableId(1),
@@ -20,5 +25,6 @@ object TableState {
         participants = 9,
       ),
     ),
+    subscribers = Set.empty,
   )
 }

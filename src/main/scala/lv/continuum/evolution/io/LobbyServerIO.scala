@@ -7,7 +7,7 @@ import org.http4s.server.blaze._
 object LobbyServerIO extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] = for {
-    tableState <- Ref.of[IO, TableState](TableState.initial)
+    tableState <- Ref.of[IO, TableState[IO]](TableState.initial)
     _ <- BlazeServerBuilder[IO]
 
       // TODO Load port and host from configuration
