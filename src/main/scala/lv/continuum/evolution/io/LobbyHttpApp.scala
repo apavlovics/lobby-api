@@ -1,6 +1,7 @@
 package lv.continuum.evolution.io
 
 import cats.effect.Concurrent
+import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.Pipe
 import fs2.concurrent.Queue
@@ -20,22 +21,25 @@ class LobbyHttpApp[F[_] : Concurrent](
 ) extends Http4sDsl[F]
   with ProtocolFormat {
 
-  private val pipe: Pipe[F, WebSocketFrame, WebSocketFrame] = { inputStream =>
+  private def pipe(
+    sessionParams: Ref[F, SessionParams],
+  ): Pipe[F, WebSocketFrame, WebSocketFrame] = { inputStream =>
     inputStream
       .collect { case Text(message, _) => decode[In](message) }
-      .evalMap(lobbyProcessor.process)
+      .evalMap(lobbyProcessor.process(_, sessionParams))
       .collect { case Some(out) => Text(out.asJson.noSpaces) }
   }
 
   val app: HttpApp[F] = HttpRoutes.of[F] {
     case GET -> Root / "lobby_api" =>
-      Queue
-        .unbounded[F, WebSocketFrame]
-        .flatMap { queue =>
-          val send = queue.dequeue.through(pipe)
-          val receive = queue.enqueue
-          WebSocketBuilder[F].build(send, receive)
-        }
+      for {
+        sessionParams <- Ref.of[F, SessionParams](SessionParams())
+        queue <- Queue.unbounded[F, WebSocketFrame]
+
+        send = queue.dequeue.through(pipe(sessionParams))
+        receive = queue.enqueue
+        response <- WebSocketBuilder[F].build(send, receive)
+      } yield response
   }.orNotFound
 }
 
