@@ -19,6 +19,7 @@ val scalaTestVersion = "3.1.0"
 val catsScalaTestVersion = "3.0.4"
 
 val http4sVersion = "0.21.0-M6"
+val pureConfigVersion = "0.12.2"
 
 // Akka
 libraryDependencies ++= Seq(
@@ -34,11 +35,6 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-generic" % circeVersion,
   "io.circe" %% "circe-generic-extras" % circeVersion,
   "io.circe" %% "circe-parser" % circeVersion,
-)
-
-// Configuration
-libraryDependencies ++= Seq(
-  "com.typesafe" % "config" % typesafeConfigVersion,
 )
 
 // Enumeratum
@@ -57,6 +53,12 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-blaze-server" % http4sVersion,
   "org.http4s" %% "http4s-dsl" % http4sVersion,
+)
+
+// PureConfig
+libraryDependencies ++= Seq(
+  "com.github.pureconfig" %% "pureconfig" % pureConfigVersion,
+  "com.github.pureconfig" %% "pureconfig-cats-effect" % pureConfigVersion,
 )
 
 // Testing

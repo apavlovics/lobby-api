@@ -9,6 +9,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
+import lv.continuum.evolution.config.LobbyServerConfig
 
 import scala.io.StdIn
 import scala.util.{Failure, Success}
@@ -33,8 +34,8 @@ class LobbyServerAkka(implicit
       }
     }
 
-  def start(address: String, port: Int): Unit = {
-    Http().bindAndHandle(route, address, port).onComplete {
+  def start(host: String, port: Int): Unit = {
+    Http().bindAndHandle(route, host, port).onComplete {
       case Success(serverBinding) =>
         val localAddress = serverBinding.localAddress
         logger.info(s"Server started at ${ localAddress.getHostName }:${ localAddress.getPort }, press enter to terminate")
@@ -52,10 +53,8 @@ object LobbyServerAkka extends App {
     implicit val system: ActorSystem = ActorSystem("akka-lobby-server")
 
     // Start server
-    val config = ConfigFactory.load().getConfig("akka-lobby-server")
-    val address = config.getString("address")
-    val port = config.getInt("port")
-    new LobbyServerAkka().start(address, port)
+    val lobbyServerConfig = LobbyServerConfig.loadOrThrow(ConfigFactory.load())
+    new LobbyServerAkka().start(lobbyServerConfig.host, lobbyServerConfig.port)
 
     // Terminate server
     StdIn.readLine()
