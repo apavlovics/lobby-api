@@ -17,7 +17,8 @@ import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.Text
 
 class LobbyHttpApp[F[_] : Concurrent](
-  tableState: Ref[F, TableState[F]],
+  tablesRef: Ref[F, Tables],
+  subscribersRef: Ref[F, Subscribers[F]],
 ) extends Http4sDsl[F]
   with ProtocolFormat {
 
@@ -33,9 +34,9 @@ class LobbyHttpApp[F[_] : Concurrent](
   val app: HttpApp[F] = HttpRoutes.of[F] {
     case GET -> Root / "lobby_api" =>
       for {
-        sessionParams <- Ref.of[F, SessionParams](SessionParams())
+        sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
         queue <- Queue.unbounded[F, WebSocketFrame]
-        lobbySession = LobbySession(tableState, sessionParams, queue)
+        lobbySession = LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
 
         send = queue.dequeue.through(pipe(lobbySession))
         receive = queue.enqueue
@@ -46,6 +47,7 @@ class LobbyHttpApp[F[_] : Concurrent](
 
 object LobbyHttpApp {
   def apply[F[_] : Concurrent](
-    tableState: Ref[F, TableState[F]],
-  ): LobbyHttpApp[F] = new LobbyHttpApp(tableState)
+    tablesRef: Ref[F, Tables],
+    subscribersRef: Ref[F, Subscribers[F]],
+  ): LobbyHttpApp[F] = new LobbyHttpApp(tablesRef, subscribersRef)
 }

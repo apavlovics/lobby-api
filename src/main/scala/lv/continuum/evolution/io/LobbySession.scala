@@ -12,15 +12,16 @@ import lv.continuum.evolution.protocol.Protocol._
 import org.http4s.websocket.WebSocketFrame
 
 class LobbySession[F[_] : Monad](
-  tableState: Ref[F, TableState[F]],
-  sessionParams: Ref[F, SessionParams],
+  tablesRef: Ref[F, Tables],
+  subscribersRef: Ref[F, Subscribers[F]],
+  sessionParamsRef: Ref[F, SessionParams],
   queue: Queue[F, WebSocketFrame],
 ) {
 
   def process(
     in: Either[Error, In],
   ): F[Option[Out]] = for {
-    sessionParams <- sessionParams.get
+    sessionParams <- sessionParamsRef.get
     out <- sessionParams.userType match {
       case None           => processUnauthenticated(in)
       case Some(userType) => processAuthenticated(in, userType)
@@ -52,11 +53,12 @@ class LobbySession[F[_] : Monad](
       F.pure(PongOut(seq = seq).some)
 
     case Right(SubscribeTablesIn) => for {
-      tables <- tableState.modify(t => (t.copy(subscribers = t.subscribers + queue), t.tables))
+      _ <- subscribersRef.update(_ + queue)
+      tables <- tablesRef.get
     } yield TableListOut(tables = tables).some
 
     case Right(UnsubscribeTablesIn) =>
-      tableState.update(t => t.copy(subscribers = t.subscribers - queue)).as(None)
+      subscribersRef.update(_ - queue).as(None)
 
     // TODO Complete implementation
     case Right(_) => F.pure(None)
@@ -69,15 +71,15 @@ class LobbySession[F[_] : Monad](
     password: Password,
   ): F[Option[Out]] = (username, password) match {
     case (Username("admin"), Password("admin")) =>
-      sessionParams.update(_.copy(userType = Admin.some))
+      sessionParamsRef.update(_.copy(userType = Admin.some))
         .as(LoginSuccessfulOut(userType = Admin).some)
 
     case (Username("user"), Password("user")) =>
-      sessionParams.update(_.copy(userType = User.some))
+      sessionParamsRef.update(_.copy(userType = User.some))
         .as(LoginSuccessfulOut(userType = User).some)
 
     case _ =>
-      sessionParams.update(_.copy(userType = None))
+      sessionParamsRef.update(_.copy(userType = None))
         .as(ErrorOut(OutType.LoginFailed).some)
   }
 
@@ -88,8 +90,9 @@ class LobbySession[F[_] : Monad](
 
 object LobbySession {
   def apply[F[_] : Monad](
-    tableState: Ref[F, TableState[F]],
-    sessionParams: Ref[F, SessionParams],
+    tablesRef: Ref[F, Tables],
+    subscribersRef: Ref[F, Subscribers[F]],
+    sessionParamsRef: Ref[F, SessionParams],
     queue: Queue[F, WebSocketFrame],
-  ): LobbySession[F] = new LobbySession(tableState, sessionParams, queue)
+  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
 }

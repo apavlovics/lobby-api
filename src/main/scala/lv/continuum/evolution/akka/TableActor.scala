@@ -5,6 +5,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol._
+import lv.continuum.evolution.protocol.SampleData._
 
 object TableActor {
 
@@ -28,18 +29,7 @@ object TableActor {
   def apply(): Behavior[TableCommand] = process(
     // Initial TableState that holds some sample data
     TableState(
-      tables = List(
-        Table(
-          id = TableId(1),
-          name = TableName("table - James Bond"),
-          participants = 7,
-        ),
-        Table(
-          id = TableId(2),
-          name = TableName("table - Mission Impossible"),
-          participants = 9,
-        ),
-      ),
+      tables = tables,
       subscribers = Set.empty,
     )
   )

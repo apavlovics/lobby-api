@@ -1,0 +1,10 @@
+package lv.continuum.evolution
+
+import fs2.concurrent.Queue
+import lv.continuum.evolution.protocol.Protocol.Table
+import org.http4s.websocket.WebSocketFrame
+
+package object io {
+  type Tables = List[Table]
+  type Subscribers[F[_]] = Set[Queue[F, WebSocketFrame]]
+}
