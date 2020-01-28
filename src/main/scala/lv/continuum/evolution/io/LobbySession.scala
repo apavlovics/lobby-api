@@ -12,12 +12,11 @@ import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
 import org.http4s.websocket.WebSocketFrame
 
-class LobbySession[F[_] : Monad](
+class LobbySession[F[_] : Monad : Logger](
   tablesRef: Ref[F, Tables],
   subscribersRef: Ref[F, Subscribers[F]],
   sessionParamsRef: Ref[F, SessionParams],
   queue: Queue[F, WebSocketFrame],
-  logger: Logger[F],
 ) {
 
   def process(
@@ -86,16 +85,15 @@ class LobbySession[F[_] : Monad](
   }
 
   private def error(error: Error): F[Option[Out]] =
-    logger.info(s"Issue while parsing JSON: ${ error.getMessage }") *>
+    Logger[F].info(s"Issue while parsing JSON: ${ error.getMessage }") *>
       Monad[F].pure(ErrorOut(OutType.InvalidMessage).some)
 }
 
 object LobbySession {
-  def apply[F[_] : Monad](
+  def apply[F[_] : Monad : Logger](
     tablesRef: Ref[F, Tables],
     subscribersRef: Ref[F, Subscribers[F]],
     sessionParamsRef: Ref[F, SessionParams],
     queue: Queue[F, WebSocketFrame],
-    logger: Logger[F],
-  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue, logger)
+  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
 }
