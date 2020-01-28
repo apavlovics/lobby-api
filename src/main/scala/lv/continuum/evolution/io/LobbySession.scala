@@ -4,6 +4,7 @@ import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.concurrent.Queue
+import io.chrisdavenport.log4cats.Logger
 import io.circe.Error
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
@@ -16,6 +17,7 @@ class LobbySession[F[_] : Monad](
   subscribersRef: Ref[F, Subscribers[F]],
   sessionParamsRef: Ref[F, SessionParams],
   queue: Queue[F, WebSocketFrame],
+  logger: Logger[F],
 ) {
 
   def process(
@@ -83,9 +85,9 @@ class LobbySession[F[_] : Monad](
         .as(ErrorOut(OutType.LoginFailed).some)
   }
 
-  // TODO Add logging framework
   private def error(error: Error): F[Option[Out]] =
-    F.pure(ErrorOut(OutType.InvalidMessage).some)
+    logger.info(s"Issue while parsing JSON: ${ error.getMessage }") *>
+      F.pure(ErrorOut(OutType.InvalidMessage).some)
 }
 
 object LobbySession {
@@ -94,5 +96,6 @@ object LobbySession {
     subscribersRef: Ref[F, Subscribers[F]],
     sessionParamsRef: Ref[F, SessionParams],
     queue: Queue[F, WebSocketFrame],
-  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
+    logger: Logger[F],
+  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue, logger)
 }

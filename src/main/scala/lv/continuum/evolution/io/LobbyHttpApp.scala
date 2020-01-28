@@ -5,6 +5,7 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.Pipe
 import fs2.concurrent.Queue
+import io.chrisdavenport.log4cats.Logger
 import io.circe.parser._
 import io.circe.syntax._
 import lv.continuum.evolution.protocol.Protocol._
@@ -19,6 +20,7 @@ import org.http4s.websocket.WebSocketFrame.Text
 class LobbyHttpApp[F[_] : Concurrent](
   tablesRef: Ref[F, Tables],
   subscribersRef: Ref[F, Subscribers[F]],
+  logger: Logger[F],
 ) extends Http4sDsl[F]
   with ProtocolFormat {
 
@@ -36,7 +38,7 @@ class LobbyHttpApp[F[_] : Concurrent](
       for {
         sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
         queue <- Queue.unbounded[F, WebSocketFrame]
-        lobbySession = LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
+        lobbySession = LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue, logger)
 
         send = queue.dequeue.through(pipe(lobbySession))
         receive = queue.enqueue
@@ -49,5 +51,6 @@ object LobbyHttpApp {
   def apply[F[_] : Concurrent](
     tablesRef: Ref[F, Tables],
     subscribersRef: Ref[F, Subscribers[F]],
-  ): LobbyHttpApp[F] = new LobbyHttpApp(tablesRef, subscribersRef)
+    logger: Logger[F],
+  ): LobbyHttpApp[F] = new LobbyHttpApp(tablesRef, subscribersRef, logger)
 }

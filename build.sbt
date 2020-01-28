@@ -13,12 +13,12 @@ scalacOptions ++= Seq(
 val akkaVersion = "2.6.1"
 val akkaHttpVersion = "10.1.11"
 val circeVersion = "0.12.1"
-val typesafeConfigVersion = "1.4.0"
 val enumeratumVersion = "1.5.14"
 val scalaTestVersion = "3.1.0"
 val catsScalaTestVersion = "3.0.4"
 
 val http4sVersion = "0.21.0-M6"
+val log4catsVersion = "1.0.1"
 val pureConfigVersion = "0.12.2"
 
 // Akka
@@ -53,6 +53,11 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-blaze-server" % http4sVersion,
   "org.http4s" %% "http4s-dsl" % http4sVersion,
+)
+
+// Logging
+libraryDependencies ++= Seq(
+  "io.chrisdavenport" %% "log4cats-slf4j" % log4catsVersion,
 )
 
 // PureConfig
