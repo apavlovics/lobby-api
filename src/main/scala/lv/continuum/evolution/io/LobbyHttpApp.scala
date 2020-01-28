@@ -5,9 +5,9 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.Pipe
 import fs2.concurrent.Queue
-import io.chrisdavenport.log4cats.Logger
 import io.circe.parser._
 import io.circe.syntax._
+import io.odin.Logger
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.ProtocolFormat
 import org.http4s.{HttpApp, HttpRoutes}

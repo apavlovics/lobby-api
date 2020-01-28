@@ -15,7 +15,7 @@ val http4sVersion = "0.21.0-M6"
 val slf4jVersion = "1.7.29"
 val logbackVersion = "1.2.3"
 val scalaLoggingVersion = "3.9.2"
-val log4catsVersion = "1.0.1"
+val odinVersion = "0.6.0"
 val pureConfigVersion = "0.12.2"
 val scalaTestVersion = "3.1.0"
 val catsScalaTestVersion = "3.0.4"
@@ -52,7 +52,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-api" % slf4jVersion,
   "ch.qos.logback" % "logback-classic" % logbackVersion,
   "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
-  "io.chrisdavenport" %% "log4cats-slf4j" % log4catsVersion,
+  "com.github.valskalla" %% "odin-core" % odinVersion,
 )
 
 // PureConfig

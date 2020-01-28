@@ -3,15 +3,17 @@ package lv.continuum.evolution.io
 import cats.effect.concurrent.Ref
 import cats.effect.{ExitCode, IO, IOApp}
 import com.typesafe.config.ConfigFactory
-import io.chrisdavenport.log4cats.Logger
-import io.chrisdavenport.log4cats.slf4j.Slf4jLogger
+import io.odin.consoleLogger
+import io.odin.Logger
+import io.odin.formatter.Formatter
 import lv.continuum.evolution.config.LobbyServerConfig
 import lv.continuum.evolution.protocol.SampleData._
 import org.http4s.server.blaze._
 
 object LobbyServerIO extends IOApp {
 
-  private implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]
+  // TODO Migrate SLF4J logging to Odin
+  private implicit val logger: Logger[IO] = consoleLogger(formatter = Formatter.colorful)
 
   override def run(args: List[String]): IO[ExitCode] = for {
     config <- IO(ConfigFactory.load())

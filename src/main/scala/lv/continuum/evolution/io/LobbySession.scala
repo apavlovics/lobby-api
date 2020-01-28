@@ -4,8 +4,8 @@ import cats.Monad
 import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.concurrent.Queue
-import io.chrisdavenport.log4cats.Logger
 import io.circe.Error
+import io.odin.Logger
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol.UserType._
