@@ -85,7 +85,7 @@ class LobbySession[F[_] : Monad : Logger](
   }
 
   private def error(error: Error): F[Option[Out]] =
-    Logger[F].info(s"Issue while parsing JSON: ${ error.getMessage }") *>
+    Logger[F].warn(s"Issue while parsing JSON: ${ error.getMessage }") *>
       Monad[F].pure(ErrorOut(OutType.InvalidMessage).some)
 }
 
