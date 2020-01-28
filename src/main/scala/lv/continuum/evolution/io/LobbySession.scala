@@ -38,7 +38,7 @@ class LobbySession[F[_] : Monad](
         login(username, password)
 
       case Right(_) =>
-        F.pure(ErrorOut(OutType.NotAuthenticated).some)
+        Monad[F].pure(ErrorOut(OutType.NotAuthenticated).some)
 
       case Left(e) => error(e)
     }
@@ -52,7 +52,7 @@ class LobbySession[F[_] : Monad](
       login(username, password)
 
     case Right(PingIn(seq)) =>
-      F.pure(PongOut(seq = seq).some)
+      Monad[F].pure(PongOut(seq = seq).some)
 
     case Right(SubscribeTablesIn) => for {
       _ <- subscribersRef.update(_ + queue)
@@ -63,7 +63,7 @@ class LobbySession[F[_] : Monad](
       subscribersRef.update(_ - queue).as(None)
 
     // TODO Complete implementation
-    case Right(_) => F.pure(None)
+    case Right(_) => Monad[F].pure(None)
 
     case Left(e) => error(e)
   }
@@ -87,7 +87,7 @@ class LobbySession[F[_] : Monad](
 
   private def error(error: Error): F[Option[Out]] =
     logger.info(s"Issue while parsing JSON: ${ error.getMessage }") *>
-      F.pure(ErrorOut(OutType.InvalidMessage).some)
+      Monad[F].pure(ErrorOut(OutType.InvalidMessage).some)
 }
 
 object LobbySession {

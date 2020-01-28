@@ -1,6 +1,3 @@
-// See https://github.com/augustjune/context-applied
-addCompilerPlugin("org.augustjune" %% "context-applied" % "0.1.2")
-
 scalaVersion := "2.13.1"
 scalacOptions ++= Seq(
   "-deprecation",
