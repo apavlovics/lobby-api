@@ -14,12 +14,14 @@ val akkaVersion = "2.6.1"
 val akkaHttpVersion = "10.1.11"
 val circeVersion = "0.12.1"
 val enumeratumVersion = "1.5.14"
-val scalaTestVersion = "3.1.0"
-val catsScalaTestVersion = "3.0.4"
-
 val http4sVersion = "0.21.0-M6"
+val slf4jVersion = "1.7.29"
+val logbackVersion = "1.2.3"
+val scalaLoggingVersion = "3.9.2"
 val log4catsVersion = "1.0.1"
 val pureConfigVersion = "0.12.2"
+val scalaTestVersion = "3.1.0"
+val catsScalaTestVersion = "3.0.4"
 
 // Akka
 libraryDependencies ++= Seq(
@@ -42,13 +44,6 @@ libraryDependencies ++= Seq(
   "com.beachape" %% "enumeratum" % enumeratumVersion,
 )
 
-// Logging
-libraryDependencies ++= Seq(
-  "org.slf4j" % "slf4j-api" % "1.7.29",
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2",
-)
-
 // Http4s
 libraryDependencies ++= Seq(
   "org.http4s" %% "http4s-blaze-server" % http4sVersion,
@@ -57,6 +52,9 @@ libraryDependencies ++= Seq(
 
 // Logging
 libraryDependencies ++= Seq(
+  "org.slf4j" % "slf4j-api" % slf4jVersion,
+  "ch.qos.logback" % "logback-classic" % logbackVersion,
+  "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
   "io.chrisdavenport" %% "log4cats-slf4j" % log4catsVersion,
 )
 
