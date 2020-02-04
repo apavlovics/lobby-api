@@ -201,7 +201,7 @@ trait TestData {
         |}""".stripMargin
     val out =
       TableListOut(
-        tables = List(
+        tables = Vector(
           tableJamesBond,
           tableMissionImpossible,
         ),

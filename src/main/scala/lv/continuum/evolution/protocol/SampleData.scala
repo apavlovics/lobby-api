@@ -4,7 +4,7 @@ import lv.continuum.evolution.protocol.Protocol._
 
 object SampleData {
 
-  val tables: List[Table] = List(
+  val tables: Vector[Table] = Vector(
     Table(
       id = TableId(1),
       name = TableName("table - James Bond"),

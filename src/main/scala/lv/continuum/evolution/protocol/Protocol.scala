@@ -128,7 +128,7 @@ object Protocol {
 
     case class TableListOut(
       $type: OutType = TableList,
-      tables: List[Table],
+      tables: Vector[Table],
     ) extends PushOut
 
     case class TableAddedOut(

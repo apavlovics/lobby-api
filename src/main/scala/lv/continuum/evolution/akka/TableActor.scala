@@ -12,13 +12,13 @@ object TableActor {
   case class TableCommand(in: TableIn, replyTo: ActorRef[PushOut])
 
   private case class TableState(
-    tables: List[Table],
+    tables: Vector[Table],
     subscribers: Set[ActorRef[PushOut]],
     nextId: TableId,
   )
   private object TableState {
     def apply(
-      tables: List[Table],
+      tables: Vector[Table],
       subscribers: Set[ActorRef[PushOut]],
     ): TableState = {
       val nextId = tables.map(_.id).maxByOption(_.value).map(_.inc).getOrElse(TableId.Initial)
@@ -66,10 +66,10 @@ object TableActor {
 
     val newTables = {
       if (in.afterId == TableId.Absent) {
-        tableToAdd :: state.tables
+        tableToAdd +: state.tables
       } else {
         state.tables.flatMap { t =>
-          if (t.id == in.afterId) List(t, tableToAdd) else List(t)
+          if (t.id == in.afterId) Vector(t, tableToAdd) else Vector(t)
         }
       }
     }
