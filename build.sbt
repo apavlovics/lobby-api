@@ -18,6 +18,7 @@ lazy val root = (project in file("."))
         "-language:higherKinds",
         "-unchecked",
         "-Xfatal-warnings",
+        "-Xlint:_",
       ),
     )),
   )
