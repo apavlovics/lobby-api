@@ -10,12 +10,12 @@ import io.circe.syntax._
 import io.odin.Logger
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.ProtocolFormat
-import org.http4s.{HttpApp, HttpRoutes}
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits._
 import org.http4s.server.websocket.WebSocketBuilder
 import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.Text
+import org.http4s.{HttpApp, HttpRoutes}
 
 class LobbyHttpApp[F[_] : Concurrent : Logger](
   tablesRef: Ref[F, Tables],

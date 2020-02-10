@@ -3,8 +3,7 @@ package lv.continuum.evolution.io
 import cats.effect.concurrent.Ref
 import cats.effect.{ExitCode, IO, IOApp}
 import com.typesafe.config.ConfigFactory
-import io.odin.consoleLogger
-import io.odin.Logger
+import io.odin.{Logger, consoleLogger}
 import io.odin.formatter.Formatter
 import lv.continuum.evolution.config.LobbyServerConfig
 import lv.continuum.evolution.protocol.SampleData._
