@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext
 /** @see [[https://github.com/valskalla/odin#slf4j-bridge Odin SLF4J Bridge]] */
 class StaticLoggerBinder extends OdinLoggerBinder[IO] {
 
-  private val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
+  private val ec = ExecutionContext.global
 
   implicit val timer: Timer[IO] = IO.timer(ec)
   implicit val cs: ContextShift[IO] = IO.contextShift(ec)

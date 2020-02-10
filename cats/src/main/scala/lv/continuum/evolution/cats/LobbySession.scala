@@ -1,4 +1,4 @@
-package lv.continuum.evolution.io
+package lv.continuum.evolution.cats
 
 import cats.Monad
 import cats.effect.concurrent.Ref

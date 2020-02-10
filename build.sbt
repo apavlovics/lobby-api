@@ -5,7 +5,7 @@ lazy val root = (project in file("."))
     config,
     protocol,
     akka,
-    io,
+    cats,
   )
   .settings(
     name := "evolution-gaming-lobby-api",
@@ -65,7 +65,7 @@ lazy val akka = (project in file("akka"))
     ),
   )
 
-lazy val io = (project in file("io"))
+lazy val cats = (project in file("cats"))
   .dependsOn(
     config,
     protocol,

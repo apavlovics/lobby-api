@@ -1,4 +1,4 @@
-package lv.continuum.evolution.io
+package lv.continuum.evolution.cats
 
 import lv.continuum.evolution.protocol.Protocol.UserType
 
