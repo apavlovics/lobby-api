@@ -21,47 +21,47 @@ class TableActorSpec
     subscribe(pushActorInboxSubscriber)
 
     protected def subscribe(pushActorInbox: TestInbox[PushOut]): Unit = {
-      testKit.run(TableCommand(subscribeTablesIn._2, pushActorInbox.ref))
-      pushActorInbox.receiveMessage() shouldBe a[TableListOut]
+      testKit.run(TableCommand(subscribeTables._2, pushActorInbox.ref))
+      pushActorInbox.receiveMessage() shouldBe a[TableList]
     }
 
     protected def unsubscribe(pushActorInbox: TestInbox[PushOut]): Unit = {
-      testKit.run(TableCommand(unsubscribeTablesIn._2, pushActorInbox.ref))
+      testKit.run(TableCommand(unsubscribeTables._2, pushActorInbox.ref))
       pushActorInbox.hasMessages shouldBe false
     }
   }
 
   "TableActor" should {
-    "handle AddTableIn, UpdateTableIn and RemoveTableIn commands and notify subscribers" in new Fixture {
-      testKit.run(TableCommand(addTableIn._2, pushActorInboxAdmin.ref))
-      pushActorInboxSubscriber.expectMessage(tableAddedOut._2)
+    "handle AddTable, UpdateTable and RemoveTable messages and notify subscribers" in new Fixture {
+      testKit.run(TableCommand(addTable._2, pushActorInboxAdmin.ref))
+      pushActorInboxSubscriber.expectMessage(tableAdded._2)
 
-      testKit.run(TableCommand(updateTableIn._2, pushActorInboxAdmin.ref))
-      pushActorInboxSubscriber.expectMessage(tableUpdatedOut._2)
+      testKit.run(TableCommand(updateTable._2, pushActorInboxAdmin.ref))
+      pushActorInboxSubscriber.expectMessage(tableUpdated._2)
 
-      testKit.run(TableCommand(removeTableIn._2, pushActorInboxAdmin.ref))
-      pushActorInboxSubscriber.expectMessage(tableRemovedOut._2)
+      testKit.run(TableCommand(removeTable._2, pushActorInboxAdmin.ref))
+      pushActorInboxSubscriber.expectMessage(tableRemoved._2)
 
       unsubscribe(pushActorInboxSubscriber)
 
-      testKit.run(TableCommand(addTableIn._2, pushActorInboxAdmin.ref))
+      testKit.run(TableCommand(addTable._2, pushActorInboxAdmin.ref))
       pushActorInboxSubscriber.hasMessages shouldBe false
       pushActorInboxAdmin.hasMessages shouldBe false
     }
-    "handle failure upon AddTableIn command" in new Fixture {
-      testKit.run(TableCommand(addTableInInvalid, pushActorInboxAdmin.ref))
+    "handle failure upon AddTable message" in new Fixture {
+      testKit.run(TableCommand(addTableInvalid, pushActorInboxAdmin.ref))
       pushActorInboxSubscriber.hasMessages shouldBe false
-      pushActorInboxAdmin.expectMessage(errorOutTableAddFailed._2)
+      pushActorInboxAdmin.expectMessage(tableAddFailed._2)
     }
-    "handle failure upon UpdateTableIn command" in new Fixture {
-      testKit.run(TableCommand(updateTableInInvalid, pushActorInboxAdmin.ref))
+    "handle failure upon UpdateTable message" in new Fixture {
+      testKit.run(TableCommand(updateTableInvalid, pushActorInboxAdmin.ref))
       pushActorInboxSubscriber.hasMessages shouldBe false
-      pushActorInboxAdmin.expectMessage(tableErrorOutTableUpdateFailed._2)
+      pushActorInboxAdmin.expectMessage(tableUpdateFailed._2)
     }
-    "handle failure upon RemoveTableIn command" in new Fixture {
-      testKit.run(TableCommand(removeTableInInvalid, pushActorInboxAdmin.ref))
+    "handle failure upon RemoveTable message" in new Fixture {
+      testKit.run(TableCommand(removeTableInvalid, pushActorInboxAdmin.ref))
       pushActorInboxSubscriber.hasMessages shouldBe false
-      pushActorInboxAdmin.expectMessage(tableErrorOutTableRemoveFailed._2)
+      pushActorInboxAdmin.expectMessage(tableRemoveFailed._2)
     }
   }
 }

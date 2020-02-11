@@ -33,11 +33,11 @@ class LobbySession[F[_] : Monad : Logger](
     in: Either[Error, In],
   ): F[Option[Out]] = {
     in match {
-      case Right(LoginIn(username, password)) =>
+      case Right(Login(username, password)) =>
         login(username, password)
 
       case Right(_) =>
-        Monad[F].pure(ErrorOut(OutType.NotAuthenticated).some)
+        Monad[F].pure(NotAuthenticated.some)
 
       case Left(e) => error(e)
     }
@@ -47,18 +47,18 @@ class LobbySession[F[_] : Monad : Logger](
     in: Either[Error, In],
     userType: UserType,
   ): F[Option[Out]] = in match {
-    case Right(LoginIn(username, password)) =>
+    case Right(Login(username, password)) =>
       login(username, password)
 
-    case Right(PingIn(seq)) =>
-      Monad[F].pure(PongOut(seq = seq).some)
+    case Right(Ping(seq)) =>
+      Monad[F].pure(Pong(seq = seq).some)
 
-    case Right(SubscribeTablesIn) => for {
+    case Right(SubscribeTables) => for {
       _ <- subscribersRef.update(_ + queue)
       tables <- tablesRef.get
-    } yield TableListOut(tables = tables).some
+    } yield TableList(tables = tables).some
 
-    case Right(UnsubscribeTablesIn) =>
+    case Right(UnsubscribeTables) =>
       subscribersRef.update(_ - queue).as(None)
 
     // TODO Complete implementation
@@ -73,20 +73,20 @@ class LobbySession[F[_] : Monad : Logger](
   ): F[Option[Out]] = (username, password) match {
     case (Username("admin"), Password("admin")) =>
       sessionParamsRef.update(_.copy(userType = Admin.some))
-        .as(LoginSuccessfulOut(userType = Admin).some)
+        .as(LoginSuccessful(userType = Admin).some)
 
     case (Username("user"), Password("user")) =>
       sessionParamsRef.update(_.copy(userType = User.some))
-        .as(LoginSuccessfulOut(userType = User).some)
+        .as(LoginSuccessful(userType = User).some)
 
     case _ =>
       sessionParamsRef.update(_.copy(userType = None))
-        .as(ErrorOut(OutType.LoginFailed).some)
+        .as(LoginFailed.some)
   }
 
   private def error(error: Error): F[Option[Out]] =
     Logger[F].warn(s"Issue while parsing JSON: ${ error.getMessage }") *>
-      Monad[F].pure(ErrorOut(OutType.InvalidMessage).some)
+      Monad[F].pure(InvalidMessage.some)
 }
 
 object LobbySession {

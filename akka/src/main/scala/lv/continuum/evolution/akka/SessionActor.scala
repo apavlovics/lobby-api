@@ -22,11 +22,11 @@ object SessionActor {
       Behaviors
         .receive[SessionCommand] { (context, command) =>
           command.in match {
-            case Right(LoginIn(username, password)) =>
+            case Right(Login(username, password)) =>
               login(username, password, command.replyTo)
 
             case Right(_) =>
-              command.replyTo ! Some(ErrorOut(OutType.NotAuthenticated))
+              command.replyTo ! Some(NotAuthenticated)
               Behaviors.same
 
             case Left(e) =>
@@ -39,15 +39,15 @@ object SessionActor {
       Behaviors
         .receive[SessionCommand] { (context, command) =>
           (userType, command.in) match {
-            case (_, Right(LoginIn(username, password))) =>
+            case (_, Right(Login(username, password))) =>
               login(username, password, command.replyTo)
 
-            case (_, Right(PingIn(seq))) =>
-              command.replyTo ! Some(PongOut(seq = seq))
+            case (_, Right(Ping(seq))) =>
+              command.replyTo ! Some(Pong(seq = seq))
               Behaviors.same
 
             case (User, Right(_: AdminTableIn)) =>
-              command.replyTo ! Some(ErrorOut(OutType.NotAuthorized))
+              command.replyTo ! Some(NotAuthorized)
               Behaviors.same
 
             case (_, Right(tableIn: TableIn)) =>
@@ -67,16 +67,16 @@ object SessionActor {
       replyTo: ActorRef[Option[Out]],
     ): Behavior[SessionCommand] = (username, password) match {
       case (Username("admin"), Password("admin")) =>
-        replyTo ! Some(LoginSuccessfulOut(userType = Admin))
+        replyTo ! Some(LoginSuccessful(userType = Admin))
         authenticated(Admin)
 
       case (Username("user"), Password("user")) =>
-        replyTo ! Some(LoginSuccessfulOut(userType = User))
+        replyTo ! Some(LoginSuccessful(userType = User))
         authenticated(User)
 
       case _ =>
-        replyTo ! Some(ErrorOut(OutType.LoginFailed))
-        tableActor ! TableCommand(UnsubscribeTablesIn, pushActor)
+        replyTo ! Some(LoginFailed)
+        tableActor ! TableCommand(UnsubscribeTables, pushActor)
         unauthenticated
     }
 
@@ -86,7 +86,7 @@ object SessionActor {
       replyTo: ActorRef[Option[Out]],
     ): Behavior[SessionCommand] = {
       context.log.warn(s"Issue while parsing JSON: ${ error.getMessage }")
-      replyTo ! Some(ErrorOut(OutType.InvalidMessage))
+      replyTo ! Some(InvalidMessage)
       Behaviors.same
     }
 

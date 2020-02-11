@@ -18,31 +18,31 @@ class ProtocolFormatSpec
   "ProtocolFormat" should {
     "provide correct decoders for In ADTs" in {
       List(
-        loginIn,
-        pingIn,
-        subscribeTablesIn,
-        unsubscribeTablesIn,
-        addTableIn,
-        updateTableIn,
-        removeTableIn,
+        login,
+        ping,
+        subscribeTables,
+        unsubscribeTables,
+        addTable,
+        updateTable,
+        removeTable,
       ).map(verifyDecodeIn)
     }
     "provide correct encoders for Out ADTs" in {
       List(
-        loginSuccessfulOutUser,
-        loginSuccessfulOutAdmin,
-        pongOut,
-        tableListOut,
-        tableAddedOut,
-        tableUpdatedOut,
-        tableRemovedOut,
-        tableErrorOutTableUpdateFailed,
-        tableErrorOutTableRemoveFailed,
-        errorOutLoginFailed,
-        errorOutTableAddFailed,
-        errorOutNotAuthorized,
-        errorOutNotAuthenticated,
-        errorOutInvalidMessage,
+        loginSuccessfulUser,
+        loginSuccessfulAdmin,
+        loginFailed,
+        pong,
+        tableList,
+        tableAdded,
+        tableUpdated,
+        tableRemoved,
+        tableAddFailed,
+        tableUpdateFailed,
+        tableRemoveFailed,
+        notAuthorized,
+        notAuthenticated,
+        invalidMessage,
       ).map(verifyEncodeOut)
     }
   }

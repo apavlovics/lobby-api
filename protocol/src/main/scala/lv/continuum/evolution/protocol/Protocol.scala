@@ -33,70 +33,36 @@ object Protocol {
     def toTable(id: TableId): Table = Table(id, name, participants)
   }
 
-  sealed trait InType extends EnumEntry with Snakecase
-  object InType extends Enum[InType] {
-
-    val values: IndexedSeq[InType] = findValues
-
-    case object Login extends InType
-    case object Ping extends InType
-    case object SubscribeTables extends InType
-    case object UnsubscribeTables extends InType
-    case object AddTable extends InType
-    case object UpdateTable extends InType
-    case object RemoveTable extends InType
-  }
-
   sealed trait In
   sealed trait TableIn extends In
   sealed trait AdminTableIn extends TableIn
   object In {
 
-    case class LoginIn(
+    case class Login(
       username: Username,
       password: Password,
     ) extends In
 
-    case class PingIn(
+    case class Ping(
       seq: Seq,
     ) extends In
 
-    case object SubscribeTablesIn extends TableIn
+    case object SubscribeTables extends TableIn
 
-    case object UnsubscribeTablesIn extends TableIn
+    case object UnsubscribeTables extends TableIn
 
-    case class AddTableIn(
+    case class AddTable(
       afterId: TableId,
       table: TableToAdd,
     ) extends AdminTableIn
 
-    case class UpdateTableIn(
+    case class UpdateTable(
       table: Table,
     ) extends AdminTableIn
 
-    case class RemoveTableIn(
+    case class RemoveTable(
       id: TableId,
     ) extends AdminTableIn
-  }
-
-  sealed trait OutType extends EnumEntry with Snakecase
-  object OutType extends Enum[OutType] {
-
-    val values: IndexedSeq[OutType] = findValues
-
-    case object LoginSuccessful extends OutType
-    case object LoginFailed extends OutType
-    case object Pong extends OutType
-    case object TableList extends OutType
-    case object TableAdded extends OutType
-    case object TableUpdated extends OutType
-    case object TableRemoved extends OutType
-    case object TableAddFailed extends OutType
-    case object TableUpdateFailed extends OutType
-    case object TableRemoveFailed extends OutType
-    case object NotAuthorized extends OutType
-    case object NotAuthenticated extends OutType
-    case object InvalidMessage extends OutType
   }
 
   sealed trait UserType extends EnumEntry with Snakecase
@@ -108,52 +74,51 @@ object Protocol {
     case object Admin extends UserType
   }
 
-  sealed trait Out {
-    def $type: OutType
-  }
+  sealed trait Out
   sealed trait PushOut extends Out
   object Out {
 
-    import OutType._
-
-    case class LoginSuccessfulOut(
-      $type: OutType = LoginSuccessful,
+    case class LoginSuccessful(
       userType: UserType,
     ) extends Out
 
-    case class PongOut(
-      $type: OutType = Pong,
+    case object LoginFailed extends Out
+
+    case class Pong(
       seq: Seq,
     ) extends Out
 
-    case class TableListOut(
-      $type: OutType = TableList,
+    case class TableList(
       tables: Vector[Table],
     ) extends PushOut
 
-    case class TableAddedOut(
-      $type: OutType = TableAdded,
+    case class TableAdded(
       afterId: TableId,
       table: Table,
     ) extends PushOut
 
-    case class TableUpdatedOut(
-      $type: OutType = TableUpdated,
+    case class TableUpdated(
       table: Table,
     ) extends PushOut
 
-    case class TableRemovedOut(
-      $type: OutType = TableRemoved,
+    case class TableRemoved(
       id: TableId,
     ) extends PushOut
 
-    case class TableErrorOut(
-      $type: OutType,
+    case object TableAddFailed extends PushOut
+
+    case class TableUpdateFailed(
       id: TableId,
     ) extends PushOut
 
-    case class ErrorOut(
-      $type: OutType,
+    case class TableRemoveFailed(
+      id: TableId,
     ) extends PushOut
+
+    case object NotAuthorized extends PushOut
+
+    case object NotAuthenticated extends PushOut
+
+    case object InvalidMessage extends PushOut
   }
 }

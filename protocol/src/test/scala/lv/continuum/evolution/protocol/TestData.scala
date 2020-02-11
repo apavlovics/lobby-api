@@ -28,7 +28,7 @@ trait TestData {
 
   // In
 
-  val loginIn: (String, LoginIn) = {
+  val login: (String, Login) = {
     val json =
       """|{
          |  "$type": "login",
@@ -36,14 +36,14 @@ trait TestData {
          |  "password": "pass"
          |}""".stripMargin
     val in =
-      LoginIn(
+      Login(
         username = Username("user"),
         password = Password("pass"),
       )
     (json, in)
   }
 
-  val pingIn: (String, PingIn) = {
+  val ping: (String, Ping) = {
     val json =
       """
         |{
@@ -51,31 +51,31 @@ trait TestData {
         |  "seq": 12345
         |}""".stripMargin
     val in =
-      PingIn(
+      Ping(
         seq = Seq(12345),
       )
     (json, in)
   }
 
-  val subscribeTablesIn: (String, SubscribeTablesIn.type) = {
+  val subscribeTables: (String, SubscribeTables.type) = {
     val json =
       """
         |{
         |  "$type": "subscribe_tables"
         |}""".stripMargin
-    (json, SubscribeTablesIn)
+    (json, SubscribeTables)
   }
 
-  val unsubscribeTablesIn: (String, UnsubscribeTablesIn.type) = {
+  val unsubscribeTables: (String, UnsubscribeTables.type) = {
     val json =
       """
         |{
         |  "$type": "unsubscribe_tables"
         |}""".stripMargin
-    (json, UnsubscribeTablesIn)
+    (json, UnsubscribeTables)
   }
 
-  val addTableIn: (String, AddTableIn) = {
+  val addTable: (String, AddTable) = {
     val json =
       """
         |{
@@ -87,7 +87,7 @@ trait TestData {
         |  }
         |}""".stripMargin
     val in =
-      AddTableIn(
+      AddTable(
         afterId = TableId.Absent,
         table = TableToAdd(
           name = TableName("table - Foo Fighters"),
@@ -97,10 +97,10 @@ trait TestData {
     (json, in)
   }
 
-  val addTableInInvalid: AddTableIn =
-    addTableIn._2.copy(afterId = tableIdInvalid)
+  val addTableInvalid: AddTable =
+    addTable._2.copy(afterId = tableIdInvalid)
 
-  val updateTableIn: (String, UpdateTableIn) = {
+  val updateTable: (String, UpdateTable) = {
     val json =
       """
         |{
@@ -112,16 +112,16 @@ trait TestData {
         |  }
         |}""".stripMargin
     val in =
-      UpdateTableIn(
+      UpdateTable(
         table = tableFooFighters,
       )
     (json, in)
   }
 
-  val updateTableInInvalid: UpdateTableIn =
-    updateTableIn._2.copy(table = updateTableIn._2.table.copy(id = tableIdInvalid))
+  val updateTableInvalid: UpdateTable =
+    updateTable._2.copy(table = updateTable._2.table.copy(id = tableIdInvalid))
 
-  val removeTableIn: (String, RemoveTableIn) = {
+  val removeTable: (String, RemoveTable) = {
     val json =
       """
         |{
@@ -129,18 +129,18 @@ trait TestData {
         |  "id": 3
         |}""".stripMargin
     val in =
-      RemoveTableIn(
+      RemoveTable(
         id = TableId(3),
       )
     (json, in)
   }
 
-  val removeTableInInvalid: RemoveTableIn =
-    removeTableIn._2.copy(id = tableIdInvalid)
+  val removeTableInvalid: RemoveTable =
+    removeTable._2.copy(id = tableIdInvalid)
 
   // Out
 
-  val loginSuccessfulOutUser: (String, LoginSuccessfulOut) = {
+  val loginSuccessfulUser: (String, LoginSuccessful) = {
     val json =
       """
         |{
@@ -148,13 +148,13 @@ trait TestData {
         |  "user_type": "user"
         |}""".stripMargin
     val out =
-      LoginSuccessfulOut(
+      LoginSuccessful(
         userType = User,
       )
     (json, out)
   }
 
-  val loginSuccessfulOutAdmin: (String, LoginSuccessfulOut) = {
+  val loginSuccessfulAdmin: (String, LoginSuccessful) = {
     val json =
       """
         |{
@@ -162,13 +162,22 @@ trait TestData {
         |  "user_type": "admin"
         |}""".stripMargin
     val out =
-      LoginSuccessfulOut(
+      LoginSuccessful(
         userType = Admin,
       )
     (json, out)
   }
 
-  val pongOut: (String, PongOut) = {
+  val loginFailed: (String, LoginFailed.type) = {
+    val json =
+      """
+        |{
+        |  "$type": "login_failed"
+        |}""".stripMargin
+    (json, LoginFailed)
+  }
+
+  val pong: (String, Pong) = {
     val json =
       """
         |{
@@ -176,13 +185,13 @@ trait TestData {
         |  "seq": 12345
         |}""".stripMargin
     val out =
-      PongOut(
+      Pong(
         seq = Seq(12345),
       )
     (json, out)
   }
 
-  val tableListOut: (String, TableListOut) = {
+  val tableList: (String, TableList) = {
     val json =
       """
         |{
@@ -200,7 +209,7 @@ trait TestData {
         |  ]
         |}""".stripMargin
     val out =
-      TableListOut(
+      TableList(
         tables = Vector(
           tableJamesBond,
           tableMissionImpossible,
@@ -209,7 +218,7 @@ trait TestData {
     (json, out)
   }
 
-  val tableAddedOut: (String, TableAddedOut) = {
+  val tableAdded: (String, TableAdded) = {
     val json =
       """
         |{
@@ -222,14 +231,14 @@ trait TestData {
         |  }
         |}""".stripMargin
     val out =
-      TableAddedOut(
+      TableAdded(
         afterId = TableId.Absent,
         table = tableFooFighters,
       )
     (json, out)
   }
 
-  val tableUpdatedOut: (String, TableUpdatedOut) = {
+  val tableUpdated: (String, TableUpdated) = {
     val json =
       """
         |{
@@ -241,13 +250,13 @@ trait TestData {
         |  }
         |}""".stripMargin
     val out =
-      TableUpdatedOut(
+      TableUpdated(
         table = tableFooFighters,
       )
     (json, out)
   }
 
-  val tableRemovedOut: (String, TableRemovedOut) = {
+  val tableRemoved: (String, TableRemoved) = {
     val json =
       """
         |{
@@ -255,13 +264,22 @@ trait TestData {
         |  "id": 3
         |}""".stripMargin
     val out =
-      TableRemovedOut(
+      TableRemoved(
         id = TableId(3),
       )
     (json, out)
   }
 
-  val tableErrorOutTableUpdateFailed: (String, TableErrorOut) = {
+  val tableAddFailed: (String, TableAddFailed.type) = {
+    val json =
+      """
+        |{
+        |  "$type": "table_add_failed"
+        |}""".stripMargin
+    (json, TableAddFailed)
+  }
+
+  val tableUpdateFailed: (String, TableUpdateFailed) = {
     val json =
       """
         |{
@@ -269,14 +287,13 @@ trait TestData {
         |  "id": 99999
         |}""".stripMargin
     val out =
-      TableErrorOut(
-        $type = OutType.TableUpdateFailed,
+      TableUpdateFailed(
         id = tableIdInvalid,
       )
     (json, out)
   }
 
-  val tableErrorOutTableRemoveFailed: (String, TableErrorOut) = {
+  val tableRemoveFailed: (String, TableRemoveFailed) = {
     val json =
       """
         |{
@@ -284,75 +301,36 @@ trait TestData {
         |  "id": 99999
         |}""".stripMargin
     val out =
-      TableErrorOut(
-        $type = OutType.TableRemoveFailed,
+      TableRemoveFailed(
         id = tableIdInvalid,
       )
     (json, out)
   }
 
-  val errorOutLoginFailed: (String, ErrorOut) = {
-    val json =
-      """
-        |{
-        |  "$type": "login_failed"
-        |}""".stripMargin
-    val out =
-      ErrorOut(
-        $type = OutType.LoginFailed,
-      )
-    (json, out)
-  }
-
-  val errorOutTableAddFailed: (String, ErrorOut) = {
-    val json =
-      """
-        |{
-        |  "$type": "table_add_failed"
-        |}""".stripMargin
-    val out =
-      ErrorOut(
-        $type = OutType.TableAddFailed,
-      )
-    (json, out)
-  }
-
-  val errorOutNotAuthorized: (String, ErrorOut) = {
+  val notAuthorized: (String, NotAuthorized.type) = {
     val json =
       """
         |{
         |  "$type": "not_authorized"
         |}""".stripMargin
-    val out =
-      ErrorOut(
-        $type = OutType.NotAuthorized,
-      )
-    (json, out)
+    (json, NotAuthorized)
   }
 
-  val errorOutNotAuthenticated: (String, ErrorOut) = {
+  val notAuthenticated: (String, NotAuthenticated.type) = {
     val json =
       """
         |{
         |  "$type": "not_authenticated"
         |}""".stripMargin
-    val out =
-      ErrorOut(
-        $type = OutType.NotAuthenticated,
-      )
-    (json, out)
+    (json, NotAuthenticated)
   }
 
-  val errorOutInvalidMessage: (String, ErrorOut) = {
+  val invalidMessage: (String, InvalidMessage.type) = {
     val json =
       """
         |{
         |  "$type": "invalid_message"
         |}""".stripMargin
-    val out =
-      ErrorOut(
-        $type = OutType.InvalidMessage,
-      )
-    (json, out)
+    (json, InvalidMessage)
   }
 }

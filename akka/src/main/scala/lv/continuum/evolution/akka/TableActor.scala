@@ -37,20 +37,20 @@ object TableActor {
   private def process(state: TableState): Behavior[TableCommand] = {
     Behaviors.receive { (_, command) =>
       command.in match {
-        case SubscribeTablesIn =>
-          command.replyTo ! TableListOut(tables = state.tables)
+        case SubscribeTables =>
+          command.replyTo ! TableList(tables = state.tables)
           process(state.copy(subscribers = state.subscribers + command.replyTo))
 
-        case UnsubscribeTablesIn =>
+        case UnsubscribeTables =>
           process(state.copy(subscribers = state.subscribers - command.replyTo))
 
-        case in: AddTableIn =>
+        case in: AddTable =>
           addTable(state, in, command.replyTo)
 
-        case in: UpdateTableIn =>
+        case in: UpdateTable =>
           updateTable(state, in, command.replyTo)
 
-        case in: RemoveTableIn =>
+        case in: RemoveTable =>
           removeTable(state, in, command.replyTo)
       }
     }
@@ -58,7 +58,7 @@ object TableActor {
 
   private def addTable(
     state: TableState,
-    in: AddTableIn,
+    in: AddTable,
     replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] = {
 
@@ -74,7 +74,7 @@ object TableActor {
       }
     }
     if (newTables.size != state.tables.size) {
-      val tableAddedOut = TableAddedOut(
+      val tableAddedOut = TableAdded(
         afterId = in.afterId,
         table = tableToAdd,
       )
@@ -84,16 +84,14 @@ object TableActor {
         tables = newTables,
       ))
     } else {
-      replyTo ! ErrorOut(
-        $type = OutType.TableAddFailed,
-      )
+      replyTo ! TableAddFailed
       Behaviors.same
     }
   }
 
   private def updateTable(
     state: TableState,
-    in: UpdateTableIn,
+    in: UpdateTable,
     replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] = {
     var updated = false
@@ -105,12 +103,11 @@ object TableActor {
       else table
     }
     if (updated) {
-      val tableUpdatedOut = TableUpdatedOut(table = in.table)
+      val tableUpdatedOut = TableUpdated(table = in.table)
       state.subscribers.foreach(_ ! tableUpdatedOut)
       process(state.copy(tables = newTables))
     } else {
-      replyTo ! TableErrorOut(
-        $type = OutType.TableUpdateFailed,
+      replyTo ! TableUpdateFailed(
         id = in.table.id,
       )
       Behaviors.same
@@ -119,17 +116,16 @@ object TableActor {
 
   private def removeTable(
     state: TableState,
-    in: RemoveTableIn,
+    in: RemoveTable,
     replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] = {
     val newTables = state.tables.filterNot(_.id == in.id)
     if (newTables.size != state.tables.size) {
-      val tableRemovedOut = TableRemovedOut(id = in.id)
+      val tableRemovedOut = TableRemoved(id = in.id)
       state.subscribers.foreach(_ ! tableRemovedOut)
       process(state.copy(tables = newTables))
     } else {
-      replyTo ! TableErrorOut(
-        $type = OutType.TableRemoveFailed,
+      replyTo ! TableRemoveFailed(
         id = in.id,
       )
       Behaviors.same

@@ -28,14 +28,14 @@ class SessionActorSpec
     testKit.expectEffect(Watched(pushActorInbox.ref))
 
     protected def verifyLogin(username: Username, password: Password, out: Out): Unit =
-      verifyReplyTo(LoginIn(username, password), Some(out))
+      verifyReplyTo(Login(username, password), Some(out))
 
     protected def verifyReportParsingErrors(): Unit = {
       testKit.run(SessionCommand(
         in = Left(ParsingFailure("Parsing failed", new Exception("BANG!"))),
         replyTo = replyToInbox.ref,
       ))
-      replyToInbox.expectMessage(Some(errorOutInvalidMessage._2))
+      replyToInbox.expectMessage(Some(invalidMessage._2))
     }
 
     protected def verifyReplyTo(in: In, out: Option[Out]): Unit = {
@@ -53,28 +53,28 @@ class SessionActorSpec
   }
 
   trait AuthenticatedAsUser extends NotAuthenticated {
-    verifyLogin(Username("user"), Password("user"), loginSuccessfulOutUser._2)
+    verifyLogin(Username("user"), Password("user"), loginSuccessfulUser._2)
   }
 
   trait AuthenticatedAsAdmin extends NotAuthenticated {
-    verifyLogin(Username("admin"), Password("admin"), loginSuccessfulOutAdmin._2)
+    verifyLogin(Username("admin"), Password("admin"), loginSuccessfulAdmin._2)
   }
 
   "SessionActor" when {
 
     "not authenticated" should {
       "decline authentication upon invalid credentials" in new NotAuthenticated {
-        verifyLogin(Username("invalid"), Password("invalid"), errorOutLoginFailed._2)
+        verifyLogin(Username("invalid"), Password("invalid"), loginFailed._2)
       }
       "not respond to pings" in new NotAuthenticated {
-        verifyReplyTo(pingIn._2, Some(errorOutNotAuthenticated._2))
+        verifyReplyTo(ping._2, Some(notAuthenticated._2))
       }
       "decline forwarding TableIn messages to TableActor" in new NotAuthenticated {
-        verifyReplyTo(subscribeTablesIn._2, Some(errorOutNotAuthenticated._2))
+        verifyReplyTo(subscribeTables._2, Some(notAuthenticated._2))
         tableActorInbox.hasMessages shouldBe false
       }
       "decline forwarding AdminTableIn messages to TableActor" in new NotAuthenticated {
-        verifyReplyTo(addTableIn._2, Some(errorOutNotAuthenticated._2))
+        verifyReplyTo(addTable._2, Some(notAuthenticated._2))
         tableActorInbox.hasMessages shouldBe false
       }
       "report parsing errors" in new NotAuthenticated {
@@ -87,14 +87,14 @@ class SessionActorSpec
 
     "authenticated as User" should {
       "respond to pings" in new AuthenticatedAsUser {
-        verifyReplyTo(pingIn._2, Some(pongOut._2))
+        verifyReplyTo(ping._2, Some(pong._2))
       }
       "forward TableIn messages to TableActor" in new AuthenticatedAsUser {
-        verifyReplyTo(subscribeTablesIn._2, None)
-        tableActorInbox.expectMessage(TableCommand(subscribeTablesIn._2, pushActorInbox.ref))
+        verifyReplyTo(subscribeTables._2, None)
+        tableActorInbox.expectMessage(TableCommand(subscribeTables._2, pushActorInbox.ref))
       }
       "decline forwarding AdminTableIn messages to TableActor" in new AuthenticatedAsUser {
-        verifyReplyTo(addTableIn._2, Some(errorOutNotAuthorized._2))
+        verifyReplyTo(addTable._2, Some(notAuthorized._2))
         tableActorInbox.hasMessages shouldBe false
       }
       "report parsing errors" in new AuthenticatedAsUser {
@@ -107,15 +107,15 @@ class SessionActorSpec
 
     "authenticated as Admin" should {
       "respond to pings" in new AuthenticatedAsAdmin {
-        verifyReplyTo(pingIn._2, Some(pongOut._2))
+        verifyReplyTo(ping._2, Some(pong._2))
       }
       "forward TableIn messages to TableActor" in new AuthenticatedAsAdmin {
-        verifyReplyTo(subscribeTablesIn._2, None)
-        tableActorInbox.expectMessage(TableCommand(subscribeTablesIn._2, pushActorInbox.ref))
+        verifyReplyTo(subscribeTables._2, None)
+        tableActorInbox.expectMessage(TableCommand(subscribeTables._2, pushActorInbox.ref))
       }
       "forward AdminTableIn messages to TableActor" in new AuthenticatedAsAdmin {
-        verifyReplyTo(addTableIn._2, None)
-        tableActorInbox.expectMessage(TableCommand(addTableIn._2, pushActorInbox.ref))
+        verifyReplyTo(addTable._2, None)
+        tableActorInbox.expectMessage(TableCommand(addTable._2, pushActorInbox.ref))
       }
       "report parsing errors" in new AuthenticatedAsAdmin {
         verifyReportParsingErrors()
