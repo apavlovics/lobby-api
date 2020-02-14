@@ -26,13 +26,13 @@ class LobbyHttpApp[F[_] : Concurrent : Logger : Parallel](
 
   private def pipe(
     lobbySession: LobbySession[F],
-    pushQueue: Queue[F, Out]
+    subscriber: Subscriber[F],
   ): Pipe[F, WebSocketFrame, WebSocketFrame] = { inputStream =>
     inputStream
       .collect { case Text(message, _) => decode[In](message) }
       .evalMap(lobbySession.process)
       .collect { case Some(out) => out }
-      .merge(pushQueue.dequeue)
+      .merge(subscriber.dequeue)
       .map(out => Text(out.asJson.noSpaces))
   }
 
@@ -41,10 +41,10 @@ class LobbyHttpApp[F[_] : Concurrent : Logger : Parallel](
       for {
         sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
         queue <- Queue.unbounded[F, WebSocketFrame]
-        pushQueue <- Queue.unbounded[F, Out]
-        lobbySession = LobbySession(tablesRef, subscribersRef, sessionParamsRef, pushQueue)
+        subscriber <- Queue.unbounded[F, PushOut]
+        lobbySession = LobbySession(tablesRef, subscribersRef, sessionParamsRef, subscriber)
 
-        send = queue.dequeue.through(pipe(lobbySession, pushQueue))
+        send = queue.dequeue.through(pipe(lobbySession, subscriber))
         receive = queue.enqueue
         response <- WebSocketBuilder[F].build(send, receive)
       } yield response

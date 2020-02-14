@@ -3,7 +3,6 @@ package lv.continuum.evolution.cats
 import cats.{Monad, Parallel}
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import fs2.concurrent.Queue
 import io.circe.Error
 import io.odin.Logger
 import lv.continuum.evolution.protocol.Protocol.In._
@@ -15,7 +14,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
   tablesRef: Ref[F, Tables],
   subscribersRef: Ref[F, Subscribers[F]],
   sessionParamsRef: Ref[F, SessionParams],
-  queue: Queue[F, Out],
+  subscriber: Subscriber[F],
 ) {
 
   def process(
@@ -53,12 +52,12 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
       Monad[F].pure(Pong(seq = seq).some)
 
     case Right(SubscribeTables) => for {
-      _ <- subscribersRef.update(_ + queue)
+      _ <- subscribersRef.update(_ + subscriber)
       tables <- tablesRef.get
     } yield TableList(tables = tables).some
 
     case Right(UnsubscribeTables) =>
-      subscribersRef.update(_ - queue).as(None)
+      subscribersRef.update(_ - subscriber).as(None)
 
     case Right(in: RemoveTable) => for {
       tableRemoved <- tablesRef.modify { tables =>
@@ -109,6 +108,6 @@ object LobbySession {
     tablesRef: Ref[F, Tables],
     subscribersRef: Ref[F, Subscribers[F]],
     sessionParamsRef: Ref[F, SessionParams],
-    queue: Queue[F, Out],
-  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
+    subscriber: Subscriber[F],
+  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, subscriber)
 }
