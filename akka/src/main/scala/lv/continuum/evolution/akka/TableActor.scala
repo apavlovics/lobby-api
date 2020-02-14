@@ -5,31 +5,20 @@ import akka.actor.typed.{ActorRef, Behavior}
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol._
-import lv.continuum.evolution.protocol.SampleData._
+import lv.continuum.evolution.model.Lobby
 
 object TableActor {
 
   case class TableCommand(in: TableIn, replyTo: ActorRef[PushOut])
 
   private case class TableState(
-    tables: Vector[Table],
+    lobby: Lobby,
     subscribers: Set[ActorRef[PushOut]],
-    nextId: TableId,
   )
-  private object TableState {
-    def apply(
-      tables: Vector[Table],
-      subscribers: Set[ActorRef[PushOut]],
-    ): TableState = {
-      val nextId = tables.map(_.id).maxByOption(_.value).map(_.inc).getOrElse(TableId.Initial)
-      TableState(tables, subscribers, nextId)
-    }
-  }
 
   def apply(): Behavior[TableCommand] = process(
-    // Initial TableState that holds some sample data
     TableState(
-      tables = tables,
+      lobby = Lobby(),
       subscribers = Set.empty,
     )
   )
@@ -38,7 +27,7 @@ object TableActor {
     Behaviors.receive { (_, command) =>
       command.in match {
         case SubscribeTables =>
-          command.replyTo ! TableList(tables = state.tables)
+          command.replyTo ! TableList(tables = state.lobby.tables)
           process(state.copy(subscribers = state.subscribers + command.replyTo))
 
         case UnsubscribeTables =>
@@ -60,75 +49,49 @@ object TableActor {
     state: TableState,
     in: AddTable,
     replyTo: ActorRef[PushOut],
-  ): Behavior[TableCommand] = {
-
-    def tableToAdd: Table = in.table.toTable(state.nextId)
-
-    val newTables = {
-      if (in.afterId == TableId.Absent) {
-        tableToAdd +: state.tables
-      } else {
-        state.tables.flatMap { t =>
-          if (t.id == in.afterId) Vector(t, tableToAdd) else Vector(t)
-        }
-      }
-    }
-    if (newTables.size != state.tables.size) {
-      val tableAdded = TableAdded(
-        afterId = in.afterId,
-        table = tableToAdd,
-      )
-      state.subscribers.foreach(_ ! tableAdded)
-      process(state.copy(
-        nextId = state.nextId.inc,
-        tables = newTables,
-      ))
-    } else {
+  ): Behavior[TableCommand] =
+    state.lobby.addTable(in.table, in.afterId).fold[Behavior[TableCommand]] {
       replyTo ! TableAddFailed
       Behaviors.same
+    } { case (lobby, table) =>
+      val tableAdded = TableAdded(
+        afterId = in.afterId,
+        table = table,
+      )
+      state.subscribers.foreach(_ ! tableAdded)
+      process(state.copy(lobby = lobby))
     }
-  }
 
   private def updateTable(
     state: TableState,
     in: UpdateTable,
     replyTo: ActorRef[PushOut],
-  ): Behavior[TableCommand] = {
-    var updated = false
-    val newTables = state.tables.map { table =>
-      if (table.id == in.table.id) {
-        updated = true
-        in.table
-      }
-      else table
-    }
-    if (updated) {
-      val tableUpdated = TableUpdated(table = in.table)
-      state.subscribers.foreach(_ ! tableUpdated)
-      process(state.copy(tables = newTables))
-    } else {
+  ): Behavior[TableCommand] =
+    state.lobby.updateTable(in.table).fold[Behavior[TableCommand]] {
       replyTo ! TableUpdateFailed(
         id = in.table.id,
       )
       Behaviors.same
+    } { lobby =>
+      val tableUpdated = TableUpdated(table = in.table)
+      state.subscribers.foreach(_ ! tableUpdated)
+      process(state.copy(lobby = lobby))
     }
-  }
 
   private def removeTable(
     state: TableState,
     in: RemoveTable,
     replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] = {
-    val newTables = state.tables.filterNot(_.id == in.id)
-    if (newTables.size != state.tables.size) {
-      val tableRemoved = TableRemoved(id = in.id)
-      state.subscribers.foreach(_ ! tableRemoved)
-      process(state.copy(tables = newTables))
-    } else {
+    state.lobby.removeTable(in.id).fold[Behavior[TableCommand]] {
       replyTo ! TableRemoveFailed(
         id = in.id,
       )
       Behaviors.same
+    } { lobby =>
+      val tableRemoved = TableRemoved(id = in.id)
+      state.subscribers.foreach(_ ! tableRemoved)
+      process(state.copy(lobby = lobby))
     }
   }
 }

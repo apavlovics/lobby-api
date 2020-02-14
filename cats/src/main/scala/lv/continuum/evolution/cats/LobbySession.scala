@@ -5,13 +5,14 @@ import cats.effect.concurrent.Ref
 import cats.implicits._
 import io.circe.Error
 import io.odin.Logger
+import lv.continuum.evolution.model.Lobby
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
 
 class LobbySession[F[_] : Logger : Monad : Parallel](
-  tablesRef: Ref[F, Tables],
+  lobbyRef: Ref[F, Lobby],
   subscribersRef: Ref[F, Subscribers[F]],
   sessionParamsRef: Ref[F, SessionParams],
   subscriber: Subscriber[F],
@@ -53,23 +54,15 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
 
     case Right(SubscribeTables) => for {
       _ <- subscribersRef.update(_ + subscriber)
-      tables <- tablesRef.get
-    } yield TableList(tables = tables).some
+      lobby <- lobbyRef.get
+    } yield TableList(tables = lobby.tables).some
 
     case Right(UnsubscribeTables) =>
       subscribersRef.update(_ - subscriber).as(None)
 
     case Right(in: UpdateTable) => for {
-      tableUpdated <- tablesRef.modify { tables =>
-        var tableUpdated = false
-        val newTables = tables.map { table =>
-          if (table.id == in.table.id) {
-            tableUpdated = true
-            in.table
-          }
-          else table
-        }
-        (newTables, tableUpdated)
+      tableUpdated <- lobbyRef.modify { lobby =>
+        lobby.updateTable(in.table).fold { (lobby, false) } { (_, true) }
       }
       out <- {
         if (tableUpdated) {
@@ -83,9 +76,8 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
     } yield out
 
     case Right(in: RemoveTable) => for {
-      tableRemoved <- tablesRef.modify { tables =>
-        val newTables = tables.filterNot(_.id == in.id)
-        (newTables, newTables.size != tables.size)
+      tableRemoved <- lobbyRef.modify { lobby =>
+        lobby.removeTable(in.id).fold { (lobby, false) } { (_, true) }
       }
       out <- {
         if (tableRemoved) {
@@ -128,9 +120,9 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
 
 object LobbySession {
   def apply[F[_] : Logger : Monad : Parallel](
-    tablesRef: Ref[F, Tables],
+    lobbyRef: Ref[F, Lobby],
     subscribersRef: Ref[F, Subscribers[F]],
     sessionParamsRef: Ref[F, SessionParams],
     subscriber: Subscriber[F],
-  ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, subscriber)
+  ): LobbySession[F] = new LobbySession(lobbyRef, subscribersRef, sessionParamsRef, subscriber)
 }
