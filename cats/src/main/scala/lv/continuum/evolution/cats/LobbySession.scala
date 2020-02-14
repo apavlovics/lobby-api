@@ -1,6 +1,6 @@
 package lv.continuum.evolution.cats
 
-import cats.Monad
+import cats.{Monad, Parallel}
 import cats.effect.concurrent.Ref
 import cats.implicits._
 import fs2.concurrent.Queue
@@ -10,13 +10,12 @@ import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
-import org.http4s.websocket.WebSocketFrame
 
-class LobbySession[F[_] : Monad : Logger](
+class LobbySession[F[_] : Logger : Monad : Parallel](
   tablesRef: Ref[F, Tables],
   subscribersRef: Ref[F, Subscribers[F]],
   sessionParamsRef: Ref[F, SessionParams],
-  queue: Queue[F, WebSocketFrame],
+  queue: Queue[F, Out],
 ) {
 
   def process(
@@ -61,6 +60,22 @@ class LobbySession[F[_] : Monad : Logger](
     case Right(UnsubscribeTables) =>
       subscribersRef.update(_ - queue).as(None)
 
+    case Right(in: RemoveTable) => for {
+      tableRemoved <- tablesRef.modify { tables =>
+        val newTables = tables.filterNot(_.id == in.id)
+        (newTables, newTables.size != tables.size)
+      }
+      out <- {
+        if (tableRemoved) {
+          val tableRemoved = TableRemoved(id = in.id)
+          for {
+            subscribers <- subscribersRef.get
+            _ <- subscribers.map(_.enqueue1(tableRemoved)).toVector.parSequence
+          } yield None
+        } else Monad[F].pure(TableRemoveFailed(in.id).some)
+      }
+    } yield out
+
     // TODO Complete implementation
     case Right(_) => Monad[F].pure(None)
 
@@ -90,10 +105,10 @@ class LobbySession[F[_] : Monad : Logger](
 }
 
 object LobbySession {
-  def apply[F[_] : Monad : Logger](
+  def apply[F[_] : Logger : Monad : Parallel](
     tablesRef: Ref[F, Tables],
     subscribersRef: Ref[F, Subscribers[F]],
     sessionParamsRef: Ref[F, SessionParams],
-    queue: Queue[F, WebSocketFrame],
+    queue: Queue[F, Out],
   ): LobbySession[F] = new LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
 }

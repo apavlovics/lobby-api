@@ -1,5 +1,6 @@
 package lv.continuum.evolution.cats
 
+import cats.Parallel
 import cats.effect.Concurrent
 import cats.effect.concurrent.Ref
 import cats.implicits._
@@ -17,7 +18,7 @@ import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.Text
 import org.http4s.{HttpApp, HttpRoutes}
 
-class LobbyHttpApp[F[_] : Concurrent : Logger](
+class LobbyHttpApp[F[_] : Concurrent : Logger : Parallel](
   tablesRef: Ref[F, Tables],
   subscribersRef: Ref[F, Subscribers[F]],
 ) extends Http4sDsl[F]
@@ -25,11 +26,14 @@ class LobbyHttpApp[F[_] : Concurrent : Logger](
 
   private def pipe(
     lobbySession: LobbySession[F],
+    pushQueue: Queue[F, Out]
   ): Pipe[F, WebSocketFrame, WebSocketFrame] = { inputStream =>
     inputStream
       .collect { case Text(message, _) => decode[In](message) }
       .evalMap(lobbySession.process)
-      .collect { case Some(out) => Text(out.asJson.noSpaces) }
+      .collect { case Some(out) => out }
+      .merge(pushQueue.dequeue)
+      .map(out => Text(out.asJson.noSpaces))
   }
 
   val app: HttpApp[F] = HttpRoutes.of[F] {
@@ -37,9 +41,10 @@ class LobbyHttpApp[F[_] : Concurrent : Logger](
       for {
         sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
         queue <- Queue.unbounded[F, WebSocketFrame]
-        lobbySession = LobbySession(tablesRef, subscribersRef, sessionParamsRef, queue)
+        pushQueue <- Queue.unbounded[F, Out]
+        lobbySession = LobbySession(tablesRef, subscribersRef, sessionParamsRef, pushQueue)
 
-        send = queue.dequeue.through(pipe(lobbySession))
+        send = queue.dequeue.through(pipe(lobbySession, pushQueue))
         receive = queue.enqueue
         response <- WebSocketBuilder[F].build(send, receive)
       } yield response
@@ -47,7 +52,7 @@ class LobbyHttpApp[F[_] : Concurrent : Logger](
 }
 
 object LobbyHttpApp {
-  def apply[F[_] : Concurrent : Logger](
+  def apply[F[_] : Concurrent : Logger : Parallel](
     tablesRef: Ref[F, Tables],
     subscribersRef: Ref[F, Subscribers[F]],
   ): LobbyHttpApp[F] = new LobbyHttpApp(tablesRef, subscribersRef)
