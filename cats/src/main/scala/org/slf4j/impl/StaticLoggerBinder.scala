@@ -17,7 +17,10 @@ class StaticLoggerBinder extends OdinLoggerBinder[IO] {
   implicit val F: ConcurrentEffect[IO] = IO.ioConcurrentEffect
 
   val loggers: PartialFunction[String, Logger[IO]] = {
-    case _ => consoleLogger[IO](formatter = Formatter.colorful)
+    case _ => consoleLogger[IO](
+      formatter = Formatter.colorful,
+      minLevel = Level.Info,
+    )
   }
 }
 
