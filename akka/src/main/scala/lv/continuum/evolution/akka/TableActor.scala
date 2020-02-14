@@ -74,11 +74,11 @@ object TableActor {
       }
     }
     if (newTables.size != state.tables.size) {
-      val tableAddedOut = TableAdded(
+      val tableAdded = TableAdded(
         afterId = in.afterId,
         table = tableToAdd,
       )
-      state.subscribers.foreach(_ ! tableAddedOut)
+      state.subscribers.foreach(_ ! tableAdded)
       process(state.copy(
         nextId = state.nextId.inc,
         tables = newTables,
@@ -103,8 +103,8 @@ object TableActor {
       else table
     }
     if (updated) {
-      val tableUpdatedOut = TableUpdated(table = in.table)
-      state.subscribers.foreach(_ ! tableUpdatedOut)
+      val tableUpdated = TableUpdated(table = in.table)
+      state.subscribers.foreach(_ ! tableUpdated)
       process(state.copy(tables = newTables))
     } else {
       replyTo ! TableUpdateFailed(
@@ -121,8 +121,8 @@ object TableActor {
   ): Behavior[TableCommand] = {
     val newTables = state.tables.filterNot(_.id == in.id)
     if (newTables.size != state.tables.size) {
-      val tableRemovedOut = TableRemoved(id = in.id)
-      state.subscribers.foreach(_ ! tableRemovedOut)
+      val tableRemoved = TableRemoved(id = in.id)
+      state.subscribers.foreach(_ ! tableRemoved)
       process(state.copy(tables = newTables))
     } else {
       replyTo ! TableRemoveFailed(
