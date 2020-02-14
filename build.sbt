@@ -2,8 +2,7 @@ import Dependencies._
 
 lazy val root = (project in file("."))
   .aggregate(
-    config,
-    protocol,
+    common,
     akka,
     cats,
   )
@@ -23,15 +22,7 @@ lazy val root = (project in file("."))
     )),
   )
 
-lazy val config = (project in file("config"))
-  .settings(
-    libraryDependencies ++= Seq(
-      PureConfig.Core,
-      PureConfig.CatsEffect,
-    ),
-  )
-
-lazy val protocol = (project in file("protocol"))
+lazy val common = (project in file("common"))
   .settings(
     libraryDependencies ++= Seq(
       Circe.Core,
@@ -39,6 +30,8 @@ lazy val protocol = (project in file("protocol"))
       Circe.GenericExtras,
       Circe.Parser,
       Enumeratum,
+      PureConfig.Core,
+      PureConfig.CatsEffect,
 
       CatsScalaTest % Test,
       ScalaTest % Test,
@@ -47,8 +40,7 @@ lazy val protocol = (project in file("protocol"))
 
 lazy val akka = (project in file("akka"))
   .dependsOn(
-    config,
-    protocol % "compile->compile;test->test",
+    common % "compile->compile;test->test",
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -68,8 +60,7 @@ lazy val akka = (project in file("akka"))
 
 lazy val cats = (project in file("cats"))
   .dependsOn(
-    config,
-    protocol,
+    common % "compile->compile;test->test",
   )
   .settings(
     libraryDependencies ++= Seq(

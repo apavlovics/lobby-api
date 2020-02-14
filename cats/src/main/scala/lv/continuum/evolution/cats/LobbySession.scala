@@ -59,6 +59,29 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
     case Right(UnsubscribeTables) =>
       subscribersRef.update(_ - subscriber).as(None)
 
+    case Right(in: UpdateTable) => for {
+      tableUpdated <- tablesRef.modify { tables =>
+        var tableUpdated = false
+        val newTables = tables.map { table =>
+          if (table.id == in.table.id) {
+            tableUpdated = true
+            in.table
+          }
+          else table
+        }
+        (newTables, tableUpdated)
+      }
+      out <- {
+        if (tableUpdated) {
+          val tableUpdated = TableUpdated(table = in.table)
+          for {
+            subscribers <- subscribersRef.get
+            _ <- subscribers.map(_.enqueue1(tableUpdated)).toVector.parSequence
+          } yield None
+        } else Monad[F].pure(TableUpdateFailed(in.table.id).some)
+      }
+    } yield out
+
     case Right(in: RemoveTable) => for {
       tableRemoved <- tablesRef.modify { tables =>
         val newTables = tables.filterNot(_.id == in.id)
