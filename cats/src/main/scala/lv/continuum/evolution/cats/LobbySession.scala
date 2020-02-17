@@ -71,8 +71,8 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
       out <- tableAdded.fold {
         Monad[F].pure(TableAddFailed.some)
       } { table =>
+        val tableAdded = TableAdded(afterId = in.afterId, table = table)
         for {
-          tableAdded <- Monad[F].pure(TableAdded(afterId = in.afterId, table = table))
           subscribers <- subscribersRef.get
           _ <- subscribers.map(_.enqueue1(tableAdded)).toVector.parSequence
         } yield None
@@ -84,8 +84,8 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
         lobby.updateTable(in.table).fold { (lobby, false) } { (_, true) }
       }
       out <- if (tableUpdated) {
+        val tableUpdated = TableUpdated(table = in.table)
         for {
-          tableUpdated <- Monad[F].pure(TableUpdated(table = in.table))
           subscribers <- subscribersRef.get
           _ <- subscribers.map(_.enqueue1(tableUpdated)).toVector.parSequence
         } yield None
@@ -97,8 +97,8 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
         lobby.removeTable(in.id).fold { (lobby, false) } { (_, true) }
       }
       out <- if (tableRemoved) {
+        val tableRemoved = TableRemoved(id = in.id)
         for {
-          tableRemoved <- Monad[F].pure(TableRemoved(id = in.id))
           subscribers <- subscribersRef.get
           _ <- subscribers.map(_.enqueue1(tableRemoved)).toVector.parSequence
         } yield None
