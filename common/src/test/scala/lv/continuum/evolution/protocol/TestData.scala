@@ -25,6 +25,10 @@ trait TestData {
     name = TableName("table - Foo Fighters"),
     participants = 4,
   )
+  val tableToAddFooFighters: TableToAdd = TableToAdd(
+    name = TableName("table - Foo Fighters"),
+    participants = 4,
+  )
 
   // In
 
@@ -89,10 +93,7 @@ trait TestData {
     val in =
       AddTable(
         afterId = TableId.Absent,
-        table = TableToAdd(
-          name = TableName("table - Foo Fighters"),
-          participants = 4,
-        ),
+        table = tableToAddFooFighters,
       )
     (json, in)
   }
