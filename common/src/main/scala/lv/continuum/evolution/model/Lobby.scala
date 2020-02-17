@@ -8,7 +8,7 @@ case class Lobby(
   nextTableId: TableId,
 ) {
 
-  def addTable(tableToAdd: TableToAdd, afterId: TableId): Option[(Lobby, Table)] = {
+  def addTable(afterId: TableId, tableToAdd: TableToAdd): Option[(Lobby, Table)] = {
     lazy val table: Table = tableToAdd.toTable(nextTableId)
     val newTables = {
       if (afterId == TableId.Absent) {

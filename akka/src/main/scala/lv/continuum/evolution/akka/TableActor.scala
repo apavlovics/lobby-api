@@ -50,7 +50,7 @@ object TableActor {
     in: AddTable,
     replyTo: ActorRef[PushOut],
   ): Behavior[TableCommand] =
-    state.lobby.addTable(in.table, in.afterId).fold[Behavior[TableCommand]] {
+    state.lobby.addTable(in.afterId, in.table).fold[Behavior[TableCommand]] {
       replyTo ! TableAddFailed
       Behaviors.same
     } { case (lobby, table) =>

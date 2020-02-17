@@ -60,38 +60,50 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
     case Right(UnsubscribeTables) =>
       subscribersRef.update(_ - subscriber).as(None)
 
+    case Right(in: AddTable) => for {
+      tableAdded <- lobbyRef.modify { lobby =>
+        lobby.addTable(in.afterId, in.table).fold {
+          (lobby, Option.empty[Table])
+        } { result =>
+          (result._1, result._2.some)
+        }
+      }
+      out <- tableAdded.fold {
+        Monad[F].pure(TableAddFailed.some)
+      } { table =>
+        for {
+          tableAdded <- Monad[F].pure(TableAdded(afterId = in.afterId, table = table))
+          subscribers <- subscribersRef.get
+          _ <- subscribers.map(_.enqueue1(tableAdded)).toVector.parSequence
+        } yield None
+      }
+    } yield out
+
     case Right(in: UpdateTable) => for {
       tableUpdated <- lobbyRef.modify { lobby =>
         lobby.updateTable(in.table).fold { (lobby, false) } { (_, true) }
       }
-      out <- {
-        if (tableUpdated) {
-          val tableUpdated = TableUpdated(table = in.table)
-          for {
-            subscribers <- subscribersRef.get
-            _ <- subscribers.map(_.enqueue1(tableUpdated)).toVector.parSequence
-          } yield None
-        } else Monad[F].pure(TableUpdateFailed(in.table.id).some)
-      }
+      out <- if (tableUpdated) {
+        for {
+          tableUpdated <- Monad[F].pure(TableUpdated(table = in.table))
+          subscribers <- subscribersRef.get
+          _ <- subscribers.map(_.enqueue1(tableUpdated)).toVector.parSequence
+        } yield None
+      } else Monad[F].pure(TableUpdateFailed(in.table.id).some)
     } yield out
 
     case Right(in: RemoveTable) => for {
       tableRemoved <- lobbyRef.modify { lobby =>
         lobby.removeTable(in.id).fold { (lobby, false) } { (_, true) }
       }
-      out <- {
-        if (tableRemoved) {
-          val tableRemoved = TableRemoved(id = in.id)
-          for {
-            subscribers <- subscribersRef.get
-            _ <- subscribers.map(_.enqueue1(tableRemoved)).toVector.parSequence
-          } yield None
-        } else Monad[F].pure(TableRemoveFailed(in.id).some)
-      }
+      out <- if (tableRemoved) {
+        for {
+          tableRemoved <- Monad[F].pure(TableRemoved(id = in.id))
+          subscribers <- subscribersRef.get
+          _ <- subscribers.map(_.enqueue1(tableRemoved)).toVector.parSequence
+        } yield None
+      } else Monad[F].pure(TableRemoveFailed(in.id).some)
     } yield out
-
-    // TODO Complete implementation
-    case Right(_) => Monad[F].pure(None)
 
     case Left(e) => error(e)
   }
