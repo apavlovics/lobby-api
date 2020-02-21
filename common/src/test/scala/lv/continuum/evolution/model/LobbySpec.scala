@@ -10,16 +10,16 @@ class LobbySpec
     with Matchers
     with TestData {
 
+  private val lobby = Lobby(tables = Vector(tableJamesBond, tableMissionImpossible))
+  private val lobbyEmpty = Lobby(tables = Vector.empty)
+
   "Lobby" should {
     "have correct nextTableId upon initialization" in {
-      val lobby1 = Lobby(tables = Vector.empty)
-      lobby1.nextTableId shouldBe TableId.Initial
-
-      val lobby2 = Lobby(tables = Vector(tableJamesBond, tableFooFighters))
-      lobby2.nextTableId shouldBe tableFooFighters.id.inc
+      lobby.nextTableId shouldBe tableMissionImpossible.id.inc
+      lobbyEmpty.nextTableId shouldBe TableId.Initial
     }
-    "allow adding a table in front" in {
-      val lobby = Lobby(tables = Vector(tableJamesBond, tableMissionImpossible))
+
+    "add a table in front" in {
       val result = lobby.addTable(TableId.Absent, tableToAddFooFighters)
       result should contain((
         Lobby(
@@ -32,8 +32,7 @@ class LobbySpec
         ), tableFooFighters
       ))
     }
-    "allow adding a table after another table" in {
-      val lobby = Lobby(tables = Vector(tableJamesBond, tableMissionImpossible))
+    "add a table after another table" in {
       val result = lobby.addTable(tableJamesBond.id, tableToAddFooFighters)
       result should contain((
         Lobby(
@@ -46,6 +45,36 @@ class LobbySpec
         ), tableFooFighters
       ))
     }
-    // TODO Complete implementation
+    "not add a table if afterId does not exist" in {
+      lobby.addTable(tableIdInvalid, tableToAddFooFighters) shouldBe None
+    }
+
+    "update a table" in {
+      val tableJamesBondUpdated = tableJamesBond.copy(name = TableName("table - 007"))
+      val result = lobby.updateTable(tableJamesBondUpdated)
+      result should contain(Lobby(
+        tables = Vector(
+          tableJamesBondUpdated,
+          tableMissionImpossible,
+        ),
+        nextTableId = lobby.nextTableId,
+      ))
+    }
+    "not update a table if table does not exist" in {
+      lobby.updateTable(tableFooFighters) shouldBe None
+    }
+
+    "remove a table" in {
+      val result = lobby.removeTable(tableMissionImpossible.id)
+      result should contain(Lobby(
+        tables = Vector(
+          tableJamesBond,
+        ),
+        nextTableId = lobby.nextTableId,
+      ))
+    }
+    "not remove a table if tableId does not exist" in {
+      lobby.removeTable(tableIdInvalid) shouldBe None
+    }
   }
 }
