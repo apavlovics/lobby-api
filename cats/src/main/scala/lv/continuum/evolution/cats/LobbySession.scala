@@ -24,7 +24,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
     sessionParams <- sessionParamsRef.get
     out <- sessionParams.userType match {
       case None           => processUnauthenticated(in)
-      case Some(userType) => processAuthenticated(in, userType)
+      case Some(userType) => processAuthenticated(userType, in)
     }
   } yield out
 
@@ -43,24 +43,27 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
   }
 
   private def processAuthenticated(
-    in: Either[Error, In],
     userType: UserType,
-  ): F[Option[Out]] = in match {
-    case Right(Login(username, password)) =>
+    in: Either[Error, In],
+  ): F[Option[Out]] = (userType, in) match {
+    case (_, Right(Login(username, password))) =>
       login(username, password)
 
-    case Right(Ping(seq)) =>
+    case (_, Right(Ping(seq))) =>
       Monad[F].pure(Pong(seq = seq).some)
 
-    case Right(SubscribeTables) => for {
+    case (_, Right(SubscribeTables)) => for {
       _ <- subscribersRef.update(_ + subscriber)
       lobby <- lobbyRef.get
     } yield TableList(tables = lobby.tables).some
 
-    case Right(UnsubscribeTables) =>
+    case (_, Right(UnsubscribeTables)) =>
       subscribersRef.update(_ - subscriber).as(None)
 
-    case Right(in: AddTable) => for {
+    case (User, Right(_: AdminTableIn)) =>
+      Monad[F].pure(NotAuthorized.some)
+
+    case (Admin, Right(in: AddTable)) => for {
       tableAdded <- lobbyRef.modify { lobby =>
         lobby.addTable(in.afterId, in.table).fold {
           (lobby, Option.empty[Table])
@@ -79,7 +82,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
       }
     } yield out
 
-    case Right(in: UpdateTable) => for {
+    case (Admin, Right(in: UpdateTable)) => for {
       tableUpdated <- lobbyRef.modify { lobby =>
         lobby.updateTable(in.table).fold { (lobby, false) } { (_, true) }
       }
@@ -92,7 +95,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
       } else Monad[F].pure(TableUpdateFailed(in.table.id).some)
     } yield out
 
-    case Right(in: RemoveTable) => for {
+    case (Admin, Right(in: RemoveTable)) => for {
       tableRemoved <- lobbyRef.modify { lobby =>
         lobby.removeTable(in.id).fold { (lobby, false) } { (_, true) }
       }
@@ -105,7 +108,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
       } else Monad[F].pure(TableRemoveFailed(in.id).some)
     } yield out
 
-    case Left(e) => error(e)
+    case (_, Left(e)) => error(e)
   }
 
   private def login(
