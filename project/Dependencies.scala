@@ -4,6 +4,7 @@ object Dependencies {
 
   private val akkaVersion = "2.6.1"
   private val akkaHttpVersion = "10.1.11"
+  private val catsVersion = "2.1.1"
   private val catsScalaTestVersion = "3.0.4"
   private val circeVersion = "0.13.0"
   private val enumeratumVersion = "1.5.14"
@@ -23,6 +24,10 @@ object Dependencies {
 
     val StreamTyped = "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion
     val StreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion
+  }
+
+  object Cats {
+    val Laws = "org.typelevel" %% "cats-effect-laws" % catsVersion
   }
 
   val CatsScalaTest = "com.ironcorelabs" %% "cats-scalatest" % catsScalaTestVersion
