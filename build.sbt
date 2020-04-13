@@ -49,7 +49,6 @@ lazy val akka = (project in file("akka"))
       Akka.StreamTyped,
       Logback,
       ScalaLogging,
-      Slf4j,
 
       Akka.ActorTestkitTyped % Test,
       Akka.HttpTestkit % Test,

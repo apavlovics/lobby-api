@@ -5,15 +5,14 @@ object Dependencies {
   private val akkaVersion = "2.6.1"
   private val akkaHttpVersion = "10.1.11"
   private val catsScalaTestVersion = "3.0.4"
-  private val circeVersion = "0.12.1"
+  private val circeVersion = "0.13.0"
   private val enumeratumVersion = "1.5.14"
-  private val http4sVersion = "0.21.0-M6"
+  private val http4sVersion = "0.21.3"
   private val logbackVersion = "1.2.3"
   private val odinVersion = "0.6.0"
-  private val pureConfigVersion = "0.12.2"
+  private val pureConfigVersion = "0.12.3"
   private val scalaLoggingVersion = "3.9.2"
   private val scalaTestVersion = "3.1.0"
-  private val slf4jVersion = "1.7.29"
 
   object Akka {
     val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
@@ -56,5 +55,4 @@ object Dependencies {
 
   val ScalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion
   val ScalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
-  val Slf4j = "org.slf4j" % "slf4j-api" % slf4jVersion
 }
