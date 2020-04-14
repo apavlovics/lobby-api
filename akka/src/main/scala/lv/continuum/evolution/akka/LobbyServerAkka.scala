@@ -5,10 +5,11 @@ import java.util.UUID
 import akka.actor._
 import akka.actor.typed.scaladsl.adapter._
 import akka.http.scaladsl._
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.{Authenticator => _, _}
 import akka.http.scaladsl.server.Route
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
+import lv.continuum.evolution.auth.{Authenticator, SimpleAuthenticator}
 import lv.continuum.evolution.config.LobbyServerConfig
 
 import scala.io.StdIn
@@ -20,8 +21,9 @@ class LobbyServerAkka(implicit
 
   import system.dispatcher
 
-  // Create one TableActor per server
+  // Create one TableActor and Authenticator per server
   private val tableActor = system.spawn(TableActor(), s"TableActor")
+  private val authenticator: Authenticator = new SimpleAuthenticator
 
   private[akka] val route: Route =
     Route.seal {
@@ -29,7 +31,7 @@ class LobbyServerAkka(implicit
 
         // Initialize actors, sources and flows per WebSocket connection
         val (pushActor, pushSource) = PushSource()
-        val sessionActor = system.spawn(SessionActor(tableActor, pushActor), s"SessionActor-${ UUID.randomUUID() }")
+        val sessionActor = system.spawn(SessionActor(authenticator, tableActor, pushActor), s"SessionActor-${ UUID.randomUUID() }")
         handleWebSocketMessages(LobbyFlow(pushSource, sessionActor))
       }
     }

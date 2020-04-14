@@ -53,6 +53,7 @@ lazy val akka = (project in file("akka"))
       Akka.ActorTestkitTyped % Test,
       Akka.HttpTestkit % Test,
       Akka.StreamTestkit % Test,
+      ScalaMock % Test,
       ScalaTest % Test,
     ),
   )

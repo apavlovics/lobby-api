@@ -13,6 +13,7 @@ object Dependencies {
   private val odinVersion = "0.6.0"
   private val pureConfigVersion = "0.12.3"
   private val scalaLoggingVersion = "3.9.2"
+  private val scalaMockVersion = "4.4.0"
   private val scalaTestVersion = "3.1.0"
 
   object Akka {
@@ -59,5 +60,6 @@ object Dependencies {
   }
 
   val ScalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion
+  val ScalaMock = "org.scalamock" %% "scalamock" % scalaMockVersion
   val ScalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
 }

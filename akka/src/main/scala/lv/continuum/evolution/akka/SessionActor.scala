@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior, Terminated}
 import io.circe.Error
 import lv.continuum.evolution.akka.TableActor.TableCommand
+import lv.continuum.evolution.auth.Authenticator
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol.UserType._
@@ -14,6 +15,7 @@ object SessionActor {
   case class SessionCommand(in: Either[Error, In], replyTo: ActorRef[Option[Out]])
 
   def apply(
+    authenticator: Authenticator,
     tableActor: ActorRef[TableCommand],
     pushActor: ActorRef[PushOut],
   ): Behavior[SessionCommand] = {
@@ -65,20 +67,17 @@ object SessionActor {
       username: Username,
       password: Password,
       replyTo: ActorRef[Option[Out]],
-    ): Behavior[SessionCommand] = (username, password) match {
-      case (Username("admin"), Password("admin")) =>
-        replyTo ! Some(LoginSuccessful(userType = Admin))
-        authenticated(Admin)
+    ): Behavior[SessionCommand] =
+      authenticator.authenticate(username, password) match {
+        case Some(userType) =>
+          replyTo ! Some(LoginSuccessful(userType))
+          authenticated(userType)
 
-      case (Username("user"), Password("user")) =>
-        replyTo ! Some(LoginSuccessful(userType = User))
-        authenticated(User)
-
-      case _ =>
-        replyTo ! Some(LoginFailed)
-        tableActor ! TableCommand(UnsubscribeTables, pushActor)
-        unauthenticated
-    }
+        case None =>
+          replyTo ! Some(LoginFailed)
+          tableActor ! TableCommand(UnsubscribeTables, pushActor)
+          unauthenticated
+      }
 
     def error(
       context: ActorContext[SessionCommand],

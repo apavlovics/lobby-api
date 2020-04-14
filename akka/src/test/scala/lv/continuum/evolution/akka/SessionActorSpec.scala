@@ -6,23 +6,28 @@ import akka.actor.typed.Terminated
 import io.circe.ParsingFailure
 import lv.continuum.evolution.akka.SessionActor.SessionCommand
 import lv.continuum.evolution.akka.TableActor.TableCommand
+import lv.continuum.evolution.auth.Authenticator
 import lv.continuum.evolution.protocol.Protocol.In._
+import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.TestData
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class SessionActorSpec
   extends AnyWordSpec
     with Matchers
+    with MockFactory
     with TestData {
 
-  trait NotAuthenticated {
+  trait Fixture {
+    val authenticator: Authenticator = mock[Authenticator]
     val tableActorInbox: TestInbox[TableCommand] = TestInbox()
     val pushActorInbox: TestInbox[PushOut] = TestInbox()
     val replyToInbox: TestInbox[Option[Out]] = TestInbox()
     val testKit: BehaviorTestKit[SessionCommand] =
-      BehaviorTestKit(SessionActor(tableActorInbox.ref, pushActorInbox.ref))
+      BehaviorTestKit(SessionActor(authenticator, tableActorInbox.ref, pushActorInbox.ref))
 
     // Verify that PushActor is being watched
     testKit.expectEffect(Watched(pushActorInbox.ref))
@@ -52,19 +57,25 @@ class SessionActorSpec
     }
   }
 
-  trait AuthenticatedAsUser extends NotAuthenticated {
-    verifyLogin(Username("user"), Password("user"), loginSuccessfulUser._2)
+  trait NotAuthenticated extends Fixture {
+    (authenticator.authenticate _).expects(*, *).returning(None).noMoreThanOnce()
   }
 
-  trait AuthenticatedAsAdmin extends NotAuthenticated {
-    verifyLogin(Username("admin"), Password("admin"), loginSuccessfulAdmin._2)
+  trait AuthenticatedAsUser extends Fixture {
+    (authenticator.authenticate _).expects(*, *).returning(Some(User)).once()
+    verifyLogin(Username("test"), Password("test"), loginSuccessfulUser._2)
+  }
+
+  trait AuthenticatedAsAdmin extends Fixture {
+    (authenticator.authenticate _).expects(*, *).returning(Some(Admin)).once()
+    verifyLogin(Username("test"), Password("test"), loginSuccessfulAdmin._2)
   }
 
   "SessionActor" when {
 
     "not authenticated" should {
       "decline authentication upon invalid credentials" in new NotAuthenticated {
-        verifyLogin(Username("invalid"), Password("invalid"), loginFailed._2)
+        verifyLogin(Username("test"), Password("test"), loginFailed._2)
       }
       "not respond to pings" in new NotAuthenticated {
         verifyReplyTo(ping._2, Some(notAuthenticated._2))
