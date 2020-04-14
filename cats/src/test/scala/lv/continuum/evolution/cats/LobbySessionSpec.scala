@@ -4,8 +4,7 @@ import cats.effect.concurrent.Ref
 import cats.effect.IO
 import cats.implicits._
 import fs2.concurrent.Queue
-import io.odin.formatter.Formatter
-import io.odin.{Logger, consoleLogger}
+import lv.continuum.evolution.auth.{Authenticator => CommonAuthenticator}
 import lv.continuum.evolution.model.Lobby
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol._
@@ -23,13 +22,14 @@ class LobbySessionSpec
 
   private implicit val limit: Duration = 30.seconds
 
-  private implicit val logger: Logger[IO] = consoleLogger[IO](formatter = Formatter.colorful)
   private val lobbySessionIO: IO[LobbySession[IO]] = for {
     lobbyRef <- Ref.of[IO, Lobby](Lobby())
     subscribersRef <- Ref.of[IO, Subscribers[IO]](Set.empty)
     sessionParamsRef <- Ref.of[IO, SessionParams](SessionParams())
     subscriber <- Queue.unbounded[IO, PushOut]
     lobbySession = LobbySession[IO](
+      // TODO Replace with mock implementation
+      authenticator = Authenticator[IO](new CommonAuthenticator),
       lobbyRef = lobbyRef,
       subscribersRef = subscribersRef,
       sessionParamsRef = sessionParamsRef,
@@ -43,8 +43,7 @@ class LobbySessionSpec
       "decline authentication upon invalid credentials" in run {
         for {
           lobbySession <- lobbySessionIO
-          // TODO Make common authentication component
-          out <- lobbySession.process(Login(Username("invalid"), Password("invalid")).asRight)
+          out <- lobbySession.process(Login(Username("test"), Password("test")).asRight)
         } yield out should contain(loginFailed._2)
       }
     }

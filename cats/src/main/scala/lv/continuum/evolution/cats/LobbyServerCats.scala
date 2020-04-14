@@ -5,6 +5,7 @@ import cats.effect.{Blocker, ExitCode, IO, IOApp}
 import com.typesafe.config.ConfigFactory
 import io.odin.formatter.Formatter
 import io.odin.{Logger, consoleLogger}
+import lv.continuum.evolution.auth.{Authenticator => CommonAuthenticator}
 import lv.continuum.evolution.config.LobbyServerConfig
 import lv.continuum.evolution.model.Lobby
 import org.http4s.server.blaze._
@@ -19,12 +20,13 @@ object LobbyServerCats extends IOApp {
         config <- IO(ConfigFactory.load())
         lobbyServerConfig <- LobbyServerConfig.load[IO](config, blocker)
 
+        authenticator = Authenticator[IO](new CommonAuthenticator)
         lobbyRef <- Ref.of[IO, Lobby](Lobby())
         subscribersRef <- Ref.of[IO, Subscribers[IO]](Set.empty)
 
         _ <- BlazeServerBuilder[IO]
           .bindHttp(lobbyServerConfig.port, lobbyServerConfig.host)
-          .withHttpApp(LobbyHttpApp[IO](lobbyRef, subscribersRef).app)
+          .withHttpApp(LobbyHttpApp[IO](authenticator, lobbyRef, subscribersRef).app)
           .serve
           .compile
           .drain

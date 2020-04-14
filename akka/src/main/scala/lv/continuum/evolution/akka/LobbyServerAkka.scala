@@ -9,7 +9,7 @@ import akka.http.scaladsl.server.Directives.{Authenticator => _, _}
 import akka.http.scaladsl.server.Route
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
-import lv.continuum.evolution.auth.{Authenticator, SimpleAuthenticator}
+import lv.continuum.evolution.auth.Authenticator
 import lv.continuum.evolution.config.LobbyServerConfig
 
 import scala.io.StdIn
@@ -23,7 +23,7 @@ class LobbyServerAkka(implicit
 
   // Create one TableActor and Authenticator per server
   private val tableActor = system.spawn(TableActor(), s"TableActor")
-  private val authenticator: Authenticator = new SimpleAuthenticator
+  private val authenticator: Authenticator = new Authenticator
 
   private[akka] val route: Route =
     Route.seal {

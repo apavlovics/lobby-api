@@ -1,8 +1,8 @@
 package lv.continuum.evolution.cats
 
-import cats.{Monad, Parallel}
 import cats.effect.concurrent.Ref
 import cats.implicits._
+import cats.{Monad, Parallel}
 import io.circe.Error
 import io.odin.Logger
 import lv.continuum.evolution.model.Lobby
@@ -12,6 +12,7 @@ import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
 
 class LobbySession[F[_] : Logger : Monad : Parallel](
+  authenticator: Authenticator[F],
   lobbyRef: Ref[F, Lobby],
   subscribersRef: Ref[F, Subscribers[F]],
   sessionParamsRef: Ref[F, SessionParams],
@@ -114,19 +115,18 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
   private def login(
     username: Username,
     password: Password,
-  ): F[Option[Out]] = (username, password) match {
-    case (Username("admin"), Password("admin")) =>
-      sessionParamsRef.update(_.copy(userType = Admin.some))
-        .as(LoginSuccessful(userType = Admin).some)
+  ): F[Option[Out]] = for {
+    userType <- authenticator.authenticate(username, password)
+    out <- userType match {
+      case Some(userType) =>
+        sessionParamsRef.update(_.copy(userType = userType.some))
+          .as(LoginSuccessful(userType).some)
 
-    case (Username("user"), Password("user")) =>
-      sessionParamsRef.update(_.copy(userType = User.some))
-        .as(LoginSuccessful(userType = User).some)
-
-    case _ =>
-      sessionParamsRef.update(_.copy(userType = None))
-        .as(LoginFailed.some)
-  }
+      case None =>
+        sessionParamsRef.update(_.copy(userType = None))
+          .as(LoginFailed.some)
+    }
+  } yield out
 
   private def error(error: Error): F[Option[Out]] =
     Logger[F].warn(s"Issue while parsing JSON: ${ error.getMessage }") *>
@@ -135,9 +135,10 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
 
 object LobbySession {
   def apply[F[_] : Logger : Monad : Parallel](
+    authenticator: Authenticator[F],
     lobbyRef: Ref[F, Lobby],
     subscribersRef: Ref[F, Subscribers[F]],
     sessionParamsRef: Ref[F, SessionParams],
     subscriber: Subscriber[F],
-  ): LobbySession[F] = new LobbySession(lobbyRef, subscribersRef, sessionParamsRef, subscriber)
+  ): LobbySession[F] = new LobbySession(authenticator, lobbyRef, subscribersRef, sessionParamsRef, subscriber)
 }
