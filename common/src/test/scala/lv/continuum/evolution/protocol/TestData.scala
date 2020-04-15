@@ -31,9 +31,9 @@ trait TestData {
     participants = 4,
   )
 
-  val error: Error = ParsingFailure("Parsing failed", new Exception("BANG!"))
-
   // In
+
+  val error: Error = ParsingFailure("Parsing failed", new Exception("BANG!"))
 
   val login: (String, Login) = {
     val json =

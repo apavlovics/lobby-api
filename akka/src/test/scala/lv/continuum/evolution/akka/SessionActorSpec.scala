@@ -8,7 +8,6 @@ import cats.syntax.option._
 import lv.continuum.evolution.akka.SessionActor.SessionCommand
 import lv.continuum.evolution.akka.TableActor.TableCommand
 import lv.continuum.evolution.auth.Authenticator
-import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.TestData
@@ -34,7 +33,7 @@ class SessionActorSpec
     testKit.expectEffect(Watched(pushActorInbox.ref))
 
     protected def verifyLogin(out: Out): Unit =
-      verifyReplyTo(Login(Username("test"), Password("test")), out.some)
+      verifyReplyTo(login._2, out.some)
 
     protected def verifyReportInvalidMessages(): Unit = {
       testKit.run(SessionCommand(

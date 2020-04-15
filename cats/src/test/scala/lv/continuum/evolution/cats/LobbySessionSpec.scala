@@ -6,7 +6,6 @@ import cats.implicits._
 import fs2.concurrent.Queue
 import lv.continuum.evolution.auth.{Authenticator => CommonAuthenticator}
 import lv.continuum.evolution.model.Lobby
-import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.TestData
 import org.scalatest.matchers.should.Matchers
@@ -50,7 +49,7 @@ class LobbySessionSpec
       "decline authentication upon invalid credentials" in run {
         for {
           lobbySession <- lobbySessionIO(notAuthenticatedAuthenticator)
-          out <- lobbySession.process(Login(Username("test"), Password("test")).asRight)
+          out <- lobbySession.process(login._2.asRight)
         } yield out should contain(loginFailed._2)
       }
       "decline responding to pings" in run {
