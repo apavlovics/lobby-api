@@ -1,5 +1,6 @@
 package lv.continuum.evolution.protocol
 
+import io.circe.{Error, ParsingFailure}
 import lv.continuum.evolution.protocol.Protocol.In._
 import lv.continuum.evolution.protocol.Protocol.Out._
 import lv.continuum.evolution.protocol.Protocol.UserType._
@@ -29,6 +30,8 @@ trait TestData {
     name = TableName("table - Foo Fighters"),
     participants = 4,
   )
+
+  val error: Error = ParsingFailure("Parsing failed", new Exception("BANG!"))
 
   // In
 

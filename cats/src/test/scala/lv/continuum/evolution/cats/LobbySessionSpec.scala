@@ -20,13 +20,13 @@ class LobbySessionSpec
     with Matchers
     with TestData {
 
-  private implicit val limit: Duration = 30.seconds
+  private implicit val limit: Duration = 5.seconds
 
-  private val notAuthenticatedAuthenticator: Authenticator[IO] = {
-    val commonAuthenticator = new CommonAuthenticator {
+  private val notAuthenticatedAuthenticator = {
+    val mock = new CommonAuthenticator {
       override def authenticate(username: Username, password: Password): Option[UserType] = None
     }
-    Authenticator[IO](commonAuthenticator)
+    Authenticator[IO](mock)
   }
 
   private def lobbySessionIO(authenticator: Authenticator[IO]): IO[LobbySession[IO]] =
@@ -52,6 +52,30 @@ class LobbySessionSpec
           lobbySession <- lobbySessionIO(notAuthenticatedAuthenticator)
           out <- lobbySession.process(Login(Username("test"), Password("test")).asRight)
         } yield out should contain(loginFailed._2)
+      }
+      "decline responding to pings" in run {
+        for {
+          lobbySession <- lobbySessionIO(notAuthenticatedAuthenticator)
+          out <- lobbySession.process(ping._2.asRight)
+        } yield out should contain(notAuthenticated._2)
+      }
+      "decline processing TableIn messages" in run {
+        for {
+          lobbySession <- lobbySessionIO(notAuthenticatedAuthenticator)
+          out <- lobbySession.process(subscribeTables._2.asRight)
+        } yield out should contain(notAuthenticated._2)
+      }
+      "decline processing AdminTableIn messages" in run {
+        for {
+          lobbySession <- lobbySessionIO(notAuthenticatedAuthenticator)
+          out <- lobbySession.process(addTable._2.asRight)
+        } yield out should contain(notAuthenticated._2)
+      }
+      "report invalid messages" in run {
+        for {
+          lobbySession <- lobbySessionIO(notAuthenticatedAuthenticator)
+          out <- lobbySession.process(error.asLeft)
+        } yield out should contain(invalidMessage._2)
       }
     }
   }

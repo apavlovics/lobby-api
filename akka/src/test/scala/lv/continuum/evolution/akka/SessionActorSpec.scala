@@ -3,8 +3,8 @@ package lv.continuum.evolution.akka
 import akka.actor.testkit.typed.Effect.Watched
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox}
 import akka.actor.typed.Terminated
+import cats.syntax.either._
 import cats.syntax.option._
-import io.circe.ParsingFailure
 import lv.continuum.evolution.akka.SessionActor.SessionCommand
 import lv.continuum.evolution.akka.TableActor.TableCommand
 import lv.continuum.evolution.auth.Authenticator
@@ -36,9 +36,9 @@ class SessionActorSpec
     protected def verifyLogin(out: Out): Unit =
       verifyReplyTo(Login(Username("test"), Password("test")), out.some)
 
-    protected def verifyReportParsingErrors(): Unit = {
+    protected def verifyReportInvalidMessages(): Unit = {
       testKit.run(SessionCommand(
-        in = Left(ParsingFailure("Parsing failed", new Exception("BANG!"))),
+        in = error.asLeft,
         replyTo = replyToInbox.ref,
       ))
       replyToInbox.expectMessage(invalidMessage._2.some)
@@ -46,7 +46,7 @@ class SessionActorSpec
 
     protected def verifyReplyTo(in: In, out: Option[Out]): Unit = {
       testKit.run(SessionCommand(
-        in = Right(in),
+        in = in.asRight,
         replyTo = replyToInbox.ref,
       ))
       replyToInbox.expectMessage(out)
@@ -78,7 +78,7 @@ class SessionActorSpec
       "decline authentication upon invalid credentials" in new NotAuthenticated {
         verifyLogin(loginFailed._2)
       }
-      "not respond to pings" in new NotAuthenticated {
+      "decline responding to pings" in new NotAuthenticated {
         verifyReplyTo(ping._2, notAuthenticated._2.some)
       }
       "decline forwarding TableIn messages to TableActor" in new NotAuthenticated {
@@ -90,7 +90,7 @@ class SessionActorSpec
         tableActorInbox.hasMessages shouldBe false
       }
       "report parsing errors" in new NotAuthenticated {
-        verifyReportParsingErrors()
+        verifyReportInvalidMessages()
       }
       "stop when PushActor terminates" in new NotAuthenticated {
         verifyStop()
@@ -109,8 +109,8 @@ class SessionActorSpec
         verifyReplyTo(addTable._2, notAuthorized._2.some)
         tableActorInbox.hasMessages shouldBe false
       }
-      "report parsing errors" in new AuthenticatedAsUser {
-        verifyReportParsingErrors()
+      "report invalid messages" in new AuthenticatedAsUser {
+        verifyReportInvalidMessages()
       }
       "stop when PushActor terminates" in new AuthenticatedAsUser {
         verifyStop()
@@ -129,8 +129,8 @@ class SessionActorSpec
         verifyReplyTo(addTable._2, None)
         tableActorInbox.expectMessage(TableCommand(addTable._2, pushActorInbox.ref))
       }
-      "report parsing errors" in new AuthenticatedAsAdmin {
-        verifyReportParsingErrors()
+      "report invalid messages" in new AuthenticatedAsAdmin {
+        verifyReportInvalidMessages()
       }
       "stop when PushActor terminates" in new AuthenticatedAsAdmin {
         verifyStop()
