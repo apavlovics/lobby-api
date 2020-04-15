@@ -29,6 +29,7 @@ class LobbySessionSpec
     Authenticator[IO](stub)
   }
 
+  // TODO Verify changes to refs and queues
   private def lobbySessionIO(authenticator: Authenticator[IO]): IO[LobbySession[IO]] =
     for {
       lobbyRef <- Ref.of[IO, Lobby](Lobby())
@@ -98,13 +99,32 @@ class LobbySessionSpec
           out <- lobbySession.process(ping._2.asRight)
         } yield out should contain(pong._2)
       }
-      // TODO Complete implementation
+      "subscribe and unsubscribe via TableIn messages" in run {
+        for {
+          lobbySession <- userLobbySessionIO
+          subscribeTablesOut <- lobbySession.process(subscribeTables._2.asRight)
+          _ <- IO {
+            subscribeTablesOut should contain(tableList._2)
+          }
+          unsubscribeTablesOut <- lobbySession.process(unsubscribeTables._2.asRight)
+        } yield unsubscribeTablesOut shouldBe None
+      }
+      "decline processing AdminTableIn messages" in run {
+        for {
+          lobbySession <- userLobbySessionIO
+          out <- lobbySession.process(addTable._2.asRight)
+        } yield out should contain(notAuthorized._2)
+      }
       "report invalid messages" in run {
         for {
           lobbySession <- userLobbySessionIO
           out <- lobbySession.process(error.asLeft)
         } yield out should contain(invalidMessage._2)
       }
+    }
+
+    "authenticated as Admin" should {
+      // TODO Complete implementation
     }
   }
 }
