@@ -1,5 +1,6 @@
 import Dependencies._
 
+// TODO Add Scalafmt code formatter
 lazy val root = (project in file("."))
   .aggregate(
     common,

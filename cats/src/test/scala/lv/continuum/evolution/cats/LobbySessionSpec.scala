@@ -30,20 +30,30 @@ class LobbySessionSpec
   }
 
   // TODO Verify changes to refs and queues
-  private def lobbySessionIO(authenticator: Authenticator[IO]): IO[LobbySession[IO]] =
-    for {
-      lobbyRef <- Ref.of[IO, Lobby](Lobby())
-      subscribersRef <- Ref.of[IO, Subscribers[IO]](Set.empty)
-      sessionParamsRef <- Ref.of[IO, SessionParams](SessionParams())
-      subscriber <- Queue.unbounded[IO, PushOut]
-      lobbySession = LobbySession[IO](
-        authenticator = authenticator,
-        lobbyRef = lobbyRef,
-        subscribersRef = subscribersRef,
-        sessionParamsRef = sessionParamsRef,
-        subscriber = subscriber,
-      )
-    } yield lobbySession
+  private def lobbySessionIO(authenticator: Authenticator[IO]): IO[LobbySession[IO]] = for {
+    lobbyRef <- Ref.of[IO, Lobby](Lobby())
+    subscribersRef <- Ref.of[IO, Subscribers[IO]](Set.empty)
+    sessionParamsRef <- Ref.of[IO, SessionParams](SessionParams())
+    subscriber <- Queue.unbounded[IO, PushOut]
+    lobbySession = LobbySession[IO](
+      authenticator = authenticator,
+      lobbyRef = lobbyRef,
+      subscribersRef = subscribersRef,
+      sessionParamsRef = sessionParamsRef,
+      subscriber = subscriber,
+    )
+  } yield lobbySession
+
+  private def authenticatedLobbySessionIO(
+    userType: UserType,
+    expectedOut: Out,
+  ): IO[LobbySession[IO]] = for {
+    lobbySession <- lobbySessionIO(stubAuthenticator(userType.some))
+    out <- lobbySession.process(login._2.asRight)
+    _ <- IO {
+      out should contain(expectedOut)
+    }
+  } yield lobbySession
 
   "LobbySession" when {
 
@@ -85,13 +95,7 @@ class LobbySessionSpec
 
     "authenticated as User" should {
 
-      val userLobbySessionIO = for {
-        lobbySession <- lobbySessionIO(stubAuthenticator(User.some))
-        out <- lobbySession.process(login._2.asRight)
-        _ <- IO {
-          out should contain(loginSuccessfulUser._2)
-        }
-      } yield lobbySession
+      val userLobbySessionIO = authenticatedLobbySessionIO(User, loginSuccessfulUser._2)
 
       "respond to pings" in run {
         for {
@@ -124,6 +128,15 @@ class LobbySessionSpec
     }
 
     "authenticated as Admin" should {
+
+      val adminLobbySessionIO = authenticatedLobbySessionIO(Admin, loginSuccessfulAdmin._2)
+
+      "respond to pings" in run {
+        for {
+          lobbySession <- adminLobbySessionIO
+          out <- lobbySession.process(ping._2.asRight)
+        } yield out should contain(pong._2)
+      }
       // TODO Complete implementation
     }
   }
