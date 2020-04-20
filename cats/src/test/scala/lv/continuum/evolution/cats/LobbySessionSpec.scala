@@ -9,6 +9,7 @@ import lv.continuum.evolution.model.Lobby
 import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.TestData
+import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -55,6 +56,28 @@ class LobbySessionSpec
     }
   } yield lobbySession
 
+  private def verifyRespondToPings(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
+    for {
+      lobbySession <- lobbySessionIO
+      out <- lobbySession.process(ping._2.asRight)
+    } yield out should contain(pong._2)
+
+  private def verifySubscribeUnsubscribe(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
+    for {
+      lobbySession <- lobbySessionIO
+      subscribeTablesOut <- lobbySession.process(subscribeTables._2.asRight)
+      _ <- IO {
+        subscribeTablesOut should contain(tableList._2)
+      }
+      unsubscribeTablesOut <- lobbySession.process(unsubscribeTables._2.asRight)
+    } yield unsubscribeTablesOut shouldBe None
+
+  private def verifyReportInvalidMessages(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
+    for {
+      lobbySession <- lobbySessionIO
+      out <- lobbySession.process(error.asLeft)
+    } yield out should contain(invalidMessage._2)
+
   "LobbySession" when {
 
     "not authenticated" should {
@@ -86,10 +109,7 @@ class LobbySessionSpec
         } yield out should contain(notAuthenticated._2)
       }
       "report invalid messages" in run {
-        for {
-          lobbySession <- notAuthenticatedLobbySessionIO
-          out <- lobbySession.process(error.asLeft)
-        } yield out should contain(invalidMessage._2)
+        verifyReportInvalidMessages(notAuthenticatedLobbySessionIO)
       }
     }
 
@@ -98,20 +118,10 @@ class LobbySessionSpec
       val userLobbySessionIO = authenticatedLobbySessionIO(User, loginSuccessfulUser._2)
 
       "respond to pings" in run {
-        for {
-          lobbySession <- userLobbySessionIO
-          out <- lobbySession.process(ping._2.asRight)
-        } yield out should contain(pong._2)
+        verifyRespondToPings(userLobbySessionIO)
       }
       "subscribe and unsubscribe via TableIn messages" in run {
-        for {
-          lobbySession <- userLobbySessionIO
-          subscribeTablesOut <- lobbySession.process(subscribeTables._2.asRight)
-          _ <- IO {
-            subscribeTablesOut should contain(tableList._2)
-          }
-          unsubscribeTablesOut <- lobbySession.process(unsubscribeTables._2.asRight)
-        } yield unsubscribeTablesOut shouldBe None
+        verifySubscribeUnsubscribe(userLobbySessionIO)
       }
       "decline processing AdminTableIn messages" in run {
         for {
@@ -120,10 +130,7 @@ class LobbySessionSpec
         } yield out should contain(notAuthorized._2)
       }
       "report invalid messages" in run {
-        for {
-          lobbySession <- userLobbySessionIO
-          out <- lobbySession.process(error.asLeft)
-        } yield out should contain(invalidMessage._2)
+        verifyReportInvalidMessages(userLobbySessionIO)
       }
     }
 
@@ -132,10 +139,13 @@ class LobbySessionSpec
       val adminLobbySessionIO = authenticatedLobbySessionIO(Admin, loginSuccessfulAdmin._2)
 
       "respond to pings" in run {
-        for {
-          lobbySession <- adminLobbySessionIO
-          out <- lobbySession.process(ping._2.asRight)
-        } yield out should contain(pong._2)
+        verifyRespondToPings(adminLobbySessionIO)
+      }
+      "subscribe and unsubscribe via TableIn messages" in run {
+        verifySubscribeUnsubscribe(adminLobbySessionIO)
+      }
+      "report invalid messages" in run {
+        verifyReportInvalidMessages(adminLobbySessionIO)
       }
       // TODO Complete implementation
     }
