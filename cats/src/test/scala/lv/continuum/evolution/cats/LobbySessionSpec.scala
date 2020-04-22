@@ -60,7 +60,10 @@ class LobbySessionSpec
     for {
       lobbySession <- lobbySessionIO
       out <- lobbySession.process(ping._2.asRight)
-    } yield out should contain(pong._2)
+      _ <- IO {
+        out should contain(pong._2)
+      }
+    } yield succeed
 
   private def verifySubscribeUnsubscribe(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
     for {
@@ -70,13 +73,19 @@ class LobbySessionSpec
         subscribeTablesOut should contain(tableList._2)
       }
       unsubscribeTablesOut <- lobbySession.process(unsubscribeTables._2.asRight)
-    } yield unsubscribeTablesOut shouldBe None
+      _ <- IO {
+        unsubscribeTablesOut shouldBe None
+      }
+    } yield succeed
 
   private def verifyReportInvalidMessages(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
     for {
       lobbySession <- lobbySessionIO
       out <- lobbySession.process(error.asLeft)
-    } yield out should contain(invalidMessage._2)
+      _ <- IO {
+        out should contain(invalidMessage._2)
+      }
+    } yield succeed
 
   "LobbySession" when {
 
@@ -88,25 +97,37 @@ class LobbySessionSpec
         for {
           lobbySession <- notAuthenticatedLobbySessionIO
           out <- lobbySession.process(login._2.asRight)
-        } yield out should contain(loginFailed._2)
+          _ <- IO {
+            out should contain(loginFailed._2)
+          }
+        } yield succeed
       }
       "decline responding to pings" in run {
         for {
           lobbySession <- notAuthenticatedLobbySessionIO
           out <- lobbySession.process(ping._2.asRight)
-        } yield out should contain(notAuthenticated._2)
+          _ <- IO {
+            out should contain(notAuthenticated._2)
+          }
+        } yield succeed
       }
       "decline processing TableIn messages" in run {
         for {
           lobbySession <- notAuthenticatedLobbySessionIO
           out <- lobbySession.process(subscribeTables._2.asRight)
-        } yield out should contain(notAuthenticated._2)
+          _ <- IO {
+            out should contain(notAuthenticated._2)
+          }
+        } yield succeed
       }
       "decline processing AdminTableIn messages" in run {
         for {
           lobbySession <- notAuthenticatedLobbySessionIO
           out <- lobbySession.process(addTable._2.asRight)
-        } yield out should contain(notAuthenticated._2)
+          _ <- IO {
+            out should contain(notAuthenticated._2)
+          }
+        } yield succeed
       }
       "report invalid messages" in run {
         verifyReportInvalidMessages(notAuthenticatedLobbySessionIO)
@@ -127,7 +148,10 @@ class LobbySessionSpec
         for {
           lobbySession <- userLobbySessionIO
           out <- lobbySession.process(addTable._2.asRight)
-        } yield out should contain(notAuthorized._2)
+          _ <- IO {
+            out should contain(notAuthorized._2)
+          }
+        } yield succeed
       }
       "report invalid messages" in run {
         verifyReportInvalidMessages(userLobbySessionIO)
@@ -144,10 +168,27 @@ class LobbySessionSpec
       "subscribe and unsubscribe via TableIn messages" in run {
         verifySubscribeUnsubscribe(adminLobbySessionIO)
       }
+      // TODO Complete implementation
+      "administer tables via AdminTableIn messages" in run {
+        for {
+          lobbySession <- adminLobbySessionIO
+          addTableOut <- lobbySession.process(addTable._2.asRight)
+          _ <- IO {
+            addTableOut shouldBe None
+          }
+          updateTableOut <- lobbySession.process(updateTable._2.asRight)
+          _ <- IO {
+            updateTableOut shouldBe None
+          }
+          removeTableOut <- lobbySession.process(removeTable._2.asRight)
+          _ <- IO {
+            removeTableOut shouldBe None
+          }
+        } yield succeed
+      }
       "report invalid messages" in run {
         verifyReportInvalidMessages(adminLobbySessionIO)
       }
-      // TODO Complete implementation
     }
   }
 }
