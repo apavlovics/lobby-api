@@ -1,10 +1,14 @@
 package lv.continuum.evolution.cats
 
-import cats.effect.IO
 import cats.effect.concurrent.Ref
+import cats.effect.{Concurrent, IO, Sync}
 import cats.implicits._
+import cats.{Monad, Parallel}
 import fs2.concurrent.Queue
+import io.circe.Error
+import io.odin.Logger
 import lv.continuum.evolution.auth.{Authenticator => CommonAuthenticator}
+import lv.continuum.evolution.cats.LobbySessionSpec.Fixture
 import lv.continuum.evolution.model.Lobby
 import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
@@ -23,172 +27,172 @@ class LobbySessionSpec
 
   private implicit val limit: Duration = 5.seconds
 
-  private def stubAuthenticator(userType: Option[UserType]): Authenticator[IO] = {
+  private def stubAuthenticator[F[_] : Sync](userType: Option[UserType]): Authenticator[F] = {
     val stub = new CommonAuthenticator {
       override def authenticate(username: Username, password: Password): Option[UserType] = userType
     }
-    Authenticator[IO](stub)
+    Authenticator[F](stub)
   }
 
-  // TODO Verify changes to refs and queues
-  private def lobbySessionIO(authenticator: Authenticator[IO]): IO[LobbySession[IO]] = for {
-    lobbyRef <- Ref.of[IO, Lobby](Lobby())
-    subscribersRef <- Ref.of[IO, Subscribers[IO]](Set.empty)
-    sessionParamsRef <- Ref.of[IO, SessionParams](SessionParams())
-    subscriber <- Queue.unbounded[IO, PushOut]
-    lobbySession = LobbySession[IO](
+  private def fixtureF[F[_] : Concurrent : Logger : Parallel](
+    authenticator: Authenticator[F],
+  ): F[Fixture[F]] = for {
+    lobbyRef <- Ref.of[F, Lobby](Lobby())
+    subscribersRef <- Ref.of[F, Subscribers[F]](Set.empty)
+    sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
+    subscriber <- Queue.unbounded[F, PushOut]
+    lobbySession = LobbySession[F](
       authenticator = authenticator,
       lobbyRef = lobbyRef,
       subscribersRef = subscribersRef,
       sessionParamsRef = sessionParamsRef,
       subscriber = subscriber,
     )
-  } yield lobbySession
+  } yield Fixture[F](lobbySession, subscribersRef, subscriber)
 
-  private def authenticatedLobbySessionIO(
+  private def authenticatedFixtureF[F[_] : Concurrent : Logger : Parallel](
     userType: UserType,
     expectedOut: Out,
-  ): IO[LobbySession[IO]] = for {
-    lobbySession <- lobbySessionIO(stubAuthenticator(userType.some))
-    out <- lobbySession.process(login._2.asRight)
-    _ <- IO {
+  ): F[Fixture[F]] = for {
+    fixture <- fixtureF(stubAuthenticator(userType.some))
+    out <- fixture.lobbySession.process(login._2.asRight)
+    _ <- Sync[F].delay {
       out should contain(expectedOut)
     }
-  } yield lobbySession
+  } yield fixture
 
-  private def verifyRespondToPings(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
-    for {
-      lobbySession <- lobbySessionIO
-      out <- lobbySession.process(ping._2.asRight)
-      _ <- IO {
-        out should contain(pong._2)
-      }
-    } yield succeed
+  private def verifyInOut[F[_] : Monad : Sync](
+    fixtureF: F[Fixture[F]],
+    in: Either[Error, In],
+    expectedOut: Option[Out],
+  ): F[Assertion] = for {
+    fixture <- fixtureF
+    out <- fixture.lobbySession.process(in)
+    _ <- Sync[F].delay {
+      out shouldBe expectedOut
+    }
+  } yield succeed
 
-  private def verifySubscribeUnsubscribe(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
-    for {
-      lobbySession <- lobbySessionIO
-      subscribeTablesOut <- lobbySession.process(subscribeTables._2.asRight)
-      _ <- IO {
-        subscribeTablesOut should contain(tableList._2)
-      }
-      unsubscribeTablesOut <- lobbySession.process(unsubscribeTables._2.asRight)
-      _ <- IO {
-        unsubscribeTablesOut shouldBe None
-      }
-    } yield succeed
+  private def verifyRespondToPings[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
+    verifyInOut(fixtureF, ping._2.asRight, pong._2.some)
 
-  private def verifyReportInvalidMessages(lobbySessionIO: IO[LobbySession[IO]]): IO[Assertion] =
-    for {
-      lobbySession <- lobbySessionIO
-      out <- lobbySession.process(error.asLeft)
-      _ <- IO {
-        out should contain(invalidMessage._2)
-      }
-    } yield succeed
+  private def verifyReportInvalidMessages[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
+    verifyInOut(fixtureF, error.asLeft, invalidMessage._2.some)
+
+  private def verifySubscribeUnsubscribe[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
+    fixture <- fixtureF
+    subscribeTablesOut <- fixture.lobbySession.process(subscribeTables._2.asRight)
+    _ <- Sync[F].delay {
+      subscribeTablesOut should contain(tableList._2)
+    }
+    unsubscribeTablesOut <- fixture.lobbySession.process(unsubscribeTables._2.asRight)
+    _ <- Sync[F].delay {
+      unsubscribeTablesOut shouldBe None
+    }
+  } yield succeed
+
+  private def verifyAdministerTables[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
+    fixture <- fixtureF
+    addTableOut <- fixture.lobbySession.process(addTable._2.asRight)
+    _ <- Sync[F].delay {
+      addTableOut shouldBe None
+    }
+    updateTableOut <- fixture.lobbySession.process(updateTable._2.asRight)
+    _ <- Sync[F].delay {
+      updateTableOut shouldBe None
+    }
+    removeTableOut <- fixture.lobbySession.process(removeTable._2.asRight)
+    _ <- Sync[F].delay {
+      removeTableOut shouldBe None
+    }
+  } yield succeed
 
   "LobbySession" when {
 
     "not authenticated" should {
 
-      val notAuthenticatedLobbySessionIO = lobbySessionIO(stubAuthenticator(None))
+      val notAuthenticatedFixtureIO = fixtureF[IO](stubAuthenticator(None))
 
       "decline authentication upon invalid credentials" in run {
-        for {
-          lobbySession <- notAuthenticatedLobbySessionIO
-          out <- lobbySession.process(login._2.asRight)
-          _ <- IO {
-            out should contain(loginFailed._2)
-          }
-        } yield succeed
+        verifyInOut(
+          fixtureF = notAuthenticatedFixtureIO,
+          in = login._2.asRight,
+          expectedOut = loginFailed._2.some,
+        )
       }
       "decline responding to pings" in run {
-        for {
-          lobbySession <- notAuthenticatedLobbySessionIO
-          out <- lobbySession.process(ping._2.asRight)
-          _ <- IO {
-            out should contain(notAuthenticated._2)
-          }
-        } yield succeed
+        verifyInOut(
+          fixtureF = notAuthenticatedFixtureIO,
+          in = ping._2.asRight,
+          expectedOut = notAuthenticated._2.some,
+        )
       }
       "decline processing TableIn messages" in run {
-        for {
-          lobbySession <- notAuthenticatedLobbySessionIO
-          out <- lobbySession.process(subscribeTables._2.asRight)
-          _ <- IO {
-            out should contain(notAuthenticated._2)
-          }
-        } yield succeed
+        verifyInOut(
+          fixtureF = notAuthenticatedFixtureIO,
+          in = subscribeTables._2.asRight,
+          expectedOut = notAuthenticated._2.some,
+        )
       }
       "decline processing AdminTableIn messages" in run {
-        for {
-          lobbySession <- notAuthenticatedLobbySessionIO
-          out <- lobbySession.process(addTable._2.asRight)
-          _ <- IO {
-            out should contain(notAuthenticated._2)
-          }
-        } yield succeed
+        verifyInOut(
+          fixtureF = notAuthenticatedFixtureIO,
+          in = addTable._2.asRight,
+          expectedOut = notAuthenticated._2.some,
+        )
       }
       "report invalid messages" in run {
-        verifyReportInvalidMessages(notAuthenticatedLobbySessionIO)
+        verifyReportInvalidMessages(notAuthenticatedFixtureIO)
       }
     }
 
     "authenticated as User" should {
 
-      val userLobbySessionIO = authenticatedLobbySessionIO(User, loginSuccessfulUser._2)
+      val userFixtureIO = authenticatedFixtureF[IO](User, loginSuccessfulUser._2)
 
       "respond to pings" in run {
-        verifyRespondToPings(userLobbySessionIO)
+        verifyRespondToPings(userFixtureIO)
       }
       "subscribe and unsubscribe via TableIn messages" in run {
-        verifySubscribeUnsubscribe(userLobbySessionIO)
+        verifySubscribeUnsubscribe(userFixtureIO)
       }
       "decline processing AdminTableIn messages" in run {
-        for {
-          lobbySession <- userLobbySessionIO
-          out <- lobbySession.process(addTable._2.asRight)
-          _ <- IO {
-            out should contain(notAuthorized._2)
-          }
-        } yield succeed
+        verifyInOut(
+          fixtureF = userFixtureIO,
+          in = addTable._2.asRight,
+          expectedOut = notAuthorized._2.some,
+        )
       }
       "report invalid messages" in run {
-        verifyReportInvalidMessages(userLobbySessionIO)
+        verifyReportInvalidMessages(userFixtureIO)
       }
     }
 
     "authenticated as Admin" should {
 
-      val adminLobbySessionIO = authenticatedLobbySessionIO(Admin, loginSuccessfulAdmin._2)
+      val adminFixtureIO = authenticatedFixtureF[IO](Admin, loginSuccessfulAdmin._2)
 
       "respond to pings" in run {
-        verifyRespondToPings(adminLobbySessionIO)
+        verifyRespondToPings(adminFixtureIO)
       }
       "subscribe and unsubscribe via TableIn messages" in run {
-        verifySubscribeUnsubscribe(adminLobbySessionIO)
+        verifySubscribeUnsubscribe(adminFixtureIO)
       }
-      // TODO Complete implementation
       "administer tables via AdminTableIn messages" in run {
-        for {
-          lobbySession <- adminLobbySessionIO
-          addTableOut <- lobbySession.process(addTable._2.asRight)
-          _ <- IO {
-            addTableOut shouldBe None
-          }
-          updateTableOut <- lobbySession.process(updateTable._2.asRight)
-          _ <- IO {
-            updateTableOut shouldBe None
-          }
-          removeTableOut <- lobbySession.process(removeTable._2.asRight)
-          _ <- IO {
-            removeTableOut shouldBe None
-          }
-        } yield succeed
+        verifyAdministerTables(adminFixtureIO)
       }
       "report invalid messages" in run {
-        verifyReportInvalidMessages(adminLobbySessionIO)
+        verifyReportInvalidMessages(adminFixtureIO)
       }
     }
   }
+}
+
+object LobbySessionSpec {
+
+  private case class Fixture[F[_]](
+    lobbySession: LobbySession[F],
+    subscribersRef: Ref[F, Subscribers[F]],
+    subscriber: Subscriber[F],
+  )
 }
