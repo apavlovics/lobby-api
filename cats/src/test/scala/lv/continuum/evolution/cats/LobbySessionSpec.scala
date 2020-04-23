@@ -105,6 +105,8 @@ class LobbySessionSpec
     _ <- Sync[F].delay {
       subscribeTablesOut should contain(tableList._2)
     }
+
+    // Process valid AdminTableIn messages
     addTableOut <- fixture.lobbySession.process(addTable._2.asRight)
     addTablePushOut <- fixture.subscriber.tryDequeue1
     _ <- Sync[F].delay {
@@ -123,6 +125,27 @@ class LobbySessionSpec
       removeTableOut shouldBe None
       removeTablePushOut should contain(tableRemoved._2)
     }
+
+    // Process invalid AdminTableIn messages
+    addTableOutInvalid <- fixture.lobbySession.process(addTableInvalid.asRight)
+    addTablePushOutInvalid <- fixture.subscriber.tryDequeue1
+    _ <- Sync[F].delay {
+      addTableOutInvalid should contain(tableAddFailed._2)
+      addTablePushOutInvalid shouldBe None
+    }
+    updateTableOutInvalid <- fixture.lobbySession.process(updateTableInvalid.asRight)
+    updateTablePushOutInvalid <- fixture.subscriber.tryDequeue1
+    _ <- Sync[F].delay {
+      updateTableOutInvalid should contain(tableUpdateFailed._2)
+      updateTablePushOutInvalid shouldBe None
+    }
+    removeTableOutInvalid <- fixture.lobbySession.process(removeTableInvalid.asRight)
+    removeTablePushOutInvalid <- fixture.subscriber.tryDequeue1
+    _ <- Sync[F].delay {
+      removeTableOutInvalid should contain(tableRemoveFailed._2)
+      removeTablePushOutInvalid shouldBe None
+    }
+
     unsubscribeTablesOut <- fixture.lobbySession.process(unsubscribeTables._2.asRight)
     _ <- Sync[F].delay {
       unsubscribeTablesOut shouldBe None
