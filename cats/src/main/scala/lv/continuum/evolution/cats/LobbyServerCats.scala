@@ -1,7 +1,9 @@
 package lv.continuum.evolution.cats
 
+import cats.{Applicative, Parallel}
 import cats.effect.concurrent.Ref
-import cats.effect.{Blocker, ExitCode, IO, IOApp}
+import cats.effect.{Blocker, ConcurrentEffect, ContextShift, ExitCode, IO, IOApp, Timer}
+import cats.implicits._
 import com.typesafe.config.ConfigFactory
 import io.odin.formatter.Formatter
 import io.odin.{Logger, consoleLogger}
@@ -14,22 +16,24 @@ object LobbyServerCats extends IOApp {
 
   private implicit val logger: Logger[IO] = consoleLogger(formatter = Formatter.colorful)
 
-  override def run(args: List[String]): IO[ExitCode] =
-    Blocker[IO].use { blocker =>
+  private def runF[F[_] : ConcurrentEffect : ContextShift : Logger : Parallel : Timer]: F[ExitCode] =
+    Blocker[F].use { blocker =>
       for {
-        config <- IO(ConfigFactory.load())
-        lobbyServerConfig <- LobbyServerConfig.load[IO](config, blocker)
+        config <- Applicative[F].pure(ConfigFactory.load())
+        lobbyServerConfig <- LobbyServerConfig.load[F](config, blocker)
 
-        authenticator = Authenticator[IO](new CommonAuthenticator)
-        lobbyRef <- Ref.of[IO, Lobby](Lobby())
-        subscribersRef <- Ref.of[IO, Subscribers[IO]](Set.empty)
+        authenticator = Authenticator[F](new CommonAuthenticator)
+        lobbyRef <- Ref.of[F, Lobby](Lobby())
+        subscribersRef <- Ref.of[F, Subscribers[F]](Set.empty)
 
-        _ <- BlazeServerBuilder[IO]
+        _ <- BlazeServerBuilder[F]
           .bindHttp(lobbyServerConfig.port, lobbyServerConfig.host)
-          .withHttpApp(LobbyHttpApp[IO](authenticator, lobbyRef, subscribersRef).app)
+          .withHttpApp(LobbyHttpApp[F](authenticator, lobbyRef, subscribersRef).app)
           .serve
           .compile
           .drain
       } yield ExitCode.Success
     }
+
+  override def run(args: List[String]): IO[ExitCode] = runF[IO]
 }

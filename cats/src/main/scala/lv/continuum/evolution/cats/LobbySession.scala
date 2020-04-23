@@ -2,7 +2,7 @@ package lv.continuum.evolution.cats
 
 import cats.effect.concurrent.Ref
 import cats.implicits._
-import cats.{Monad, Parallel}
+import cats.{Applicative, Monad, Parallel}
 import io.circe.Error
 import io.odin.Logger
 import lv.continuum.evolution.model.Lobby
@@ -37,11 +37,23 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
         login(username, password)
 
       case Right(_) =>
-        Monad[F].pure(NotAuthenticated.some)
+        Applicative[F].pure(NotAuthenticated.some)
 
       case Left(e) => error(e)
     }
   }
+
+  private def push(
+    subscriber: Subscriber[F],
+    pushOut: PushOut,
+  ): F[Unit] = for {
+    result <- subscriber.offer1(pushOut)
+    _ <- {
+      if (!result) {
+        Logger[F].warn(s"$subscriber seems to be full, cannot enqueue $pushOut")
+      } else Applicative[F].unit
+    }
+  } yield ()
 
   private def processAuthenticated(
     userType: UserType,
@@ -51,7 +63,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
       login(username, password)
 
     case (_, Right(Ping(seq))) =>
-      Monad[F].pure(Pong(seq = seq).some)
+      Applicative[F].pure(Pong(seq = seq).some)
 
     case (_, Right(SubscribeTables)) => for {
       _ <- subscribersRef.update(_ + subscriber)
@@ -62,7 +74,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
       subscribersRef.update(_ - subscriber).as(None)
 
     case (User, Right(_: AdminTableIn)) =>
-      Monad[F].pure(NotAuthorized.some)
+      Applicative[F].pure(NotAuthorized.some)
 
     case (Admin, Right(in: AddTable)) => for {
       tableAdded <- lobbyRef.modify { lobby =>
@@ -73,12 +85,12 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
         }
       }
       out <- tableAdded.fold {
-        Monad[F].pure(TableAddFailed.some)
+        Applicative[F].pure(TableAddFailed.some)
       } { table =>
         val tableAdded = TableAdded(afterId = in.afterId, table = table)
         for {
           subscribers <- subscribersRef.get
-          _ <- subscribers.map(_.enqueue1(tableAdded)).toVector.parSequence
+          _ <- subscribers.map(push(_, tableAdded)).toVector.parSequence
         } yield None
       }
     } yield out
@@ -91,9 +103,9 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
         val tableUpdated = TableUpdated(table = in.table)
         for {
           subscribers <- subscribersRef.get
-          _ <- subscribers.map(_.enqueue1(tableUpdated)).toVector.parSequence
+          _ <- subscribers.map(push(_, tableUpdated)).toVector.parSequence
         } yield None
-      } else Monad[F].pure(TableUpdateFailed(in.table.id).some)
+      } else Applicative[F].pure(TableUpdateFailed(in.table.id).some)
     } yield out
 
     case (Admin, Right(in: RemoveTable)) => for {
@@ -104,9 +116,9 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
         val tableRemoved = TableRemoved(id = in.id)
         for {
           subscribers <- subscribersRef.get
-          _ <- subscribers.map(_.enqueue1(tableRemoved)).toVector.parSequence
+          _ <- subscribers.map(push(_, tableRemoved)).toVector.parSequence
         } yield None
-      } else Monad[F].pure(TableRemoveFailed(in.id).some)
+      } else Applicative[F].pure(TableRemoveFailed(in.id).some)
     } yield out
 
     case (_, Left(e)) => error(e)
@@ -130,7 +142,7 @@ class LobbySession[F[_] : Logger : Monad : Parallel](
 
   private def error(error: Error): F[Option[Out]] =
     Logger[F].warn(s"Issue while parsing JSON: ${ error.getMessage }") *>
-      Monad[F].pure(InvalidMessage.some)
+      Applicative[F].pure(InvalidMessage.some)
 }
 
 object LobbySession {
