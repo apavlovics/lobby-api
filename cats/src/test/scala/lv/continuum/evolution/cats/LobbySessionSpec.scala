@@ -3,7 +3,7 @@ package lv.continuum.evolution.cats
 import cats.effect.concurrent.Ref
 import cats.effect.{Concurrent, IO, Sync}
 import cats.implicits._
-import cats.{Monad, Parallel}
+import cats.Parallel
 import fs2.concurrent.Queue
 import io.circe.Error
 import io.odin.Logger
@@ -61,95 +61,77 @@ class LobbySessionSpec
     }
   } yield fixture
 
-  private def verifyInOut[F[_] : Monad : Sync](
-    fixtureF: F[Fixture[F]],
+  private def verifyInOut[F[_] : Sync](
+    fixture: Fixture[F],
     in: Either[Error, In],
     expectedOut: Option[Out],
   ): F[Assertion] = for {
-    fixture <- fixtureF
     out <- fixture.lobbySession.process(in)
     _ <- Sync[F].delay {
       out shouldBe expectedOut
     }
   } yield succeed
 
-  private def verifyRespondToPings[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
+  private def verifyInOut[F[_] : Sync](
+    fixtureF: F[Fixture[F]],
+    in: Either[Error, In],
+    expectedOut: Option[Out],
+  ): F[Assertion] = for {
+    fixture <- fixtureF
+    _ <- verifyInOut(fixture, in, expectedOut)
+  } yield succeed
+
+  private def verifyRespondToPings[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
     verifyInOut(fixtureF, ping._2.asRight, pong._2.some)
 
-  private def verifyReportInvalidMessages[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
+  private def verifyReportInvalidMessages[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
     verifyInOut(fixtureF, error.asLeft, invalidMessage._2.some)
 
-  private def verifySubscribeUnsubscribe[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
-    fixture <- fixtureF
-    subscribeTablesOut <- fixture.lobbySession.process(subscribeTables._2.asRight)
+  private def verifyPushOut[F[_] : Sync](
+    fixture: Fixture[F],
+    expectedPushOut: Option[PushOut],
+  ): F[Assertion] = for {
+    pushOut <- fixture.subscriber.tryDequeue1
     _ <- Sync[F].delay {
-      subscribeTablesOut should contain(tableList._2)
+      pushOut shouldBe expectedPushOut
     }
+  } yield succeed
+
+  private def verifySubscribeUnsubscribe[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
+    fixture <- fixtureF
+    _ <- verifyInOut(fixture, subscribeTables._2.asRight, tableList._2.some)
     whenSubscribed <- fixture.subscribersRef.get
     _ <- Sync[F].delay {
       whenSubscribed should contain(fixture.subscriber)
     }
-    unsubscribeTablesOut <- fixture.lobbySession.process(unsubscribeTables._2.asRight)
-    _ <- Sync[F].delay {
-      unsubscribeTablesOut shouldBe None
-    }
+    _ <- verifyInOut(fixture, unsubscribeTables._2.asRight, None)
     whenUnsubscribed <- fixture.subscribersRef.get
     _ <- Sync[F].delay {
       whenUnsubscribed should not contain fixture.subscriber
     }
   } yield succeed
 
-  private def verifyAdministerTables[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
+  private def verifyAdministerTables[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
     fixture <- fixtureF
-    subscribeTablesOut <- fixture.lobbySession.process(subscribeTables._2.asRight)
-    _ <- Sync[F].delay {
-      subscribeTablesOut should contain(tableList._2)
-    }
+    _ <- verifyInOut(fixture, subscribeTables._2.asRight, tableList._2.some)
 
     // Process valid AdminTableIn messages
-    addTableOut <- fixture.lobbySession.process(addTable._2.asRight)
-    addTablePushOut <- fixture.subscriber.tryDequeue1
-    _ <- Sync[F].delay {
-      addTableOut shouldBe None
-      addTablePushOut should contain(tableAdded._2)
-    }
-    updateTableOut <- fixture.lobbySession.process(updateTable._2.asRight)
-    updateTablePushOut <- fixture.subscriber.tryDequeue1
-    _ <- Sync[F].delay {
-      updateTableOut shouldBe None
-      updateTablePushOut should contain(tableUpdated._2)
-    }
-    removeTableOut <- fixture.lobbySession.process(removeTable._2.asRight)
-    removeTablePushOut <- fixture.subscriber.tryDequeue1
-    _ <- Sync[F].delay {
-      removeTableOut shouldBe None
-      removeTablePushOut should contain(tableRemoved._2)
-    }
+    _ <- verifyInOut(fixture, addTable._2.asRight, None)
+    _ <- verifyPushOut(fixture, tableAdded._2.some)
+    _ <- verifyInOut(fixture, updateTable._2.asRight, None)
+    _ <- verifyPushOut(fixture, tableUpdated._2.some)
+    _ <- verifyInOut(fixture, removeTable._2.asRight, None)
+    _ <- verifyPushOut(fixture, tableRemoved._2.some)
 
     // Process invalid AdminTableIn messages
-    addTableOutInvalid <- fixture.lobbySession.process(addTableInvalid.asRight)
-    addTablePushOutInvalid <- fixture.subscriber.tryDequeue1
-    _ <- Sync[F].delay {
-      addTableOutInvalid should contain(tableAddFailed._2)
-      addTablePushOutInvalid shouldBe None
-    }
-    updateTableOutInvalid <- fixture.lobbySession.process(updateTableInvalid.asRight)
-    updateTablePushOutInvalid <- fixture.subscriber.tryDequeue1
-    _ <- Sync[F].delay {
-      updateTableOutInvalid should contain(tableUpdateFailed._2)
-      updateTablePushOutInvalid shouldBe None
-    }
-    removeTableOutInvalid <- fixture.lobbySession.process(removeTableInvalid.asRight)
-    removeTablePushOutInvalid <- fixture.subscriber.tryDequeue1
-    _ <- Sync[F].delay {
-      removeTableOutInvalid should contain(tableRemoveFailed._2)
-      removeTablePushOutInvalid shouldBe None
-    }
+    _ <- verifyInOut(fixture, addTableInvalid.asRight, tableAddFailed._2.some)
+    _ <- verifyPushOut(fixture, None)
+    _ <- verifyInOut(fixture, updateTableInvalid.asRight, tableUpdateFailed._2.some)
+    _ <- verifyPushOut(fixture, None)
+    _ <- verifyInOut(fixture, removeTableInvalid.asRight, tableRemoveFailed._2.some)
+    _ <- verifyPushOut(fixture, None)
 
-    unsubscribeTablesOut <- fixture.lobbySession.process(unsubscribeTables._2.asRight)
-    _ <- Sync[F].delay {
-      unsubscribeTablesOut shouldBe None
-    }
+    _ <- verifyInOut(fixture, unsubscribeTables._2.asRight, None)
   } yield succeed
 
   "LobbySession" when {
