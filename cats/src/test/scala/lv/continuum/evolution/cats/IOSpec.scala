@@ -7,6 +7,7 @@ import io.odin.{Logger, consoleLogger}
 import org.scalatest.Assertions.fail
 
 import scala.concurrent.duration._
+import scala.concurrent.Future
 
 trait IOSpec {
 
@@ -17,4 +18,6 @@ trait IOSpec {
 
   def run[A](io: IO[A])(implicit limit: Duration): A =
     io.unsafeRunTimed(limit).getOrElse(fail(s"Unable to complete test in $limit"))
+
+  def runAsFuture[A](io: IO[A]): Future[A] = io.unsafeToFuture()
 }

@@ -15,12 +15,12 @@ import lv.continuum.evolution.protocol.Protocol._
 import lv.continuum.evolution.protocol.TestData
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.wordspec.AsyncWordSpec
 
 import scala.concurrent.duration._
 
 class LobbySessionSpec
-  extends AnyWordSpec
+  extends AsyncWordSpec
     with IOSpec
     with Matchers
     with TestData {
@@ -85,25 +85,47 @@ class LobbySessionSpec
     _ <- Sync[F].delay {
       subscribeTablesOut should contain(tableList._2)
     }
+    whenSubscribed <- fixture.subscribersRef.get
+    _ <- Sync[F].delay {
+      whenSubscribed should contain(fixture.subscriber)
+    }
     unsubscribeTablesOut <- fixture.lobbySession.process(unsubscribeTables._2.asRight)
     _ <- Sync[F].delay {
       unsubscribeTablesOut shouldBe None
+    }
+    whenUnsubscribed <- fixture.subscribersRef.get
+    _ <- Sync[F].delay {
+      whenUnsubscribed should not contain fixture.subscriber
     }
   } yield succeed
 
   private def verifyAdministerTables[F[_] : Monad : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
     fixture <- fixtureF
+    subscribeTablesOut <- fixture.lobbySession.process(subscribeTables._2.asRight)
+    _ <- Sync[F].delay {
+      subscribeTablesOut should contain(tableList._2)
+    }
     addTableOut <- fixture.lobbySession.process(addTable._2.asRight)
+    addTablePushOut <- fixture.subscriber.tryDequeue1
     _ <- Sync[F].delay {
       addTableOut shouldBe None
+      addTablePushOut should contain(tableAdded._2)
     }
     updateTableOut <- fixture.lobbySession.process(updateTable._2.asRight)
+    updateTablePushOut <- fixture.subscriber.tryDequeue1
     _ <- Sync[F].delay {
       updateTableOut shouldBe None
+      updateTablePushOut should contain(tableUpdated._2)
     }
     removeTableOut <- fixture.lobbySession.process(removeTable._2.asRight)
+    removeTablePushOut <- fixture.subscriber.tryDequeue1
     _ <- Sync[F].delay {
       removeTableOut shouldBe None
+      removeTablePushOut should contain(tableRemoved._2)
+    }
+    unsubscribeTablesOut <- fixture.lobbySession.process(unsubscribeTables._2.asRight)
+    _ <- Sync[F].delay {
+      unsubscribeTablesOut shouldBe None
     }
   } yield succeed
 
@@ -113,35 +135,35 @@ class LobbySessionSpec
 
       val notAuthenticatedFixtureIO = fixtureF[IO](stubAuthenticator(None))
 
-      "decline authentication upon invalid credentials" in run {
+      "decline authentication upon invalid credentials" in run[Assertion] {
         verifyInOut(
           fixtureF = notAuthenticatedFixtureIO,
           in = login._2.asRight,
           expectedOut = loginFailed._2.some,
         )
       }
-      "decline responding to pings" in run {
+      "decline responding to pings" in run[Assertion] {
         verifyInOut(
           fixtureF = notAuthenticatedFixtureIO,
           in = ping._2.asRight,
           expectedOut = notAuthenticated._2.some,
         )
       }
-      "decline processing TableIn messages" in run {
+      "decline processing TableIn messages" in run[Assertion] {
         verifyInOut(
           fixtureF = notAuthenticatedFixtureIO,
           in = subscribeTables._2.asRight,
           expectedOut = notAuthenticated._2.some,
         )
       }
-      "decline processing AdminTableIn messages" in run {
+      "decline processing AdminTableIn messages" in run[Assertion] {
         verifyInOut(
           fixtureF = notAuthenticatedFixtureIO,
           in = addTable._2.asRight,
           expectedOut = notAuthenticated._2.some,
         )
       }
-      "report invalid messages" in run {
+      "report invalid messages" in run[Assertion] {
         verifyReportInvalidMessages(notAuthenticatedFixtureIO)
       }
     }
@@ -150,20 +172,20 @@ class LobbySessionSpec
 
       val userFixtureIO = authenticatedFixtureF[IO](User, loginSuccessfulUser._2)
 
-      "respond to pings" in run {
+      "respond to pings" in run[Assertion] {
         verifyRespondToPings(userFixtureIO)
       }
-      "subscribe and unsubscribe via TableIn messages" in run {
+      "subscribe and unsubscribe via TableIn messages" in run[Assertion] {
         verifySubscribeUnsubscribe(userFixtureIO)
       }
-      "decline processing AdminTableIn messages" in run {
+      "decline processing AdminTableIn messages" in run[Assertion] {
         verifyInOut(
           fixtureF = userFixtureIO,
           in = addTable._2.asRight,
           expectedOut = notAuthorized._2.some,
         )
       }
-      "report invalid messages" in run {
+      "report invalid messages" in run[Assertion] {
         verifyReportInvalidMessages(userFixtureIO)
       }
     }
@@ -172,16 +194,18 @@ class LobbySessionSpec
 
       val adminFixtureIO = authenticatedFixtureF[IO](Admin, loginSuccessfulAdmin._2)
 
-      "respond to pings" in run {
+      "respond to pings" in run[Assertion] {
         verifyRespondToPings(adminFixtureIO)
       }
-      "subscribe and unsubscribe via TableIn messages" in run {
+      "subscribe and unsubscribe via TableIn messages" in run[Assertion] {
         verifySubscribeUnsubscribe(adminFixtureIO)
       }
-      "administer tables via AdminTableIn messages" in run {
-        verifyAdministerTables(adminFixtureIO)
+      "administer tables via AdminTableIn messages" in {
+        val future = runAsFuture(verifyAdministerTables(adminFixtureIO))
+        context.tick()
+        future
       }
-      "report invalid messages" in run {
+      "report invalid messages" in run[Assertion] {
         verifyReportInvalidMessages(adminFixtureIO)
       }
     }
