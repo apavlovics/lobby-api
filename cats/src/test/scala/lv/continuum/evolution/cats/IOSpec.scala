@@ -16,8 +16,15 @@ trait IOSpec {
   protected implicit val timer: Timer[IO] = context.timer[IO]
   protected implicit val logger: Logger[IO] = consoleLogger[IO](formatter = Formatter.colorful)
 
-  def run[A](io: IO[A])(implicit limit: Duration): A =
+  def runTimed[A](io: IO[A])(implicit limit: Duration): A =
     io.unsafeRunTimed(limit).getOrElse(fail(s"Unable to complete test in $limit"))
 
-  def runAsFuture[A](io: IO[A]): Future[A] = io.unsafeToFuture()
+  def runAsFuture[A](
+    io: IO[A],
+    tick: Boolean = true,
+  ): Future[A] = {
+    val future = io.unsafeToFuture()
+    if (tick) context.tick()
+    future
+  }
 }
