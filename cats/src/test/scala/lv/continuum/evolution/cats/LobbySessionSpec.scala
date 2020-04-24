@@ -3,7 +3,7 @@ package lv.continuum.evolution.cats
 import cats.effect.concurrent.Ref
 import cats.effect.{Concurrent, IO, Sync}
 import cats.implicits._
-import cats.Parallel
+import cats.{Applicative, Parallel}
 import fs2.concurrent.Queue
 import io.circe.Error
 import io.odin.Logger
@@ -97,13 +97,15 @@ class LobbySessionSpec
     }
   } yield succeed
 
-  private def verifySubscribeUnsubscribe[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
-    fixture <- fixtureF
+  private def verifySubscribe[F[_] : Sync](fixture: Fixture[F]): F[Assertion] = for {
     _ <- verifyInOut(fixture, subscribeTables._2.asRight, tableList._2.some)
     whenSubscribed <- fixture.subscribersRef.get
     _ <- Sync[F].delay {
       whenSubscribed should contain(fixture.subscriber)
     }
+  } yield succeed
+
+  private def verifyUnsubscribe[F[_] : Sync](fixture: Fixture[F]): F[Assertion] = for {
     _ <- verifyInOut(fixture, unsubscribeTables._2.asRight, None)
     whenUnsubscribed <- fixture.subscribersRef.get
     _ <- Sync[F].delay {
@@ -111,27 +113,15 @@ class LobbySessionSpec
     }
   } yield succeed
 
-  private def verifyAdministerTables[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] = for {
+  private def verifySubscribeUnsubscribe[F[_] : Sync](
+    fixtureF: F[Fixture[F]],
+  )(
+    verify: Fixture[F] => F[Assertion],
+  ): F[Assertion] = for {
     fixture <- fixtureF
-    _ <- verifyInOut(fixture, subscribeTables._2.asRight, tableList._2.some)
-
-    // Process valid AdminTableIn messages
-    _ <- verifyInOut(fixture, addTable._2.asRight, None)
-    _ <- verifyPushOut(fixture, tableAdded._2.some)
-    _ <- verifyInOut(fixture, updateTable._2.asRight, None)
-    _ <- verifyPushOut(fixture, tableUpdated._2.some)
-    _ <- verifyInOut(fixture, removeTable._2.asRight, None)
-    _ <- verifyPushOut(fixture, tableRemoved._2.some)
-
-    // Process invalid AdminTableIn messages
-    _ <- verifyInOut(fixture, addTableInvalid.asRight, tableAddFailed._2.some)
-    _ <- verifyPushOut(fixture, None)
-    _ <- verifyInOut(fixture, updateTableInvalid.asRight, tableUpdateFailed._2.some)
-    _ <- verifyPushOut(fixture, None)
-    _ <- verifyInOut(fixture, removeTableInvalid.asRight, tableRemoveFailed._2.some)
-    _ <- verifyPushOut(fixture, None)
-
-    _ <- verifyInOut(fixture, unsubscribeTables._2.asRight, None)
+    _ <- verifySubscribe(fixture)
+    _ <- verify(fixture)
+    _ <- verifyUnsubscribe(fixture)
   } yield succeed
 
   "LobbySession" when {
@@ -181,7 +171,7 @@ class LobbySessionSpec
         verifyRespondToPings(userFixtureIO)
       }
       "subscribe and unsubscribe via TableIn messages" in run[Assertion] {
-        verifySubscribeUnsubscribe(userFixtureIO)
+        verifySubscribeUnsubscribe(userFixtureIO)(_ => Applicative[IO].pure(succeed))
       }
       "decline processing AdminTableIn messages" in run[Assertion] {
         verifyInOut(
@@ -203,10 +193,53 @@ class LobbySessionSpec
         verifyRespondToPings(adminFixtureIO)
       }
       "subscribe and unsubscribe via TableIn messages" in run[Assertion] {
-        verifySubscribeUnsubscribe(adminFixtureIO)
+        verifySubscribeUnsubscribe(adminFixtureIO)(_ => Applicative[IO].pure(succeed))
       }
-      "administer tables via AdminTableIn messages" in {
-        val future = runAsFuture(verifyAdministerTables(adminFixtureIO))
+      "handle AddTable, UpdateTable and RemoveTable messages and notify subscribers" in {
+        val handleAdminTableInMessages = verifySubscribeUnsubscribe(adminFixtureIO) { fixture =>
+          for {
+            _ <- verifyInOut(fixture, addTable._2.asRight, None)
+            _ <- verifyPushOut(fixture, tableAdded._2.some)
+            _ <- verifyInOut(fixture, updateTable._2.asRight, None)
+            _ <- verifyPushOut(fixture, tableUpdated._2.some)
+            _ <- verifyInOut(fixture, removeTable._2.asRight, None)
+            _ <- verifyPushOut(fixture, tableRemoved._2.some)
+          } yield succeed
+        }
+        val future = runAsFuture(handleAdminTableInMessages)
+        context.tick()
+        future
+      }
+      "handle failure upon AddTable message" in {
+        val handleFailure = verifySubscribeUnsubscribe(adminFixtureIO) { fixture =>
+          for {
+            _ <- verifyInOut(fixture, addTableInvalid.asRight, tableAddFailed._2.some)
+            _ <- verifyPushOut(fixture, None)
+          } yield succeed
+        }
+        val future = runAsFuture(handleFailure)
+        context.tick()
+        future
+      }
+      "handle failure upon UpdateTable message" in {
+        val handleFailure = verifySubscribeUnsubscribe(adminFixtureIO) { fixture =>
+          for {
+            _ <- verifyInOut(fixture, updateTableInvalid.asRight, tableUpdateFailed._2.some)
+            _ <- verifyPushOut(fixture, None)
+          } yield succeed
+        }
+        val future = runAsFuture(handleFailure)
+        context.tick()
+        future
+      }
+      "handle failure upon RemoveTable message" in {
+        val handleFailure = verifySubscribeUnsubscribe(adminFixtureIO) { fixture =>
+          for {
+            _ <- verifyInOut(fixture, removeTableInvalid.asRight, tableRemoveFailed._2.some)
+            _ <- verifyPushOut(fixture, None)
+          } yield succeed
+        }
+        val future = runAsFuture(handleFailure)
         context.tick()
         future
       }
