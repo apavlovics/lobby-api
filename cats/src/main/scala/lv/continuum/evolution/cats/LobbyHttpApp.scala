@@ -19,12 +19,12 @@ import org.http4s.websocket.WebSocketFrame
 import org.http4s.websocket.WebSocketFrame.Text
 import org.http4s.{HttpApp, HttpRoutes}
 
-class LobbyHttpApp[F[_] : Concurrent : Logger : Parallel](
+class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
   authenticator: Authenticator[F],
   lobbyRef: Ref[F, Lobby],
   subscribersRef: Ref[F, Subscribers[F]],
 ) extends Http4sDsl[F]
-  with ProtocolFormat {
+    with ProtocolFormat {
 
   private def pipe(
     lobbySession: LobbySession[F],
@@ -38,29 +38,31 @@ class LobbyHttpApp[F[_] : Concurrent : Logger : Parallel](
       .map(out => Text(out.asJson.noSpaces))
   }
 
-  val app: HttpApp[F] = HttpRoutes.of[F] {
-    case GET -> Root / "lobby_api" =>
-      for {
-        sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
-        queue <- Queue.unbounded[F, WebSocketFrame]
-        subscriber <- Queue.unbounded[F, PushOut]
-        lobbySession = LobbySession(
-          authenticator = authenticator,
-          lobbyRef = lobbyRef,
-          subscribersRef = subscribersRef,
-          sessionParamsRef = sessionParamsRef,
-          subscriber = subscriber,
-        )
+  val app: HttpApp[F] = HttpRoutes
+    .of[F] {
+      case GET -> Root / "lobby_api" =>
+        for {
+          sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
+          queue            <- Queue.unbounded[F, WebSocketFrame]
+          subscriber       <- Queue.unbounded[F, PushOut]
+          lobbySession = LobbySession(
+            authenticator = authenticator,
+            lobbyRef = lobbyRef,
+            subscribersRef = subscribersRef,
+            sessionParamsRef = sessionParamsRef,
+            subscriber = subscriber,
+          )
 
-        send = queue.dequeue.through(pipe(lobbySession, subscriber))
-        receive = queue.enqueue
-        response <- WebSocketBuilder[F].build(send, receive)
-      } yield response
-  }.orNotFound
+          send = queue.dequeue.through(pipe(lobbySession, subscriber))
+          receive = queue.enqueue
+          response <- WebSocketBuilder[F].build(send, receive)
+        } yield response
+    }
+    .orNotFound
 }
 
 object LobbyHttpApp {
-  def apply[F[_] : Concurrent : Logger : Parallel](
+  def apply[F[_]: Concurrent: Logger: Parallel](
     authenticator: Authenticator[F],
     lobbyRef: Ref[F, Lobby],
     subscribersRef: Ref[F, Subscribers[F]],

@@ -1,6 +1,5 @@
 import Dependencies._
 
-// TODO Add Scalafmt code formatter
 lazy val root = (project in file("."))
   .aggregate(
     common,
@@ -9,18 +8,20 @@ lazy val root = (project in file("."))
   )
   .settings(
     name := "evolution-gaming-lobby-api",
-    inThisBuild(List(
-      organization := "lv.continuum",
-      scalaVersion := "2.13.1",
-      scalacOptions ++= Seq(
-        "-deprecation",
-        "-feature",
-        "-language:higherKinds",
-        "-unchecked",
-        "-Xfatal-warnings",
-        "-Xlint:_",
-      ),
-    )),
+    inThisBuild(
+      List(
+        organization := "lv.continuum",
+        scalaVersion := "2.13.1",
+        scalacOptions ++= Seq(
+          "-deprecation",
+          "-feature",
+          "-language:higherKinds",
+          "-unchecked",
+          "-Xfatal-warnings",
+          "-Xlint:_",
+        ),
+      )
+    ),
   )
 
 lazy val common = (project in file("common"))
@@ -33,7 +34,6 @@ lazy val common = (project in file("common"))
       Enumeratum,
       PureConfig.Core,
       PureConfig.CatsEffect,
-
       CatsScalaTest % Test,
       ScalaTest % Test,
       ScalaMock % Test,
@@ -51,7 +51,6 @@ lazy val akka = (project in file("akka"))
       Akka.StreamTyped,
       Logback,
       ScalaLogging,
-
       Akka.ActorTestkitTyped % Test,
       Akka.HttpTestkit % Test,
       Akka.StreamTestkit % Test,
@@ -68,7 +67,6 @@ lazy val cats = (project in file("cats"))
       Http4s.Dsl,
       Odin.Core,
       Odin.Slf4j,
-
       Cats.Laws % Test,
     ),
   )

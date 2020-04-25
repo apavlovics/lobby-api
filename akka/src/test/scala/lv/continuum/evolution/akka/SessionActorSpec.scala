@@ -15,11 +15,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class SessionActorSpec
-  extends AnyWordSpec
-    with Matchers
-    with MockFactory
-    with TestData {
+class SessionActorSpec extends AnyWordSpec with Matchers with MockFactory with TestData {
 
   trait Fixture {
     val authenticator: Authenticator = mock[Authenticator]
@@ -36,18 +32,22 @@ class SessionActorSpec
       verifyReplyTo(login._2, out.some)
 
     protected def verifyReportInvalidMessages(): Unit = {
-      testKit.run(SessionCommand(
-        in = error.asLeft,
-        replyTo = replyToInbox.ref,
-      ))
+      testKit.run(
+        SessionCommand(
+          in = error.asLeft,
+          replyTo = replyToInbox.ref,
+        )
+      )
       replyToInbox.expectMessage(invalidMessage._2.some)
     }
 
     protected def verifyReplyTo(in: In, out: Option[Out]): Unit = {
-      testKit.run(SessionCommand(
-        in = in.asRight,
-        replyTo = replyToInbox.ref,
-      ))
+      testKit.run(
+        SessionCommand(
+          in = in.asRight,
+          replyTo = replyToInbox.ref,
+        )
+      )
       replyToInbox.expectMessage(out)
     }
 

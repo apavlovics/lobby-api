@@ -14,24 +14,25 @@ import org.http4s.server.blaze._
 
 object LobbyServerCats extends IOApp {
 
-  private implicit val logger: Logger[IO] = consoleLogger(formatter = Formatter.colorful)
+  implicit private val logger: Logger[IO] = consoleLogger(formatter = Formatter.colorful)
 
-  private def runF[F[_] : ConcurrentEffect : ContextShift : Logger : Parallel : Timer]: F[ExitCode] =
+  private def runF[F[_]: ConcurrentEffect: ContextShift: Logger: Parallel: Timer]: F[ExitCode] =
     Blocker[F].use { blocker =>
       for {
-        config <- Applicative[F].pure(ConfigFactory.load())
+        config            <- Applicative[F].pure(ConfigFactory.load())
         lobbyServerConfig <- LobbyServerConfig.load[F](config, blocker)
 
         authenticator = Authenticator[F](new CommonAuthenticator)
-        lobbyRef <- Ref.of[F, Lobby](Lobby())
+        lobbyRef       <- Ref.of[F, Lobby](Lobby())
         subscribersRef <- Ref.of[F, Subscribers[F]](Set.empty)
 
-        _ <- BlazeServerBuilder[F]
-          .bindHttp(lobbyServerConfig.port, lobbyServerConfig.host)
-          .withHttpApp(LobbyHttpApp[F](authenticator, lobbyRef, subscribersRef).app)
-          .serve
-          .compile
-          .drain
+        _ <-
+          BlazeServerBuilder[F]
+            .bindHttp(lobbyServerConfig.port, lobbyServerConfig.host)
+            .withHttpApp(LobbyHttpApp[F](authenticator, lobbyRef, subscribersRef).app)
+            .serve
+            .compile
+            .drain
       } yield ExitCode.Success
     }
 

@@ -11,10 +11,10 @@ import scala.concurrent.Future
 
 trait IOSpec {
 
-  protected implicit val context: TestContext = TestContext()
-  protected implicit val cs: ContextShift[IO] = context.contextShift[IO]
-  protected implicit val timer: Timer[IO] = context.timer[IO]
-  protected implicit val logger: Logger[IO] = consoleLogger[IO](formatter = Formatter.colorful)
+  implicit protected val context: TestContext = TestContext()
+  implicit protected val cs: ContextShift[IO] = context.contextShift[IO]
+  implicit protected val timer: Timer[IO] = context.timer[IO]
+  implicit protected val logger: Logger[IO] = consoleLogger[IO](formatter = Formatter.colorful)
 
   def runTimed[A](io: IO[A])(implicit limit: Duration): A =
     io.unsafeRunTimed(limit).getOrElse(fail(s"Unable to complete test in $limit"))

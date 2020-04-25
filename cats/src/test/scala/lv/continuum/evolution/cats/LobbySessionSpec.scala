@@ -19,110 +19,104 @@ import org.scalatest.wordspec.AsyncWordSpec
 
 import scala.concurrent.duration._
 
-class LobbySessionSpec
-  extends AsyncWordSpec
-    with IOSpec
-    with Matchers
-    with TestData {
+class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with TestData {
 
-  private implicit val limit: Duration = 5.seconds
+  implicit private val limit: Duration = 5.seconds
 
-  private def stubAuthenticator[F[_] : Sync](userType: Option[UserType]): Authenticator[F] = {
+  private def stubAuthenticator[F[_]: Sync](userType: Option[UserType]): Authenticator[F] = {
     val stub = new CommonAuthenticator {
       override def authenticate(username: Username, password: Password): Option[UserType] = userType
     }
     Authenticator[F](stub)
   }
 
-  private def fixtureF[F[_] : Concurrent : Logger : Parallel](
+  private def fixtureF[F[_]: Concurrent: Logger: Parallel](
     authenticator: Authenticator[F],
-  ): F[Fixture[F]] = for {
-    lobbyRef <- Ref.of[F, Lobby](Lobby())
-    subscribersRef <- Ref.of[F, Subscribers[F]](Set.empty)
-    sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
-    subscriber <- Queue.unbounded[F, PushOut]
-    lobbySession = LobbySession[F](
-      authenticator = authenticator,
-      lobbyRef = lobbyRef,
-      subscribersRef = subscribersRef,
-      sessionParamsRef = sessionParamsRef,
-      subscriber = subscriber,
-    )
-  } yield Fixture[F](lobbySession, subscribersRef, subscriber)
+  ): F[Fixture[F]] =
+    for {
+      lobbyRef         <- Ref.of[F, Lobby](Lobby())
+      subscribersRef   <- Ref.of[F, Subscribers[F]](Set.empty)
+      sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
+      subscriber       <- Queue.unbounded[F, PushOut]
+      lobbySession = LobbySession[F](
+        authenticator = authenticator,
+        lobbyRef = lobbyRef,
+        subscribersRef = subscribersRef,
+        sessionParamsRef = sessionParamsRef,
+        subscriber = subscriber,
+      )
+    } yield Fixture[F](lobbySession, subscribersRef, subscriber)
 
-  private def authenticatedFixtureF[F[_] : Concurrent : Logger : Parallel](
+  private def authenticatedFixtureF[F[_]: Concurrent: Logger: Parallel](
     userType: UserType,
     expectedOut: Out,
-  ): F[Fixture[F]] = for {
-    fixture <- fixtureF(stubAuthenticator(userType.some))
-    out <- fixture.lobbySession.process(login._2.asRight)
-    _ <- Sync[F].delay {
-      out should contain(expectedOut)
-    }
-  } yield fixture
+  ): F[Fixture[F]] =
+    for {
+      fixture <- fixtureF(stubAuthenticator(userType.some))
+      out     <- fixture.lobbySession.process(login._2.asRight)
+      _       <- Sync[F].delay(out should contain(expectedOut))
+    } yield fixture
 
-  private def verifyInOut[F[_] : Sync](
+  private def verifyInOut[F[_]: Sync](
     fixture: Fixture[F],
     in: Either[Error, In],
     expectedOut: Option[Out],
-  ): F[Assertion] = for {
-    out <- fixture.lobbySession.process(in)
-    _ <- Sync[F].delay {
-      out shouldBe expectedOut
-    }
-  } yield succeed
+  ): F[Assertion] =
+    for {
+      out <- fixture.lobbySession.process(in)
+      _   <- Sync[F].delay(out shouldBe expectedOut)
+    } yield succeed
 
-  private def verifyInOut[F[_] : Sync](
+  private def verifyInOut[F[_]: Sync](
     fixtureF: F[Fixture[F]],
     in: Either[Error, In],
     expectedOut: Option[Out],
-  ): F[Assertion] = for {
-    fixture <- fixtureF
-    _ <- verifyInOut(fixture, in, expectedOut)
-  } yield succeed
+  ): F[Assertion] =
+    for {
+      fixture <- fixtureF
+      _       <- verifyInOut(fixture, in, expectedOut)
+    } yield succeed
 
-  private def verifyRespondToPings[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
+  private def verifyRespondToPings[F[_]: Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
     verifyInOut(fixtureF, ping._2.asRight, pong._2.some)
 
-  private def verifyReportInvalidMessages[F[_] : Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
+  private def verifyReportInvalidMessages[F[_]: Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
     verifyInOut(fixtureF, error.asLeft, invalidMessage._2.some)
 
-  private def verifyPushOut[F[_] : Sync](
+  private def verifyPushOut[F[_]: Sync](
     fixture: Fixture[F],
     expectedPushOut: Option[PushOut],
-  ): F[Assertion] = for {
-    pushOut <- fixture.subscriber.tryDequeue1
-    _ <- Sync[F].delay {
-      pushOut shouldBe expectedPushOut
-    }
-  } yield succeed
+  ): F[Assertion] =
+    for {
+      pushOut <- fixture.subscriber.tryDequeue1
+      _       <- Sync[F].delay(pushOut shouldBe expectedPushOut)
+    } yield succeed
 
-  private def verifySubscribe[F[_] : Sync](fixture: Fixture[F]): F[Assertion] = for {
-    _ <- verifyInOut(fixture, subscribeTables._2.asRight, tableList._2.some)
-    whenSubscribed <- fixture.subscribersRef.get
-    _ <- Sync[F].delay {
-      whenSubscribed should contain(fixture.subscriber)
-    }
-  } yield succeed
+  private def verifySubscribe[F[_]: Sync](fixture: Fixture[F]): F[Assertion] =
+    for {
+      _              <- verifyInOut(fixture, subscribeTables._2.asRight, tableList._2.some)
+      whenSubscribed <- fixture.subscribersRef.get
+      _              <- Sync[F].delay(whenSubscribed should contain(fixture.subscriber))
+    } yield succeed
 
-  private def verifyUnsubscribe[F[_] : Sync](fixture: Fixture[F]): F[Assertion] = for {
-    _ <- verifyInOut(fixture, unsubscribeTables._2.asRight, None)
-    whenUnsubscribed <- fixture.subscribersRef.get
-    _ <- Sync[F].delay {
-      whenUnsubscribed should not contain fixture.subscriber
-    }
-  } yield succeed
+  private def verifyUnsubscribe[F[_]: Sync](fixture: Fixture[F]): F[Assertion] =
+    for {
+      _                <- verifyInOut(fixture, unsubscribeTables._2.asRight, None)
+      whenUnsubscribed <- fixture.subscribersRef.get
+      _                <- Sync[F].delay(whenUnsubscribed should not contain fixture.subscriber)
+    } yield succeed
 
-  private def verifySubscribeUnsubscribe[F[_] : Sync](
+  private def verifySubscribeUnsubscribe[F[_]: Sync](
     fixtureF: F[Fixture[F]],
   )(
     verify: Fixture[F] => F[Assertion],
-  ): F[Assertion] = for {
-    fixture <- fixtureF
-    _ <- verifySubscribe(fixture)
-    _ <- verify(fixture)
-    _ <- verifyUnsubscribe(fixture)
-  } yield succeed
+  ): F[Assertion] =
+    for {
+      fixture <- fixtureF
+      _       <- verifySubscribe(fixture)
+      _       <- verify(fixture)
+      _       <- verifyUnsubscribe(fixture)
+    } yield succeed
 
   "LobbySession" when {
 

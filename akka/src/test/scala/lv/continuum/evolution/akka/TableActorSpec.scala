@@ -8,10 +8,7 @@ import lv.continuum.evolution.protocol.TestData
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class TableActorSpec
-  extends AnyWordSpec
-    with Matchers
-    with TestData {
+class TableActorSpec extends AnyWordSpec with Matchers with TestData {
 
   trait Fixture {
     val testKit: BehaviorTestKit[TableCommand] = BehaviorTestKit(TableActor())

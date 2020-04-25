@@ -31,21 +31,20 @@ class LobbyServerAkka(implicit
 
         // Initialize actors, sources and flows per WebSocket connection
         val (pushActor, pushSource) = PushSource()
-        val sessionActor = system.spawn(SessionActor(authenticator, tableActor, pushActor), s"SessionActor-${ UUID.randomUUID() }")
+        val sessionActor = system.spawn(SessionActor(authenticator, tableActor, pushActor), s"SessionActor-${UUID.randomUUID()}")
         handleWebSocketMessages(LobbyFlow(pushSource, sessionActor))
       }
     }
 
-  def start(host: String, port: Int): Unit = {
+  def start(host: String, port: Int): Unit =
     Http().bindAndHandle(route, host, port).onComplete {
       case Success(serverBinding) =>
         val localAddress = serverBinding.localAddress
-        logger.info(s"Server started at ${ localAddress.getHostName }:${ localAddress.getPort }, press enter to terminate")
+        logger.info(s"Server started at ${localAddress.getHostName}:${localAddress.getPort}, press enter to terminate")
 
       case Failure(_) =>
         logger.error(s"Server failed to start, press enter to terminate")
     }
-  }
 }
 
 object LobbyServerAkka extends App {

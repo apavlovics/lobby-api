@@ -84,7 +84,7 @@ object SessionActor {
       error: Error,
       replyTo: ActorRef[Option[Out]],
     ): Behavior[SessionCommand] = {
-      context.log.warn(s"Issue while parsing JSON: ${ error.getMessage }")
+      context.log.warn(s"Issue while parsing JSON: ${error.getMessage}")
       replyTo ! Some(InvalidMessage)
       Behaviors.same
     }
@@ -95,7 +95,7 @@ object SessionActor {
     }
   }
 
-  private implicit class Stopper(behavior: Behaviors.Receive[SessionCommand]) {
+  implicit private class Stopper(behavior: Behaviors.Receive[SessionCommand]) {
     def stopWhenWatchedActorTerminates: Behavior[SessionCommand] =
       behavior.receiveSignal {
         case (context, Terminated(_)) =>

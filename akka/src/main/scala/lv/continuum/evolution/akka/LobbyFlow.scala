@@ -18,15 +18,13 @@ import lv.continuum.evolution.protocol._
 import scala.concurrent.duration._
 
 /** A complete lobby flow. */
-object LobbyFlow
-  extends ProtocolFormat
-    with LazyLogging {
+object LobbyFlow extends ProtocolFormat with LazyLogging {
 
   private val parallelism = Runtime.getRuntime.availableProcessors() * 2 - 1
   logger.info(s"Parallelism is $parallelism")
 
-  private implicit val timeout: Timeout = Timeout(5.seconds)
-  logger.info(s"Timeout is ${ timeout.duration }")
+  implicit private val timeout: Timeout = Timeout(5.seconds)
+  logger.info(s"Timeout is ${timeout.duration}")
 
   def apply(
     pushSource: Source[PushOut, NotUsed],

@@ -13,10 +13,12 @@ object PushSource {
   def apply()(implicit
     materializer: Materializer,
   ): (ActorRef[PushOut], Source[PushOut, NotUsed]) =
-    ActorSource.actorRef[PushOut](
-      completionMatcher = Map.empty,
-      failureMatcher = Map.empty,
-      bufferSize = 100,
-      overflowStrategy = OverflowStrategy.fail,
-    ).preMaterialize()
+    ActorSource
+      .actorRef[PushOut](
+        completionMatcher = Map.empty,
+        failureMatcher = Map.empty,
+        bufferSize = 100,
+        overflowStrategy = OverflowStrategy.fail,
+      )
+      .preMaterialize()
 }
