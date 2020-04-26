@@ -5,7 +5,8 @@ import lv.continuum.evolution.protocol.Protocol.UserType._
 import lv.continuum.evolution.protocol.Protocol._
 
 /** A simple in-memory `Authenticator` service. While it is enough for the purposes of this sample
-  * application, a real-world implementation would probably need to work asynchronously. */
+  * application, a real-world implementation would probably need to work asynchronously.
+  */
 class Authenticator {
 
   def authenticate(username: Username, password: Password): Option[UserType] =
