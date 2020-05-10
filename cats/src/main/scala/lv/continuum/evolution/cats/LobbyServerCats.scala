@@ -14,8 +14,6 @@ import org.http4s.server.blaze._
 
 object LobbyServerCats extends IOApp {
 
-  implicit private val logger: Logger[IO] = consoleLogger(formatter = Formatter.colorful)
-
   private def runF[F[_]: ConcurrentEffect: ContextShift: Logger: Parallel: Timer]: F[ExitCode] =
     Blocker[F].use { blocker =>
       for {
@@ -36,5 +34,8 @@ object LobbyServerCats extends IOApp {
       } yield ExitCode.Success
     }
 
-  override def run(args: List[String]): IO[ExitCode] = runF[IO]
+  override def run(args: List[String]): IO[ExitCode] = {
+    implicit val logger: Logger[IO] = consoleLogger(formatter = Formatter.colorful)
+    runF[IO]
+  }
 }
