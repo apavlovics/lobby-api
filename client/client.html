@@ -7,7 +7,7 @@
   <title>WebSocket Client</title>
 
   <!-- jQuery -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
   <h1>WebSocket Client</h1>
@@ -31,14 +31,14 @@
   <ul id="incoming-messages"></ul>
 
   <script>
-    var $outgoingMessageType = $("#outgoing-message-type")
-    var $outgoingMessage = $("#outgoing-message")
-    var $send = $("#send")
-    var $incomingMessages = $("#incoming-messages")
+    const $outgoingMessageType = $("#outgoing-message-type")
+    const $outgoingMessage = $("#outgoing-message")
+    const $send = $("#send")
+    const $incomingMessages = $("#incoming-messages")
 
     function updateOutgoingMessage() {
-      var outgoingMessageType = $outgoingMessageType.children("option:selected").val()
-      var message
+      const outgoingMessageType = $outgoingMessageType.children("option:selected").val()
+      let message
       switch(outgoingMessageType) {
         case "login":
           message =
@@ -97,7 +97,7 @@
 }`
           break
         default:
-          console.log("Outgoing message type " + outgoingMessageType + " is invalid")
+          console.log(`Outgoing message type ${outgoingMessageType} is invalid`)
           break
       }
       $outgoingMessage.val(message)
@@ -107,14 +107,14 @@
     $(updateOutgoingMessage)
 
     $send.prop("disabled", true)
-    var webSocket = new WebSocket("ws://localhost:9000/lobby_api")
+    const webSocket = new WebSocket("ws://localhost:9000/lobby_api")
 
-    webSocket.onopen = function () {
+    webSocket.onopen = () => {
       $send.prop("disabled", false)
       $incomingMessages.prepend($("<li>Connected via WebSocket</li>"))
 
-      $send.on("click", function () {
-        var outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
+      $send.click(() => {
+        const outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
         switch (outgoingMessageFormat) {
           case "text":
             webSocket.send($outgoingMessage.val())
@@ -123,21 +123,21 @@
             webSocket.send(new Blob([$outgoingMessage.val()]))
             break
           default:
-            console.log("Outgoing message format " + outgoingMessageFormat + " is invalid")
+            console.log(`Outgoing message format ${outgoingMessageFormat} is invalid`)
             break
         }
       })
     }
 
-    webSocket.onerror = function (error) {
+    webSocket.onerror = error => {
       console.log("Issue with WebSocket connection", error)
     }
 
-    webSocket.onmessage = function (event) {
+    webSocket.onmessage = event => {
       if (typeof event.data === "string") {
-        $incomingMessages.prepend($("<li>" + event.data + "</li>"))
+        $incomingMessages.prepend($(`<li>${event.data}</li>`))
       } else {
-        console.log("Data " + event.data + " is not supported")
+        console.log(`Data ${event.data} is not supported`)
       }
     }
   </script>
