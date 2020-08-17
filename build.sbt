@@ -7,7 +7,7 @@ lazy val root = (project in file("."))
     cats,
   )
   .settings(
-    name := "evolution-gaming-lobby-api",
+    name := "lobby-api",
     inThisBuild(
       List(
         organization := "lv.continuum",

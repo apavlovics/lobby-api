@@ -1,4 +1,4 @@
-# Evolution Gaming Lobby API
+# Lobby API
 
 This sample application exposes a server for a JSON-based lobby API over WebSocket. There are two
 implementations available: Akka-based one (see `akka` module) and Cats-based one (see `cats` module).
