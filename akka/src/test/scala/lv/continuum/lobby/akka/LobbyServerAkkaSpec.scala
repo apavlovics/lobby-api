@@ -4,7 +4,10 @@ import akka.http.scaladsl.testkit.{ScalatestRouteTest, WSProbe}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class LobbyServerAkkaSpec extends AnyWordSpec with Matchers with ScalatestRouteTest {
+class LobbyServerAkkaSpec
+  extends AnyWordSpec
+    with Matchers
+    with ScalatestRouteTest {
 
   private val route = new LobbyServerAkka().route
 

@@ -34,8 +34,8 @@ lazy val common = (project in file("common"))
       Enumeratum,
       PureConfig.Core,
       PureConfig.CatsEffect,
-      CatsScalaTest % Test,
-      ScalaTest % Test,
+      ScalaTest.WordSpec % Test,
+      ScalaTest.ShouldMatchers % Test,
       ScalaMock % Test,
     ),
   )

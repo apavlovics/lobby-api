@@ -5,7 +5,6 @@ object Dependencies {
   private val akkaVersion = "2.6.8"
   private val akkaHttpVersion = "10.2.0"
   private val catsVersion = "2.1.4"
-  private val catsScalaTestVersion = "3.0.8"
   private val circeVersion = "0.13.0"
   private val enumeratumVersion = "1.6.1"
   private val http4sVersion = "0.21.7"
@@ -30,8 +29,6 @@ object Dependencies {
   object Cats {
     val Laws = "org.typelevel" %% "cats-effect-laws" % catsVersion
   }
-
-  val CatsScalaTest = "com.ironcorelabs" %% "cats-scalatest" % catsScalaTestVersion
 
   object Circe {
     val Core = "io.circe" %% "circe-core" % circeVersion
@@ -61,5 +58,9 @@ object Dependencies {
 
   val ScalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion
   val ScalaMock = "org.scalamock" %% "scalamock" % scalaMockVersion
-  val ScalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion
+
+  object ScalaTest {
+    val WordSpec = "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion
+    val ShouldMatchers = "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion
+  }
 }
