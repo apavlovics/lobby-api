@@ -37,7 +37,7 @@ class LobbyServerAkka(implicit
     }
 
   def start(host: String, port: Int): Unit =
-    Http().bindAndHandle(route, host, port).onComplete {
+    Http().newServerAt(host, port).bind(route).onComplete {
       case Success(serverBinding) =>
         val localAddress = serverBinding.localAddress
         logger.info(s"Server started at ${localAddress.getHostName}:${localAddress.getPort}, press enter to terminate")

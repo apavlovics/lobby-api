@@ -2,19 +2,19 @@ import sbt._
 
 object Dependencies {
 
-  private val akkaVersion = "2.6.5"
-  private val akkaHttpVersion = "10.1.12"
-  private val catsVersion = "2.1.3"
-  private val catsScalaTestVersion = "3.0.4"
+  private val akkaVersion = "2.6.8"
+  private val akkaHttpVersion = "10.2.0"
+  private val catsVersion = "2.1.4"
+  private val catsScalaTestVersion = "3.0.8"
   private val circeVersion = "0.13.0"
   private val enumeratumVersion = "1.6.1"
-  private val http4sVersion = "0.21.4"
+  private val http4sVersion = "0.21.7"
   private val logbackVersion = "1.2.3"
-  private val odinVersion = "0.7.0"
-  private val pureConfigVersion = "0.12.3"
+  private val odinVersion = "0.8.1"
+  private val pureConfigVersion = "0.13.0"
   private val scalaLoggingVersion = "3.9.2"
-  private val scalaMockVersion = "4.4.0"
-  private val scalaTestVersion = "3.1.1"
+  private val scalaMockVersion = "5.0.0"
+  private val scalaTestVersion = "3.2.0"
 
   object Akka {
     val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
