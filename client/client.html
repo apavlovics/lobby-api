@@ -31,13 +31,13 @@
   <ul id="incoming-messages"></ul>
 
   <script>
-    const $outgoingMessageType = $("#outgoing-message-type")
-    const $outgoingMessage = $("#outgoing-message")
-    const $send = $("#send")
-    const $incomingMessages = $("#incoming-messages")
+    const outgoingMessageTypeSelect = $("#outgoing-message-type")
+    const outgoingMessageTextArea = $("#outgoing-message")
+    const sendButton = $("#send")
+    const incomingMessagesList = $("#incoming-messages")
 
     function updateOutgoingMessage() {
-      const outgoingMessageType = $outgoingMessageType.children("option:selected").val()
+      const outgoingMessageType = outgoingMessageTypeSelect.children("option:selected").val()
       let message
       switch(outgoingMessageType) {
         case "login":
@@ -100,27 +100,25 @@
           console.log(`Outgoing message type ${outgoingMessageType} is invalid`)
           break
       }
-      $outgoingMessage.val(message)
+      outgoingMessageTextArea.val(message)
     }
-
-    $outgoingMessageType.change(updateOutgoingMessage)
+    outgoingMessageTypeSelect.change(updateOutgoingMessage)
     $(updateOutgoingMessage)
 
-    $send.prop("disabled", true)
+    sendButton.attr("disabled", true)
     const webSocket = new WebSocket("ws://localhost:9000/lobby_api")
-
     webSocket.onopen = () => {
-      $send.prop("disabled", false)
-      $incomingMessages.prepend($("<li>Connected via WebSocket</li>"))
+      sendButton.attr("disabled", false)
+      incomingMessagesList.prepend($("<li>Connected via WebSocket</li>"))
 
-      $send.click(() => {
+      sendButton.click(() => {
         const outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
         switch (outgoingMessageFormat) {
           case "text":
-            webSocket.send($outgoingMessage.val())
+            webSocket.send(outgoingMessageTextArea.val())
             break
           case "binary":
-            webSocket.send(new Blob([$outgoingMessage.val()]))
+            webSocket.send(new Blob([outgoingMessageTextArea.val()]))
             break
           default:
             console.log(`Outgoing message format ${outgoingMessageFormat} is invalid`)
@@ -128,14 +126,12 @@
         }
       })
     }
-
     webSocket.onerror = error => {
       console.log("Issue with WebSocket connection", error)
     }
-
     webSocket.onmessage = event => {
       if (typeof event.data === "string") {
-        $incomingMessages.prepend($(`<li>${event.data}</li>`))
+        incomingMessagesList.prepend($(`<li>${event.data}</li>`))
       } else {
         console.log(`Data ${event.data} is not supported`)
       }
