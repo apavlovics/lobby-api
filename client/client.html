@@ -26,14 +26,13 @@
   <input type="radio" name="outgoing-message-format" value="text" checked>Text
   <input type="radio" name="outgoing-message-format" value="binary">Binary
   <br>
-  <button id="send">Send</button>
+  <button id="send" disabled>Send</button>
   <br>
   <ul id="incoming-messages"></ul>
 
   <script>
     const outgoingMessageTypeSelect = $("#outgoing-message-type")
     const outgoingMessageTextArea = $("#outgoing-message")
-    const sendButton = $("#send")
     const incomingMessagesList = $("#incoming-messages")
 
     function updateOutgoingMessage() {
@@ -105,12 +104,10 @@
     outgoingMessageTypeSelect.change(updateOutgoingMessage)
     $(updateOutgoingMessage)
 
-    sendButton.attr("disabled", true)
     const webSocket = new WebSocket("ws://localhost:9000/lobby_api")
     webSocket.onopen = () => {
-      sendButton.attr("disabled", false)
-      incomingMessagesList.prepend($("<li>Connected via WebSocket</li>"))
-
+      const sendButton = $("#send")
+      sendButton.removeAttr("disabled")
       sendButton.click(() => {
         const outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
         switch (outgoingMessageFormat) {
@@ -125,6 +122,7 @@
             break
         }
       })
+      incomingMessagesList.prepend($("<li>Connected via WebSocket</li>"))
     }
     webSocket.onerror = error => {
       console.log("Issue with WebSocket connection", error)
