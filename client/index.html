@@ -2,33 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="author" content="Andrejs Pavlovics">
-  <link type="text/css" rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="main.css">
   <title>WebSocket Client</title>
 
   <!-- jQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="main.js"></script>
 </head>
 <body>
   <h1>WebSocket Client</h1>
-  <select id="outgoing-message-type">
-    <option value="login" selected>Login</option>
-    <option value="ping">Ping</option>
-    <option value="subscribe_tables">Subscribe Tables</option>
-    <option value="unsubscribe_tables">Unsubscribe Tables</option>
-    <option value="add_table">Add Table</option>
-    <option value="update_table">Update Table</option>
-    <option value="remove_table">Remove Table</option>
-  </select>
-  <br>
-  <textarea id="outgoing-message"></textarea>
-  <br>
-  <input type="radio" name="outgoing-message-format" value="text" checked>Text
-  <input type="radio" name="outgoing-message-format" value="binary">Binary
-  <br>
-  <button id="send" disabled>Send</button>
-  <br>
-  <ul id="incoming-messages"></ul>
-  <script src="main.js"></script>
+  <div id="client">
+    <select id="outgoing-message-type">
+      <option value="login" selected>Login</option>
+      <option value="ping">Ping</option>
+      <option value="subscribe_tables">Subscribe Tables</option>
+      <option value="unsubscribe_tables">Unsubscribe Tables</option>
+      <option value="add_table">Add Table</option>
+      <option value="update_table">Update Table</option>
+      <option value="remove_table">Remove Table</option>
+    </select>
+    <textarea id="outgoing-message"></textarea>
+    <div>
+      <input type="radio" id="text" name="outgoing-message-format" value="text" checked><label for="text"> Text</label>
+      <input type="radio" id="binary" name="outgoing-message-format" value="binary"><label for="binary"> Binary</label>
+    </div>
+    <button id="send" disabled>Send</button>
+    <ul id="incoming-messages"></ul>
+  </div>
 </body>
 </html>
