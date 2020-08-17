@@ -1,3 +1,13 @@
+:root {
+  --white: 255, 255, 255;
+  --black: 0, 0, 0;
+  --blue: 0, 162, 255;
+  --lighter-blue: 51, 180, 255;
+  --darker-blue: 0, 128, 202;
+  --dark-blue: 0, 51, 153;
+  --gray: 235, 235, 235;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -5,7 +15,7 @@
 
 body {
   margin: 0 4em;
-  color: #000;
+  color: rgb(var(--black));
 }
 
 body, button, input[type="radio"], select, textarea {
@@ -17,17 +27,77 @@ button, input[type="radio"], select, textarea, li {
 }
 
 button {
-  padding: .5em;
+  padding: .5em .8em;
+  background-color: rgb(var(--blue));
+  color: rgb(var(--white));
+  border-style: none;
+  border-radius: .5em;
+  transition-duration: .5s;
+  cursor: pointer;
 }
 
-input[type="radio"] + label {
+button:hover {
+  background-color: rgb(var(--lighter-blue));
+  transition-duration: 0s;
+}
+
+button:active {
+  background-color: rgb(var(--darker-blue));
+}
+
+button:disabled {
+  background-color: rgb(var(--gray));
+  cursor: default;
+}
+
+input[type=radio] {
+  font-size: var(--minesweeper-font-size);
+  visibility: hidden;
+}
+
+input[type=radio] + label {
+  position: relative;
+  cursor: pointer;
+}
+
+input[type=radio] + label::before {
+  box-sizing: border-box;
+  position: absolute;
+  top: calc(50% - .5em);
+  left: -1em;
+  height: 1em;
+  width: 1em;
+  content: "";
+  border: .35em solid rgb(var(--gray));
+  background-color: rgb(var(--gray));
+  border-radius: 50%;
+}
+
+input[type=radio]:hover + label::before {
+  background-color: rgb(var(--white));
+}
+
+input[type=radio]:active + label::before {
+  background-color: rgb(var(--white));
+  border-color: rgb(var(--darker-blue));
+}
+
+input[type=radio]:checked + label::before {
+  background-color: rgb(var(--white));
+  border-color: rgb(var(--blue));
+}
+
+input[type=radio] + label {
   margin-right: 1em;
 }
 
 textarea {
-  width: 50em;
+  width: 30em;
   height: 10em;
   padding: .5em;
+  border: 1px solid rgb(var(--gray));
+  border-radius: .5em;
+  resize: none;
 }
 
 h1 {
