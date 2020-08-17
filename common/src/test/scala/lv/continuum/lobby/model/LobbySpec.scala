@@ -5,10 +5,7 @@ import lv.continuum.lobby.protocol.TestData
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class LobbySpec
-  extends AnyWordSpec
-    with Matchers
-    with TestData {
+class LobbySpec extends AnyWordSpec with Matchers with TestData {
 
   private val lobby = Lobby(tables = Vector(tableJamesBond, tableMissionImpossible))
   private val lobbyEmpty = Lobby(tables = Vector.empty)

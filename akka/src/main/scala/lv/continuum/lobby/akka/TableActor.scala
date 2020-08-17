@@ -2,10 +2,10 @@ package lv.continuum.lobby.akka
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
+import lv.continuum.lobby.model.Lobby
 import lv.continuum.lobby.protocol.Protocol.In._
 import lv.continuum.lobby.protocol.Protocol.Out._
 import lv.continuum.lobby.protocol.Protocol._
-import lv.continuum.lobby.model.Lobby
 
 object TableActor {
 

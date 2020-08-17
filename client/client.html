@@ -1,73 +1,74 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="author" content="Andrejs Pavlovics">
-    <link type="text/css" rel="stylesheet" href="main.css">
-    <title>WebSocket Client</title>
+  <meta charset="UTF-8">
+  <meta name="author" content="Andrejs Pavlovics">
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <title>WebSocket Client</title>
 
-    <!-- jQuery -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 <body>
-    <h1>WebSocket Client</h1>
-    <select id="outgoing-message-type">
-      <option value="login" selected>Login</option>
-      <option value="ping">Ping</option>
-      <option value="subscribe_tables">Subscribe Tables</option>
-      <option value="unsubscribe_tables">Unsubscribe Tables</option>
-      <option value="add_table">Add Table</option>
-      <option value="update_table">Update Table</option>
-      <option value="remove_table">Remove Table</option>
-    </select>
-    <br>
-    <textarea id="outgoing-message"></textarea>
-    <br>
-    <input type="radio" name="outgoing-message-format" value="text" checked>Text
-    <input type="radio" name="outgoing-message-format" value="binary">Binary
-    <br>
-    <button id="send">Send</button>
-    <br>
-    <ul id="incoming-messages"></ul>
+  <h1>WebSocket Client</h1>
+  <select id="outgoing-message-type">
+    <option value="login" selected>Login</option>
+    <option value="ping">Ping</option>
+    <option value="subscribe_tables">Subscribe Tables</option>
+    <option value="unsubscribe_tables">Unsubscribe Tables</option>
+    <option value="add_table">Add Table</option>
+    <option value="update_table">Update Table</option>
+    <option value="remove_table">Remove Table</option>
+  </select>
+  <br>
+  <textarea id="outgoing-message"></textarea>
+  <br>
+  <input type="radio" name="outgoing-message-format" value="text" checked>Text
+  <input type="radio" name="outgoing-message-format" value="binary">Binary
+  <br>
+  <button id="send">Send</button>
+  <br>
+  <ul id="incoming-messages"></ul>
 
-    <script>
-        var $outgoingMessageType = $("#outgoing-message-type")
-        var $outgoingMessage = $("#outgoing-message")
-        var $send = $("#send")
-        var $incomingMessages = $("#incoming-messages")
+  <script>
+    var $outgoingMessageType = $("#outgoing-message-type")
+    var $outgoingMessage = $("#outgoing-message")
+    var $send = $("#send")
+    var $incomingMessages = $("#incoming-messages")
 
-        function updateOutgoingMessage() {
-            var outgoingMessageType = $outgoingMessageType.children("option:selected").val()
-            var message
-            switch(outgoingMessageType) {
-            case "login":
-                message =
+    function updateOutgoingMessage() {
+      var outgoingMessageType = $outgoingMessageType.children("option:selected").val()
+      var message
+      switch(outgoingMessageType) {
+        case "login":
+          message =
 `{
   "$type": "login",
   "username": "admin",
   "password": "admin"
 }`
-                break
-            case "ping":
-                message =
+          break
+        case "ping":
+          message =
 `{
   "$type": "ping",
   "seq": 12345
 }`
-                break
-            case "subscribe_tables":
-                message =
+          break
+        case "subscribe_tables":
+          message =
 `{
   "$type": "subscribe_tables"
 }`
-                break
-            case "unsubscribe_tables":
-                message =
+          break
+        case "unsubscribe_tables":
+          message =
 `{
   "$type": "unsubscribe_tables"
 }`
-                break
-            case "add_table":
-                message =
+          break
+        case "add_table":
+          message =
 `{
   "$type": "add_table",
   "after_id": 2,
@@ -76,9 +77,9 @@
     "participants": 4
   }
 }`
-                break
-            case "update_table":
-                message =
+          break
+        case "update_table":
+          message =
 `{
   "$type": "update_table",
   "table": {
@@ -87,57 +88,58 @@
     "participants": 4
   }
 }`
-                break
-            case "remove_table":
-                message =
+          break
+        case "remove_table":
+          message =
 `{
   "$type": "remove_table",
   "id": 2
 }`
-                break
-            default:
-                console.log("Outgoing message type " + outgoingMessageType + " is invalid")
-                break
-            }
-            $outgoingMessage.val(message)
+          break
+        default:
+          console.log("Outgoing message type " + outgoingMessageType + " is invalid")
+          break
+      }
+      $outgoingMessage.val(message)
+    }
+
+    $outgoingMessageType.change(updateOutgoingMessage)
+    $(updateOutgoingMessage)
+
+    $send.prop("disabled", true)
+    var webSocket = new WebSocket("ws://localhost:9000/lobby_api")
+
+    webSocket.onopen = function () {
+      $send.prop("disabled", false)
+      $incomingMessages.prepend($("<li>Connected via WebSocket</li>"))
+
+      $send.on("click", function () {
+        var outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
+        switch (outgoingMessageFormat) {
+          case "text":
+            webSocket.send($outgoingMessage.val())
+            break
+          case "binary":
+            webSocket.send(new Blob([$outgoingMessage.val()]))
+            break
+          default:
+            console.log("Outgoing message format " + outgoingMessageFormat + " is invalid")
+            break
         }
-        $outgoingMessageType.change(updateOutgoingMessage)
-        $(updateOutgoingMessage)
+      })
+    }
 
-        $send.prop("disabled", true)
-        var webSocket = new WebSocket("ws://localhost:9000/lobby_api")
+    webSocket.onerror = function (error) {
+      console.log("Issue with WebSocket connection", error)
+    }
 
-        webSocket.onopen = function() {
-            $send.prop("disabled", false)
-            $incomingMessages.prepend($("<li>Connected via WebSocket</li>"))
-
-            $send.on("click", function() {
-                var outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val()
-                switch(outgoingMessageFormat) {
-                case "text":
-                    webSocket.send($outgoingMessage.val())
-                    break
-                case "binary":
-                    webSocket.send(new Blob([$outgoingMessage.val()]))
-                    break
-                default:
-                    console.log("Outgoing message format " + outgoingMessageFormat + " is invalid")
-                    break
-                }
-            })
-        }
-
-        webSocket.onerror = function(error) {
-            console.log("Issue with WebSocket connection", error)
-        }
-
-        webSocket.onmessage = function(event) {
-            if (typeof event.data === "string") {
-                $incomingMessages.prepend($("<li>" + event.data + "</li>"))
-            } else {
-                console.log("Data " + event.data + " is not supported")
-            }
-        }
-    </script>
+    webSocket.onmessage = function (event) {
+      if (typeof event.data === "string") {
+        $incomingMessages.prepend($("<li>" + event.data + "</li>"))
+      } else {
+        console.log("Data " + event.data + " is not supported")
+      }
+    }
+  </script>
 </body>
 </html>

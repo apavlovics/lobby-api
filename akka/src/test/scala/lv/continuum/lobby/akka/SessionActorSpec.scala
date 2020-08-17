@@ -15,11 +15,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class SessionActorSpec
-  extends AnyWordSpec
-    with Matchers
-    with MockFactory
-    with TestData {
+class SessionActorSpec extends AnyWordSpec with Matchers with MockFactory with TestData {
 
   trait Fixture {
     val authenticator: Authenticator = mock[Authenticator]

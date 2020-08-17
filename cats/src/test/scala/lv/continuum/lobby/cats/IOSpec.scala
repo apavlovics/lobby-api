@@ -6,8 +6,8 @@ import io.odin.formatter.Formatter
 import io.odin.{Logger, consoleLogger}
 import org.scalatest.Assertions.fail
 
-import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 trait IOSpec {
 

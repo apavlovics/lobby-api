@@ -1,9 +1,9 @@
 package lv.continuum.lobby.cats
 
-import cats.{Applicative, Parallel}
 import cats.effect.concurrent.Ref
 import cats.effect.{Blocker, ConcurrentEffect, ContextShift, ExitCode, IO, IOApp, Timer}
 import cats.implicits._
+import cats.{Applicative, Parallel}
 import com.typesafe.config.ConfigFactory
 import io.odin.formatter.Formatter
 import io.odin.{Logger, consoleLogger}
