@@ -95,7 +95,6 @@ input[type=radio] {
   border: .35em solid rgb(var(--gray));
   background-color: rgb(var(--gray));
   border-radius: 50%;
-  cursor: pointer;
 }
 
 input[type=radio]:hover {
@@ -112,9 +111,12 @@ input[type=radio]:checked {
   border-color: rgb(var(--blue));
 }
 
+input[type=radio], input[type=radio] + label {
+  cursor: pointer;
+}
+
 input[type=radio] + label {
   margin-right: 1em;
-  cursor: pointer;
 }
 
 /* Select */
