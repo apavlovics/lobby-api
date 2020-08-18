@@ -29,17 +29,13 @@ button, input[type=radio], select, textarea, li {
   margin-top: 1em;
 }
 
-button, input[type=radio] + label, select {
-  cursor: pointer;
+button, select, textarea {
+  border-radius: .5em;
+  transition-duration: .5s;
 }
 
 button, select {
   padding: .5em .8em;
-}
-
-button, select, textarea {
-  border-radius: .5em;
-  transition-duration: .5s;
 }
 
 select, textarea {
@@ -58,6 +54,7 @@ button {
   background-color: rgb(var(--blue));
   color: rgb(var(--white));
   border-style: none;
+  cursor: pointer;
 }
 
 button:hover {
@@ -82,6 +79,7 @@ input[type=radio] {
 
 input[type=radio] + label {
   position: relative;
+  cursor: pointer;
 }
 
 input[type=radio] + label::before {
@@ -131,6 +129,7 @@ select {
   background-repeat: no-repeat;
   background-position: right .7em top 50%;
   background-size: .65em auto;
+  cursor: pointer;
 }
 
 select:disabled {
