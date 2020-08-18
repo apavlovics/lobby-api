@@ -144,7 +144,7 @@ select:disabled {
   cursor: default;
 }
 
-/* Text area */
+/* Other */
 
 textarea {
   width: 30em;
@@ -152,8 +152,6 @@ textarea {
   padding: .8em;
   resize: none;
 }
-
-/* Other */
 
 h1 {
   font-size: 32px;
