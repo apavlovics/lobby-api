@@ -8,6 +8,8 @@
   --gray: 235, 235, 235;
 }
 
+/* General styles */
+
 * {
   margin: 0;
   padding: 0;
@@ -25,6 +27,8 @@ body, button, input[type="radio"], select, textarea {
 button, input[type="radio"], select, textarea, li {
   margin-top: 1em;
 }
+
+/* Button */
 
 button {
   padding: .5em .8em;
@@ -49,6 +53,8 @@ button:disabled {
   background-color: rgb(var(--gray));
   cursor: default;
 }
+
+/* Radio button */
 
 input[type=radio] {
   font-size: var(--minesweeper-font-size);
@@ -91,6 +97,8 @@ input[type=radio] + label {
   margin-right: 1em;
 }
 
+/* Other */
+
 textarea {
   width: 30em;
   height: 10em;
@@ -110,7 +118,7 @@ ul {
   list-style-position: outside;
 }
 
-#client {
+.form {
   display: flex;
   flex-flow: column nowrap;
   align-items: flex-start;
