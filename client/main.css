@@ -35,6 +35,7 @@ button, select {
 
 button, select, textarea {
   border-radius: .5em;
+  transition-duration: .5s;
 }
 
 select, textarea {
@@ -43,6 +44,7 @@ select, textarea {
 
 select:hover, textarea:hover {
   border-color: rgb(var(--dark-gray));
+  transition-duration: 0s;
 }
 
 /* Button */
@@ -51,7 +53,6 @@ button {
   background-color: rgb(var(--blue));
   color: rgb(var(--white));
   border-style: none;
-  transition-duration: .5s;
   cursor: pointer;
 }
 
@@ -141,7 +142,7 @@ select:disabled {
 textarea {
   width: 30em;
   height: 10em;
-  padding: .5em;
+  padding: .8em;
   resize: none;
 }
 
