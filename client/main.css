@@ -17,8 +17,11 @@
 }
 
 body {
-  margin: 0 4em;
+  margin: 4em;
   color: rgb(var(--black));
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
 }
 
 body, button, input[type=radio], select, textarea {
@@ -157,15 +160,8 @@ textarea {
 h1 {
   font-size: 32px;
   font-weight: bold;
-  margin-top: 2em;
 }
 
 ul {
   list-style-position: outside;
-}
-
-.form {
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: flex-start;
 }
