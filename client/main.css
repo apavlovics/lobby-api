@@ -25,7 +25,7 @@ body, button, input[type=radio], select, textarea {
   font: 16px Helvetica, Arial, sans-serif;
 }
 
-button, input[type=radio], select, textarea, li {
+button, input[type=radio], select, textarea, ul, li {
   margin-top: 1em;
 }
 
@@ -46,6 +46,11 @@ select, textarea {
 select:hover, textarea:hover {
   border-color: rgb(var(--dark-gray));
   transition-duration: 0s;
+}
+
+button:focus, select:focus, textarea:focus {
+  border-color: rgb(var(--blue));
+  outline: none;
 }
 
 /* Button */
