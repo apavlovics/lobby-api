@@ -89,7 +89,6 @@ input[type=radio] {
 
   position: relative;
   box-sizing: border-box;
-  top: calc(50% - .5em);
   top: .1em;
   height: 1em;
   width: 1em;
