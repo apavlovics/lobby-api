@@ -21,16 +21,19 @@ body {
   color: rgb(var(--black));
 }
 
-body, button, input[type="radio"], select, textarea {
+body, button, input[type=radio], select, textarea {
   font: 16px Helvetica, Arial, sans-serif;
 }
 
-button, input[type="radio"], select, textarea, li {
+button, input[type=radio], select, textarea, li {
   margin-top: 1em;
 }
 
-button, select {
+button, select, textarea {
   padding: .5em .8em;
+}
+
+button, select, textarea {
   border-radius: .5em;
 }
 
@@ -138,14 +141,13 @@ textarea {
   width: 30em;
   height: 10em;
   padding: .5em;
-  border-radius: .5em;
   resize: none;
 }
 
 /* Other */
 
 h1 {
-  font-size: 25px;
+  font-size: 32px;
   font-weight: bold;
   margin: 2em 0 .5em;
 }
