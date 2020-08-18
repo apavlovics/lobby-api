@@ -73,7 +73,6 @@ button:disabled {
 /* Radio button */
 
 input[type=radio] {
-  font-size: var(--minesweeper-font-size);
   visibility: hidden;
 }
 
