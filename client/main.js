@@ -11,68 +11,75 @@ $(document).ready(() => {
 function updateOutgoingMessage(select, textArea) {
   const outgoingMessageType = select.children('option:selected').val()
   let message
-  switch(outgoingMessageType) {
+  switch (outgoingMessageType) {
     case 'login':
-      message =
-`{
+      message = `
+{
   "$type": "login",
   "username": "admin",
   "password": "admin"
-}`
+}
+`
       break
     case 'ping':
-      message =
-`{
+      message = `
+{
   "$type": "ping",
   "seq": 12345
-}`
+}
+`
       break
     case 'subscribe_tables':
-      message =
-`{
+      message = `
+{
   "$type": "subscribe_tables"
-}`
+}
+`
       break
     case 'unsubscribe_tables':
-      message =
-`{
+      message = `
+{
   "$type": "unsubscribe_tables"
-}`
+}
+`
       break
     case 'add_table':
-      message =
-`{
+      message = `
+{
   "$type": "add_table",
   "after_id": 2,
   "table": {
     "name": "table - Foo Fighters",
     "participants": 4
   }
-}`
+}
+`
       break
     case 'update_table':
-      message =
-`{
+      message = `
+{
   "$type": "update_table",
   "table": {
     "id": 1,
     "name": "table - Pink Floyd",
     "participants": 4
   }
-}`
+}
+`
       break
     case 'remove_table':
-      message =
-`{
+      message = `
+{
   "$type": "remove_table",
   "id": 2
-}`
+}
+`
       break
     default:
       console.log(`Outgoing message type ${outgoingMessageType} is invalid`)
       break
   }
-  textArea.val(message)
+  textArea.val(message.trim())
 }
 
 function openWebSocket(textArea, list) {

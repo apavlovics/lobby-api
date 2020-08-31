@@ -7,7 +7,12 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, OptionValues}
 
-class ProtocolFormatSpec extends AnyWordSpec with Matchers with OptionValues with ProtocolFormat with TestData {
+class ProtocolFormatSpec
+  extends AnyWordSpec
+    with Matchers
+    with OptionValues
+    with ProtocolFormat
+    with TestData {
 
   "ProtocolFormat" should {
     "provide correct decoders for In ADTs" in {
