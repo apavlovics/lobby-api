@@ -77,7 +77,6 @@ function updateOutgoingMessage(select, textArea) {
       break
     default:
       console.log(`Outgoing message type ${outgoingMessageType} is invalid`)
-      break
   }
   textArea.val(message.trim())
 }
@@ -98,7 +97,6 @@ function openWebSocket(textArea, list) {
           break
         default:
           console.log(`Outgoing message format ${outgoingMessageFormat} is invalid`)
-          break
       }
     })
     list.prepend($('<li>Connected via WebSocket</li>'))
