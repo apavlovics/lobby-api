@@ -3,7 +3,7 @@ package lv.continuum.lobby.cats
 import cats.Parallel
 import cats.effect.Concurrent
 import cats.effect.concurrent.Ref
-import cats.implicits._
+import cats.syntax.all._
 import fs2.Pipe
 import fs2.concurrent.Queue
 import io.circe.parser._

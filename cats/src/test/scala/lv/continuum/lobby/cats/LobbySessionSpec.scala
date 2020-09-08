@@ -2,7 +2,7 @@ package lv.continuum.lobby.cats
 
 import cats.effect.concurrent.Ref
 import cats.effect.{Concurrent, IO, Sync}
-import cats.implicits._
+import cats.syntax.all._
 import cats.{Applicative, Parallel}
 import fs2.concurrent.Queue
 import io.circe.Error
