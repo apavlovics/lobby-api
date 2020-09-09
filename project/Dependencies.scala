@@ -27,7 +27,7 @@ object Dependencies {
   }
 
   object Cats {
-    val Laws = "org.typelevel" %% "cats-effect-laws" % catsVersion
+    val EffectLaws = "org.typelevel" %% "cats-effect-laws" % catsVersion
   }
 
   object Circe {

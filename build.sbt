@@ -67,6 +67,6 @@ lazy val cats = (project in file("cats"))
       Http4s.Dsl,
       Odin.Core,
       Odin.Slf4j,
-      Cats.Laws % Test,
+      Cats.EffectLaws % Test,
     ),
   )
