@@ -8,7 +8,7 @@ Both implementations adhere to the same protocol, so from a consumer point of vi
 
 The application is tested to work with:
 
-* Java 11
+* Java 15
 * Scala 2.13
 * sbt 1.3
 
