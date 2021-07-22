@@ -35,15 +35,24 @@ To run Cats-based implementation, execute:
 
     sbt cats/run
 
-The server starts at http://localhost:9000/lobby_api by default. It accepts either "admin", "admin" or
-"user", "user" credentials. There is a simple WebSocket client in the *client* folder that you can use to
-manually test the server.
+The server starts at http://localhost:9000/lobby_api by default. There is a simple WebSocket client in the
+*client* folder that you can use to manually test the server.
 
 ### Sample Messages
 
 The following sample messages can be sent by both Lobby API users and admins.
 
-To authenticate as a user or an admin:
+To authenticate as a user:
+
+```json
+{
+  "$type": "login",
+  "username": "user",
+  "password": "user"
+}
+```
+
+To authenticate as an admin:
 
 ```json
 {
