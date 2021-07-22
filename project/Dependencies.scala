@@ -2,10 +2,10 @@ import sbt._
 
 object Dependencies {
 
-  private val akkaVersion = "2.6.8"
-  private val akkaHttpVersion = "10.2.0"
+  private val akkaVersion = "2.6.15"
+  private val akkaHttpVersion = "10.2.4"
   private val catsVersion = "2.2.0"
-  private val circeVersion = "0.13.0"
+  private val circeVersion = "0.14.1"
   private val enumeratumVersion = "1.7.0"
   private val http4sVersion = "0.21.7"
   private val logbackVersion = "1.2.4"
