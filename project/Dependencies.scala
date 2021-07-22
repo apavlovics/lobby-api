@@ -6,14 +6,14 @@ object Dependencies {
   private val akkaHttpVersion = "10.2.0"
   private val catsVersion = "2.2.0"
   private val circeVersion = "0.13.0"
-  private val enumeratumVersion = "1.6.1"
+  private val enumeratumVersion = "1.7.0"
   private val http4sVersion = "0.21.7"
-  private val logbackVersion = "1.2.3"
+  private val logbackVersion = "1.2.4"
   private val odinVersion = "0.8.1"
   private val pureConfigVersion = "0.13.0"
-  private val scalaLoggingVersion = "3.9.2"
-  private val scalaMockVersion = "5.0.0"
-  private val scalaTestVersion = "3.2.0"
+  private val scalaLoggingVersion = "3.9.4"
+  private val scalaMockVersion = "5.1.0"
+  private val scalaTestVersion = "3.2.9"
 
   object Akka {
     val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
