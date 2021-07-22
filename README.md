@@ -1,8 +1,11 @@
 # Lobby API
 
-This sample application exposes a server for a JSON-based lobby API over WebSocket. There are two
-implementations available: Akka-based one (see `akka` module) and Cats-based one (see `cats` module).
-Both implementations adhere to the same protocol, so from a consumer point of view they are equal.
+This sample application exposes a server for a JSON-based lobby API over WebSocket. Think of lobby as a
+gateway to dynamically updating entities called tables. Lobby API users can subscribe to receive a snapshot of
+all existing tables and then get notified once Lobby API admins add, update or remove tables.
+
+There are two implementations available: Akka-based one (see `akka` module) and Cats-based one (see `cats`
+module). Both implementations adhere to the same protocol, so from a client point of view they are equal.
 
 ## System Requirements
 
