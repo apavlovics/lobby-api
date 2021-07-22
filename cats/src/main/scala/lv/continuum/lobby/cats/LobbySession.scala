@@ -1,6 +1,7 @@
 package lv.continuum.lobby.cats
 
 import cats.effect.concurrent.Ref
+import cats.instances.vector._
 import cats.syntax.all._
 import cats.{Applicative, Monad, Parallel}
 import io.circe.Error

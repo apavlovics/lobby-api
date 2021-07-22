@@ -13,7 +13,7 @@ The application is tested to work with:
 
 * Java 15
 * Scala 2.13
-* sbt 1.3
+* sbt 1.5
 
 ## Configuration
 

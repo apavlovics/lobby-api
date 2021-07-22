@@ -11,7 +11,7 @@ lazy val root = (project in file("."))
     inThisBuild(
       List(
         organization := "lv.continuum",
-        scalaVersion := "2.13.2",
+        scalaVersion := "2.13.6",
         scalacOptions ++= Seq(
           "-deprecation",
           "-feature",
@@ -19,6 +19,10 @@ lazy val root = (project in file("."))
           "-unchecked",
           "-Xfatal-warnings",
           "-Xlint:_",
+
+          // Suppress warnings for Shapeless-generated code:
+          // https://github.com/scala/bug/issues/12072
+          "-Xlint:-byname-implicit",
         ),
       )
     ),
