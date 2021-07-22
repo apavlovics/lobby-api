@@ -1,8 +1,8 @@
 # Lobby API
 
-This sample application exposes a server for a JSON-based lobby API over WebSocket. Think of lobby as a
-gateway to dynamically updating entities called tables. Lobby API users can subscribe to receive a snapshot of
-all existing tables and then get notified once Lobby API admins add, update or remove tables.
+This sample application exposes a server for a JSON-based Lobby API over WebSocket. Think of the lobby as a
+dynamic ordered collection of entities called tables. Lobby API users can subscribe to receive the current
+snapshot of tables and get notified once Lobby API admins add, update or remove them.
 
 There are two implementations available: Akka-based one (see `akka` module) and Cats-based one (see `cats`
 module). Both implementations adhere to the same protocol, so from a client point of view they are equal.
@@ -41,7 +41,9 @@ manually test the server.
 
 ### Sample Messages
 
-The following sample messages can be sent from the client to the server while both are running:
+The following sample messages can be sent by both Lobby API users and admins.
+
+To authenticate as a user or an admin:
 
 ```json
 {
@@ -51,6 +53,8 @@ The following sample messages can be sent from the client to the server while bo
 }
 ```
 
+To ping the server:
+
 ```json
 {
   "$type": "ping",
@@ -58,11 +62,25 @@ The following sample messages can be sent from the client to the server while bo
 }
 ```
 
+To subscribe and receive the current snapshot of tables and notifications about any subsequent changes:
+
 ```json
 {
   "$type": "subscribe_tables"
 }
 ```
+
+To unsubscribe and stop receiving notifications about table changes:
+
+```json
+{
+  "$type": "unsubscribe_tables"
+}
+```
+
+The following sample messages can be sent by Lobby API admins only.
+
+To add a new table:
 
 ```json
 {
@@ -75,6 +93,8 @@ The following sample messages can be sent from the client to the server while bo
 }
 ```
 
+To update an existing table:
+
 ```json
 {
   "$type": "update_table",
@@ -86,15 +106,11 @@ The following sample messages can be sent from the client to the server while bo
 }
 ```
 
+To remove an existing table:
+
 ```json
 {
   "$type": "remove_table",
   "id": 2
-}
-```
-
-```json
-{
-  "$type": "unsubscribe_tables"
 }
 ```
