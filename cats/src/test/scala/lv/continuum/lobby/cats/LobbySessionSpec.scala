@@ -1,10 +1,9 @@
 package lv.continuum.lobby.cats
 
-import cats.effect.concurrent.Ref
-import cats.effect.{Concurrent, IO, Sync}
+import cats.effect.std.Queue
+import cats.effect.{Async, IO, Ref, Sync}
 import cats.syntax.all._
 import cats.{Applicative, Parallel}
-import fs2.concurrent.Queue
 import io.circe.Error
 import io.odin.Logger
 import lv.continuum.lobby.auth.{Authenticator => CommonAuthenticator}
@@ -21,7 +20,7 @@ import scala.concurrent.duration._
 
 class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with TestData {
 
-  implicit private val limit: Duration = 5.seconds
+  implicit private val limit: FiniteDuration = 5.seconds
 
   private def stubAuthenticator[F[_]: Sync](userType: Option[UserType]): Authenticator[F] = {
     val stub = new CommonAuthenticator {
@@ -30,7 +29,7 @@ class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with Test
     Authenticator[F](stub)
   }
 
-  private def fixtureF[F[_]: Concurrent: Logger: Parallel](
+  private def fixtureF[F[_]: Async: Logger: Parallel](
     authenticator: Authenticator[F],
   ): F[Fixture[F]] =
     for {
@@ -47,7 +46,7 @@ class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with Test
       )
     } yield Fixture[F](lobbySession, subscribersRef, subscriber)
 
-  private def authenticatedFixtureF[F[_]: Concurrent: Logger: Parallel](
+  private def authenticatedFixtureF[F[_]: Async: Logger: Parallel](
     userType: UserType,
     expectedOut: Out,
   ): F[Fixture[F]] =
@@ -88,7 +87,7 @@ class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with Test
     expectedPushOut: Option[PushOut],
   ): F[Assertion] =
     for {
-      pushOut <- fixture.subscriber.tryDequeue1
+      pushOut <- fixture.subscriber.tryTake
       _       <- Sync[F].delay(pushOut shouldBe expectedPushOut)
     } yield succeed
 

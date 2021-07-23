@@ -1,6 +1,6 @@
 package lv.continuum.lobby.cats
 
-import cats.effect.concurrent.Ref
+import cats.effect.Ref
 import cats.instances.vector._
 import cats.syntax.all._
 import cats.{Applicative, Monad, Parallel}
@@ -50,7 +50,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
     pushOut: PushOut,
   ): F[Unit] =
     for {
-      result <- subscriber.offer1(pushOut)
+      result <- subscriber.tryOffer(pushOut)
       _ <- {
         if (!result) {
           Logger[F].warn(s"$subscriber seems to be full, cannot enqueue $pushOut")

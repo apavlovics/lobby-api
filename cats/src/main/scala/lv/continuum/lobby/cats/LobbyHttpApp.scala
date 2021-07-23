@@ -1,11 +1,10 @@
 package lv.continuum.lobby.cats
 
 import cats.Parallel
-import cats.effect.Concurrent
-import cats.effect.concurrent.Ref
+import cats.effect.std.Queue
+import cats.effect.{Concurrent, Ref}
 import cats.syntax.all._
-import fs2.Pipe
-import fs2.concurrent.Queue
+import fs2.{Pipe, Stream}
 import io.circe.parser._
 import io.circe.syntax._
 import io.odin.Logger
@@ -34,29 +33,25 @@ class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
       .collect { case Text(message, _) => decode[In](message) }
       .evalMap(lobbySession.process)
       .collect { case Some(out) => out }
-      .merge(subscriber.dequeue)
+      .merge(Stream.fromQueueUnterminated(subscriber))
       .map(out => Text(out.asJson.noSpaces))
   }
 
   val app: HttpApp[F] = HttpRoutes
-    .of[F] {
-      case GET -> Root / "lobby_api" =>
-        for {
-          sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
-          queue            <- Queue.unbounded[F, WebSocketFrame]
-          subscriber       <- Queue.unbounded[F, PushOut]
-          lobbySession = LobbySession(
-            authenticator = authenticator,
-            lobbyRef = lobbyRef,
-            subscribersRef = subscribersRef,
-            sessionParamsRef = sessionParamsRef,
-            subscriber = subscriber,
-          )
-
-          send = queue.dequeue.through(pipe(lobbySession, subscriber))
-          receive = queue.enqueue
-          response <- WebSocketBuilder[F].build(send, receive)
-        } yield response
+    .of[F] { case GET -> Root / "lobby_api" =>
+      for {
+        sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
+        queue            <- Queue.unbounded[F, WebSocketFrame]
+        subscriber       <- Queue.unbounded[F, PushOut]
+        lobbySession = LobbySession(
+          authenticator = authenticator,
+          lobbyRef = lobbyRef,
+          subscribersRef = subscribersRef,
+          sessionParamsRef = sessionParamsRef,
+          subscriber = subscriber,
+        )
+        response <- WebSocketBuilder[F].build(pipe(lobbySession, subscriber))
+      } yield response
     }
     .orNotFound
 }

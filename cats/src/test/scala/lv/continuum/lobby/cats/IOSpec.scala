@@ -1,7 +1,8 @@
 package lv.continuum.lobby.cats
 
-import cats.effect.laws.util.TestContext
-import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.IO
+import cats.effect.kernel.testkit.TestContext
+import cats.effect.unsafe.implicits.global
 import io.odin.formatter.Formatter
 import io.odin.{Logger, consoleLogger}
 import org.scalatest.Assertions.fail
@@ -12,11 +13,9 @@ import scala.concurrent.duration._
 trait IOSpec {
 
   implicit protected val context: TestContext = TestContext()
-  implicit protected val cs: ContextShift[IO] = context.contextShift[IO]
-  implicit protected val timer: Timer[IO] = context.timer[IO]
   implicit protected val logger: Logger[IO] = consoleLogger[IO](formatter = Formatter.colorful)
 
-  def runTimed[A](io: IO[A])(implicit limit: Duration): A =
+  def runTimed[A](io: IO[A])(implicit limit: FiniteDuration): A =
     io.unsafeRunTimed(limit).getOrElse(fail(s"Unable to complete test in $limit"))
 
   def runAsFuture[A](

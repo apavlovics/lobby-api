@@ -1,6 +1,6 @@
 package lv.continuum.lobby
 
-import fs2.concurrent.Queue
+import _root_.cats.effect.std.Queue
 import lv.continuum.lobby.protocol.Protocol.PushOut
 
 package object cats {

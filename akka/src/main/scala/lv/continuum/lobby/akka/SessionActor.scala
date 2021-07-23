@@ -97,8 +97,6 @@ object SessionActor {
 
   implicit private class Stopper(behavior: Behaviors.Receive[SessionCommand]) {
     def stopWhenWatchedActorTerminates: Behavior[SessionCommand] =
-      behavior.receiveSignal {
-        case (context, Terminated(_)) => Behaviors.stopped
-      }
+      behavior.receiveSignal { case (_, Terminated(_)) => Behaviors.stopped }
   }
 }

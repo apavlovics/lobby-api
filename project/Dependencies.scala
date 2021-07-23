@@ -4,13 +4,13 @@ object Dependencies {
 
   private val akkaVersion = "2.6.15"
   private val akkaHttpVersion = "10.2.4"
-  private val catsVersion = "2.2.0"
+  private val catsEffectVersion = "3.1.1"
   private val circeVersion = "0.14.1"
   private val enumeratumVersion = "1.7.0"
-  private val http4sVersion = "0.21.7"
+  private val http4sVersion = "1.0.0-M23"
   private val logbackVersion = "1.2.4"
-  private val odinVersion = "0.8.1"
-  private val pureConfigVersion = "0.13.0"
+  private val odinVersion = "0.12.0"
+  private val pureConfigVersion = "0.16.0"
   private val scalaLoggingVersion = "3.9.4"
   private val scalaMockVersion = "5.1.0"
   private val scalaTestVersion = "3.2.9"
@@ -27,7 +27,7 @@ object Dependencies {
   }
 
   object Cats {
-    val EffectLaws = "org.typelevel" %% "cats-effect-laws" % catsVersion
+    val EffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
   }
 
   object Circe {

@@ -19,7 +19,6 @@ lazy val root = (project in file("."))
           "-unchecked",
           "-Xfatal-warnings",
           "-Xlint:_",
-
           // Suppress warnings for Shapeless-generated code:
           // https://github.com/scala/bug/issues/12072
           "-Xlint:-byname-implicit",
@@ -71,6 +70,6 @@ lazy val cats = (project in file("cats"))
       Http4s.Dsl,
       Odin.Core,
       Odin.Slf4j,
-      Cats.EffectLaws % Test,
+      Cats.EffectTestkit % Test,
     ),
   )

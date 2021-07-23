@@ -56,14 +56,13 @@ object TableActor {
       .fold[Behavior[TableCommand]] {
         replyTo ! TableAddFailed
         Behaviors.same
-      } {
-        case (lobby, table) =>
-          val tableAdded = TableAdded(
-            afterId = in.afterId,
-            table = table,
-          )
-          state.subscribers.foreach(_ ! tableAdded)
-          process(state.copy(lobby = lobby))
+      } { case (lobby, table) =>
+        val tableAdded = TableAdded(
+          afterId = in.afterId,
+          table = table,
+        )
+        state.subscribers.foreach(_ ! tableAdded)
+        process(state.copy(lobby = lobby))
       }
 
   private def updateTable(
