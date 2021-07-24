@@ -11,7 +11,7 @@ module). Both implementations adhere to the same protocol, so from a client poin
 
 The application is tested to work with:
 
-* Java 15
+* Java 16
 * Scala 2.13
 * sbt 1.5
 
