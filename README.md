@@ -1,11 +1,8 @@
 # Lobby API
 
-This sample application exposes a server for a JSON-based Lobby API over WebSocket. Think of the lobby as a
-dynamic ordered collection of entities called tables. Lobby API users can subscribe to receive the current
-snapshot of tables and get notified once Lobby API admins add, update or remove them.
+This sample application exposes a server for a JSON-based Lobby API over WebSocket. Think of the lobby as a dynamic ordered collection of entities called tables. Lobby API users can subscribe to receive the current snapshot of tables and get notified once Lobby API admins add, update or remove them.
 
-There are two implementations available: Akka-based one (see `akka` module) and Cats-based one (see `cats`
-module). Both implementations adhere to the same protocol, so from a client point of view they are equal.
+There are two implementations available: Akka-based one (see `akka` module) and Cats-based one (see `cats` module). Both implementations adhere to the same protocol, so from a client point of view they are equal.
 
 ## System Requirements
 
@@ -35,8 +32,7 @@ To run Cats-based implementation, execute:
 
     sbt cats/run
 
-The server starts at http://localhost:9000/lobby_api by default. There is a simple WebSocket client in the
-*client* folder that you can use to manually test the server.
+The server starts at http://localhost:9000/lobby_api by default. There is a simple WebSocket client in the *client* folder that you can use to manually test the server.
 
 ### Sample Messages
 
