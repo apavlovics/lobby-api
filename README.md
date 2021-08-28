@@ -24,11 +24,11 @@ To test the application, go to its root folder and execute:
 
 ## Running
 
-To run Akka-based implementation, execute:
+To run the Akka-based implementation, execute:
 
     sbt akka/run
 
-To run Cats-based implementation, execute:
+To run the Cats-based implementation, execute:
 
     sbt cats/run
 
