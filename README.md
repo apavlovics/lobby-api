@@ -2,7 +2,7 @@
 
 This sample application exposes a server for a JSON-based Lobby API over WebSocket. Think of the lobby as a dynamic ordered collection of entities called tables. Lobby API users can subscribe to receive the current snapshot of tables and get notified once Lobby API admins add, update or remove them.
 
-There are two implementations available: Akka-based one (see `akka` module) and Cats-based one (see `cats` module). Both implementations adhere to the same protocol, so from a client point of view they are equal.
+There are two implementations available: Akka-based one (see the `akka` module) and Cats-based one (see the `cats` module). Both implementations adhere to the same protocol, so from a client point of view they are equal.
 
 ## System Requirements
 
