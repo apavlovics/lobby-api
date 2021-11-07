@@ -11,7 +11,7 @@ lazy val root = (project in file("."))
     inThisBuild(
       List(
         organization := "lv.continuum",
-        scalaVersion := "2.13.6",
+        scalaVersion := "2.13.7",
         scalacOptions ++= Seq(
           "-deprecation",
           "-feature",

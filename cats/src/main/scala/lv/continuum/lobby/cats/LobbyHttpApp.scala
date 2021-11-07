@@ -19,6 +19,7 @@ import org.http4s.websocket.WebSocketFrame.Text
 import org.http4s.{HttpApp, HttpRoutes}
 
 class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
+  webSocketBuilder: WebSocketBuilder[F],
   authenticator: Authenticator[F],
   lobbyRef: Ref[F, Lobby],
   subscribersRef: Ref[F, Subscribers[F]],
@@ -50,7 +51,7 @@ class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
           sessionParamsRef = sessionParamsRef,
           subscriber = subscriber,
         )
-        response <- WebSocketBuilder[F].build(pipe(lobbySession, subscriber))
+        response <- webSocketBuilder.build(pipe(lobbySession, subscriber))
       } yield response
     }
     .orNotFound
@@ -58,8 +59,9 @@ class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
 
 object LobbyHttpApp {
   def apply[F[_]: Concurrent: Logger: Parallel](
+    webSocketBuilder: WebSocketBuilder[F],
     authenticator: Authenticator[F],
     lobbyRef: Ref[F, Lobby],
     subscribersRef: Ref[F, Subscribers[F]],
-  ): LobbyHttpApp[F] = new LobbyHttpApp(authenticator, lobbyRef, subscribersRef)
+  ): LobbyHttpApp[F] = new LobbyHttpApp(webSocketBuilder, authenticator, lobbyRef, subscribersRef)
 }

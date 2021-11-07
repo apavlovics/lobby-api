@@ -11,8 +11,6 @@ import lv.continuum.lobby.config.LobbyServerConfig
 import lv.continuum.lobby.model.Lobby
 import org.http4s.blaze.server._
 
-import scala.concurrent.ExecutionContext.global
-
 object LobbyServerCats extends IOApp {
 
   private def runF[F[_]: Async: Logger: Parallel]: F[ExitCode] =
@@ -25,9 +23,9 @@ object LobbyServerCats extends IOApp {
       subscribersRef <- Ref.of[F, Subscribers[F]](Set.empty)
 
       _ <-
-        BlazeServerBuilder[F](global)
+        BlazeServerBuilder[F]
           .bindHttp(lobbyServerConfig.port, lobbyServerConfig.host)
-          .withHttpApp(LobbyHttpApp[F](authenticator, lobbyRef, subscribersRef).app)
+          .withHttpWebSocketApp(LobbyHttpApp[F](_, authenticator, lobbyRef, subscribersRef).app)
           .serve
           .compile
           .drain

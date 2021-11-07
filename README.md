@@ -8,7 +8,7 @@ There are two implementations available: Akka-based one (see the `akka` module) 
 
 The application uses:
 
-* Java 16
+* Java 17
 * Scala 2.13
 * sbt 1.5
 
