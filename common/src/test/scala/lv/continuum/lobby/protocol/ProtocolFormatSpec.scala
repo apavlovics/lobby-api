@@ -5,12 +5,12 @@ import io.circe.syntax._
 import lv.continuum.lobby.protocol.Protocol._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.{Assertion, OptionValues}
+import org.scalatest.{Assertion, EitherValues}
 
 class ProtocolFormatSpec
   extends AnyWordSpec
     with Matchers
-    with OptionValues
+    with EitherValues
     with ProtocolFormat
     with TestData {
 
@@ -47,8 +47,8 @@ class ProtocolFormatSpec
   }
 
   private def verifyDecodeIn(tuple: (String, In)): Assertion =
-    decode[In](tuple._1).toOption.value shouldBe tuple._2
+    decode[In](tuple._1).value shouldBe tuple._2
 
   private def verifyEncodeOut(tuple: (String, Out)): Assertion =
-    tuple._2.asJson shouldBe parse(tuple._1).toOption.value
+    tuple._2.asJson shouldBe parse(tuple._1).value
 }
