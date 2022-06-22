@@ -14,6 +14,7 @@ object Dependencies {
   private val scalaLoggingVersion = "3.9.4"
   private val scalaMockVersion = "5.1.0"
   private val scalaTestVersion = "3.2.10"
+  private val scalaTestJsonVersion = "0.2.5"
 
   object Akka {
     val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
@@ -62,5 +63,10 @@ object Dependencies {
   object ScalaTest {
     val WordSpec = "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion
     val ShouldMatchers = "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion
+    val Json = "com.stephenn" %% "scalatest-json-jsonassert" % scalaTestJsonVersion
+  }
+
+  object ZIO {
+    val Json = "dev.zio" %% "zio-json" % "0.2.0-M4+15-312a4039-SNAPSHOT"
   }
 }

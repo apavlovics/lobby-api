@@ -11,6 +11,9 @@ lazy val root = (project in file("."))
     inThisBuild(
       List(
         organization := "lv.continuum",
+
+        // Resolve snapshot releases
+        resolvers ++= Seq("public", "snapshots", "releases").map(Resolver.sonatypeRepo),
         scalaVersion := "2.13.7",
         scalacOptions ++= Seq(
           "-deprecation",
@@ -37,9 +40,11 @@ lazy val common = (project in file("common"))
       Enumeratum,
       PureConfig.Core,
       PureConfig.CatsEffect,
+      ZIO.Json,
+      ScalaMock % Test,
       ScalaTest.WordSpec % Test,
       ScalaTest.ShouldMatchers % Test,
-      ScalaMock % Test,
+      ScalaTest.Json % Test,
     ),
   )
 
