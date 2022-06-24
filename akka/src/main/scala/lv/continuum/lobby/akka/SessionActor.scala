@@ -4,6 +4,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior, Terminated}
 import lv.continuum.lobby.akka.TableActor.TableCommand
 import lv.continuum.lobby.auth.Authenticator
+import lv.continuum.lobby.model.ParsingError
 import lv.continuum.lobby.protocol.Protocol.In._
 import lv.continuum.lobby.protocol.Protocol.Out._
 import lv.continuum.lobby.protocol.Protocol.UserType._

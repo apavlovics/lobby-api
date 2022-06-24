@@ -1,5 +1,6 @@
 package lv.continuum.lobby.protocol
 
+import lv.continuum.lobby.model.ParsingError
 import lv.continuum.lobby.protocol.Protocol.In._
 import lv.continuum.lobby.protocol.Protocol.Out._
 import lv.continuum.lobby.protocol.Protocol.UserType._

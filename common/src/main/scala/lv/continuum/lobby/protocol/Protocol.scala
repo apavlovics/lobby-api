@@ -34,11 +34,6 @@ object Protocol {
     def toTable(id: TableId): Table = Table(id, name, participants)
   }
 
-  /** A wrapper for JSON parsing errors. */
-  case class ParsingError(value: String) extends AnyVal {
-    override def toString: String = value
-  }
-
   @jsonDiscriminator(name = "$type")
   sealed trait In
   sealed trait TableIn extends In

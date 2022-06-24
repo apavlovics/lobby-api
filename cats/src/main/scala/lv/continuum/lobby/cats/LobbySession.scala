@@ -5,7 +5,7 @@ import cats.instances.vector._
 import cats.syntax.all._
 import cats.{Applicative, Monad, Parallel}
 import io.odin.Logger
-import lv.continuum.lobby.model.Lobby
+import lv.continuum.lobby.model.{Lobby, ParsingError}
 import lv.continuum.lobby.protocol.Protocol.In._
 import lv.continuum.lobby.protocol.Protocol.Out._
 import lv.continuum.lobby.protocol.Protocol.UserType._

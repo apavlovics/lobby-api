@@ -9,6 +9,7 @@ import akka.stream.typed.scaladsl.ActorFlow
 import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
 import lv.continuum.lobby.akka.SessionActor.SessionCommand
+import lv.continuum.lobby.model.ParsingError
 import lv.continuum.lobby.protocol.Protocol._
 import lv.continuum.lobby.protocol._
 import zio.json.{DecoderOps, EncoderOps}

@@ -6,7 +6,7 @@ import cats.effect.{Concurrent, Ref}
 import cats.syntax.all._
 import fs2.{Pipe, Stream}
 import io.odin.Logger
-import lv.continuum.lobby.model.Lobby
+import lv.continuum.lobby.model.{Lobby, ParsingError}
 import lv.continuum.lobby.protocol.Protocol._
 import lv.continuum.lobby.protocol.ProtocolFormat
 import org.http4s.dsl.Http4sDsl
