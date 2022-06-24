@@ -16,7 +16,7 @@ import zio.json.{DecoderOps, EncoderOps}
 import scala.concurrent.duration._
 
 /** A complete lobby flow. */
-object LobbyFlow extends ZIOProtocolFormat with LazyLogging {
+object LobbyFlow extends ProtocolFormat with LazyLogging {
 
   private val parallelism = Runtime.getRuntime.availableProcessors() * 2 - 1
   logger.info(s"Parallelism is $parallelism")

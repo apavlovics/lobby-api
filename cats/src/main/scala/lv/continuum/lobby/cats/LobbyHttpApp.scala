@@ -8,7 +8,7 @@ import fs2.{Pipe, Stream}
 import io.odin.Logger
 import lv.continuum.lobby.model.Lobby
 import lv.continuum.lobby.protocol.Protocol._
-import lv.continuum.lobby.protocol.ZIOProtocolFormat
+import lv.continuum.lobby.protocol.ProtocolFormat
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits._
 import org.http4s.server.websocket.WebSocketBuilder
@@ -23,7 +23,7 @@ class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
   lobbyRef: Ref[F, Lobby],
   subscribersRef: Ref[F, Subscribers[F]],
 ) extends Http4sDsl[F]
-    with ZIOProtocolFormat {
+    with ProtocolFormat {
 
   private def pipe(
     lobbySession: LobbySession[F],
@@ -41,7 +41,6 @@ class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
     .of[F] { case GET -> Root / "lobby_api" =>
       for {
         sessionParamsRef <- Ref.of[F, SessionParams](SessionParams())
-        queue            <- Queue.unbounded[F, WebSocketFrame]
         subscriber       <- Queue.unbounded[F, PushOut]
         lobbySession = LobbySession(
           authenticator = authenticator,

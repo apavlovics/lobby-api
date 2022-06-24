@@ -5,7 +5,6 @@ object Dependencies {
   private val akkaVersion = "2.6.17"
   private val akkaHttpVersion = "10.2.7"
   private val catsEffectVersion = "3.2.9"
-  private val circeVersion = "0.14.1"
   private val enumeratumVersion = "1.7.0"
   private val http4sVersion = "1.0.0-M29"
   private val logbackVersion = "1.2.6"
@@ -29,13 +28,6 @@ object Dependencies {
 
   object Cats {
     val EffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
-  }
-
-  object Circe {
-    val Core = "io.circe" %% "circe-core" % circeVersion
-    val Generic = "io.circe" %% "circe-generic" % circeVersion
-    val GenericExtras = "io.circe" %% "circe-generic-extras" % circeVersion
-    val Parser = "io.circe" %% "circe-parser" % circeVersion
   }
 
   val Enumeratum = "com.beachape" %% "enumeratum" % enumeratumVersion

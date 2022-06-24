@@ -1,11 +1,11 @@
 package lv.continuum.lobby.protocol
 
-import io.circe.parser._
-import io.circe.syntax._
+import com.stephenn.scalatest.jsonassert.JsonMatchers.matchJson
 import lv.continuum.lobby.protocol.Protocol._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.{Assertion, EitherValues}
+import zio.json.{DecoderOps, EncoderOps}
 
 class ProtocolFormatSpec
   extends AnyWordSpec
@@ -14,7 +14,7 @@ class ProtocolFormatSpec
     with ProtocolFormat
     with TestData {
 
-  "ProtocolFormat" should {
+  "ZIOProtocolFormat" should {
     "provide correct decoders for In ADTs" in {
       List(
         login,
@@ -47,8 +47,8 @@ class ProtocolFormatSpec
   }
 
   private def verifyDecodeIn(tuple: (String, In)): Assertion =
-    decode[In](tuple._1).value shouldBe tuple._2
+    tuple._1.fromJson[In].value shouldBe tuple._2
 
   private def verifyEncodeOut(tuple: (String, Out)): Assertion =
-    tuple._2.asJson shouldBe parse(tuple._1).value
+    tuple._2.toJson should matchJson(tuple._1)
 }

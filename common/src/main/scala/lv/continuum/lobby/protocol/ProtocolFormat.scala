@@ -1,45 +1,49 @@
 package lv.continuum.lobby.protocol
 
-import io.circe.generic.extras.Configuration
-import io.circe.generic.extras.semiauto._
-import io.circe.{Codec, Decoder, Encoder}
-import lv.continuum.lobby.protocol.Protocol.In._
-import lv.continuum.lobby.protocol.Protocol.Out._
+import zio.json.{DeriveJsonCodec, JsonCodec, JsonDecoder, JsonEncoder}
 import lv.continuum.lobby.protocol.Protocol._
 
 trait ProtocolFormat {
 
-  implicit val configuration: Configuration =
-    Configuration.default
-      .withDiscriminator("$type")
-      .withSnakeCaseConstructorNames
-      .withSnakeCaseMemberNames
+  implicit val usernameCodec: JsonCodec[Username] = {
+    val encoder: JsonEncoder[Username] = JsonEncoder[String].contramap(_.value)
+    val decoder: JsonDecoder[Username] = JsonDecoder[String].map(Username)
+    JsonCodec(encoder, decoder)
+  }
 
-  implicit val usernameCodec: Codec[Username] = deriveUnwrappedCodec
-  implicit val passwordCodec: Codec[Password] = deriveUnwrappedCodec
-  implicit val seqCodec: Codec[Seq] = deriveUnwrappedCodec
-  implicit val tableIdCodec: Codec[TableId] = deriveUnwrappedCodec
-  implicit val tableNameCodec: Codec[TableName] = deriveUnwrappedCodec
+  implicit val passwordCodec: JsonCodec[Password] = {
+    val encoder: JsonEncoder[Password] = JsonEncoder[String].contramap(_.value)
+    val decoder: JsonDecoder[Password] = JsonDecoder[String].map(Password)
+    JsonCodec(encoder, decoder)
+  }
 
-  implicit val tableCodec: Codec[Table] = deriveConfiguredCodec
-  implicit val tableToAddCodec: Codec[TableToAdd] = deriveConfiguredCodec
+  implicit val seqCodec: JsonCodec[Seq] = {
+    val encoder: JsonEncoder[Seq] = JsonEncoder[Long].contramap(_.value)
+    val decoder: JsonDecoder[Seq] = JsonDecoder[Long].map(Seq)
+    JsonCodec(encoder, decoder)
+  }
 
-  implicit val inDecoder: Decoder[In] = deriveConfiguredDecoder
-  implicit val loginDecoder: Decoder[Login] = deriveConfiguredDecoder
-  implicit val pingDecoder: Decoder[Ping] = deriveConfiguredDecoder
-  implicit val addTableDecoder: Decoder[AddTable] = deriveConfiguredDecoder
-  implicit val updateTableDecoder: Decoder[UpdateTable] = deriveConfiguredDecoder
-  implicit val removeTableDecoder: Decoder[RemoveTable] = deriveConfiguredDecoder
+  implicit val tableIdCodec: JsonCodec[TableId] = {
+    val encoder: JsonEncoder[TableId] = JsonEncoder[Long].contramap(_.value)
+    val decoder: JsonDecoder[TableId] = JsonDecoder[Long].map(TableId(_))
+    JsonCodec(encoder, decoder)
+  }
 
-  implicit val userTypeEncoder: Encoder[UserType] = Encoder.encodeString.contramap(_.entryName)
+  implicit val tableNameCodec: JsonCodec[TableName] = {
+    val encoder: JsonEncoder[TableName] = JsonEncoder[String].contramap(_.value)
+    val decoder: JsonDecoder[TableName] = JsonDecoder[String].map(TableName)
+    JsonCodec(encoder, decoder)
+  }
 
-  implicit val outEncoder: Encoder[Out] = deriveConfiguredEncoder
-  implicit val loginSuccessfulEncoder: Encoder[LoginSuccessful] = deriveConfiguredEncoder
-  implicit val pongEncoder: Encoder[Pong] = deriveConfiguredEncoder
-  implicit val tableListEncoder: Encoder[TableList] = deriveConfiguredEncoder
-  implicit val tableAddedEncoder: Encoder[TableAdded] = deriveConfiguredEncoder
-  implicit val tableUpdatedEncoder: Encoder[TableUpdated] = deriveConfiguredEncoder
-  implicit val tableRemovedEncoder: Encoder[TableRemoved] = deriveConfiguredEncoder
-  implicit val tableUpdateFailedEncoder: Encoder[TableUpdateFailed] = deriveConfiguredEncoder
-  implicit val tableRemoveFailedEncoder: Encoder[TableRemoveFailed] = deriveConfiguredEncoder
+  implicit val userTypeCodec: JsonCodec[UserType] = {
+    val encoder: JsonEncoder[UserType] = JsonEncoder[String].contramap(_.entryName)
+    val decoder: JsonDecoder[UserType] = JsonDecoder[String].map(UserType.namesToValuesMap)
+    JsonCodec(encoder, decoder)
+  }
+
+  implicit val tableCodec: JsonCodec[Table] = DeriveJsonCodec.gen
+  implicit val tableToAddCodec: JsonCodec[TableToAdd] = DeriveJsonCodec.gen
+
+  implicit val inCodec: JsonCodec[In] = DeriveJsonCodec.gen
+  implicit val outCodec: JsonCodec[Out] = DeriveJsonCodec.gen
 }

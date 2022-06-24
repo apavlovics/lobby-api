@@ -33,10 +33,6 @@ lazy val root = (project in file("."))
 lazy val common = (project in file("common"))
   .settings(
     libraryDependencies ++= Seq(
-      Circe.Core,
-      Circe.Generic,
-      Circe.GenericExtras,
-      Circe.Parser,
       Enumeratum,
       PureConfig.Core,
       PureConfig.CatsEffect,
