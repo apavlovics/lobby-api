@@ -7,7 +7,7 @@ import cats.{Applicative, Parallel}
 import io.odin.Logger
 import lv.continuum.lobby.auth.{Authenticator => CommonAuthenticator}
 import lv.continuum.lobby.cats.LobbySessionSpec.Fixture
-import lv.continuum.lobby.model.Lobby
+import lv.continuum.lobby.model.{Lobby, ParsingError}
 import lv.continuum.lobby.protocol.Protocol.UserType._
 import lv.continuum.lobby.protocol.Protocol._
 import lv.continuum.lobby.protocol.TestData
