@@ -2,7 +2,6 @@ package lv.continuum.lobby.akka
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior, Terminated}
-import io.circe.Error
 import lv.continuum.lobby.akka.TableActor.TableCommand
 import lv.continuum.lobby.auth.Authenticator
 import lv.continuum.lobby.protocol.Protocol.In._
@@ -12,7 +11,7 @@ import lv.continuum.lobby.protocol.Protocol._
 
 object SessionActor {
 
-  case class SessionCommand(in: Either[Error, In], replyTo: ActorRef[Option[Out]])
+  case class SessionCommand(in: Either[ParsingError, In], replyTo: ActorRef[Option[Out]])
 
   def apply(
     authenticator: Authenticator,
@@ -81,10 +80,10 @@ object SessionActor {
 
     def error(
       context: ActorContext[SessionCommand],
-      error: Error,
+      error: ParsingError,
       replyTo: ActorRef[Option[Out]],
     ): Behavior[SessionCommand] = {
-      context.log.warn(s"Issue while parsing JSON: ${error.getMessage}")
+      context.log.warn(s"Issue while parsing JSON: $error")
       replyTo ! Some(InvalidMessage)
       Behaviors.same
     }

@@ -4,7 +4,6 @@ import cats.effect.std.Queue
 import cats.effect.{Async, IO, Ref, Sync}
 import cats.syntax.all._
 import cats.{Applicative, Parallel}
-import io.circe.Error
 import io.odin.Logger
 import lv.continuum.lobby.auth.{Authenticator => CommonAuthenticator}
 import lv.continuum.lobby.cats.LobbySessionSpec.Fixture
@@ -58,7 +57,7 @@ class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with Test
 
   private def verifyInOut[F[_]: Sync](
     fixture: Fixture[F],
-    in: Either[Error, In],
+    in: Either[ParsingError, In],
     expectedOut: Option[Out],
   ): F[Assertion] =
     for {
@@ -68,7 +67,7 @@ class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with Test
 
   private def verifyInOut[F[_]: Sync](
     fixtureF: F[Fixture[F]],
-    in: Either[Error, In],
+    in: Either[ParsingError, In],
     expectedOut: Option[Out],
   ): F[Assertion] =
     for {

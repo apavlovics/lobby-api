@@ -4,7 +4,6 @@ import cats.effect.Ref
 import cats.instances.vector._
 import cats.syntax.all._
 import cats.{Applicative, Monad, Parallel}
-import io.circe.Error
 import io.odin.Logger
 import lv.continuum.lobby.model.Lobby
 import lv.continuum.lobby.protocol.Protocol.In._
@@ -21,7 +20,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
 ) {
 
   def process(
-    in: Either[Error, In],
+    in: Either[ParsingError, In],
   ): F[Option[Out]] =
     for {
       sessionParams <- sessionParamsRef.get
@@ -32,7 +31,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
     } yield out
 
   private def processUnauthenticated(
-    in: Either[Error, In],
+    in: Either[ParsingError, In],
   ): F[Option[Out]] = {
     in match {
       case Right(Login(username, password)) =>
@@ -60,7 +59,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
 
   private def processAuthenticated(
     userType: UserType,
-    in: Either[Error, In],
+    in: Either[ParsingError, In],
   ): F[Option[Out]] =
     (userType, in) match {
       case (_, Right(Login(username, password))) =>
@@ -155,8 +154,8 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
       }
     } yield out
 
-  private def error(error: Error): F[Option[Out]] =
-    Logger[F].warn(s"Issue while parsing JSON: ${error.getMessage}") *>
+  private def error(error: ParsingError): F[Option[Out]] =
+    Logger[F].warn(s"Issue while parsing JSON: $error") *>
       Applicative[F].pure(InvalidMessage.some)
 }
 

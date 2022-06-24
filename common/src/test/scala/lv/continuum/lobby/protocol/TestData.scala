@@ -1,6 +1,5 @@
 package lv.continuum.lobby.protocol
 
-import io.circe.{Error, ParsingFailure}
 import lv.continuum.lobby.protocol.Protocol.In._
 import lv.continuum.lobby.protocol.Protocol.Out._
 import lv.continuum.lobby.protocol.Protocol.UserType._
@@ -33,7 +32,7 @@ trait TestData {
 
   // In
 
-  val error: Error = ParsingFailure("Parsing failed", new Exception("BANG!"))
+  val error: ParsingError = ParsingError("Parsing failed")
 
   val login: (String, Login) = {
     val json =
