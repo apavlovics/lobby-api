@@ -2,24 +2,24 @@ package lv.continuum.lobby.cats
 
 import cats.effect.std.Queue
 import cats.effect.{Async, IO, Ref, Sync}
-import cats.syntax.all._
+import cats.syntax.all.*
 import cats.{Applicative, Parallel}
 import io.odin.Logger
 import lv.continuum.lobby.auth.{Authenticator => CommonAuthenticator}
 import lv.continuum.lobby.cats.LobbySessionSpec.Fixture
 import lv.continuum.lobby.model.{Lobby, ParsingError}
-import lv.continuum.lobby.protocol.Protocol.UserType._
-import lv.continuum.lobby.protocol.Protocol._
+import lv.continuum.lobby.protocol.Protocol.UserType.*
+import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.TestData
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with TestData {
 
-  implicit private val limit: FiniteDuration = 5.seconds
+  private given limit: FiniteDuration = 5.seconds
 
   private def stubAuthenticator[F[_]: Sync](userType: Option[UserType]): Authenticator[F] = {
     val stub = new CommonAuthenticator {

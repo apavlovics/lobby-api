@@ -3,15 +3,15 @@ package org.slf4j.impl
 import cats.effect.std.Dispatcher
 import cats.effect.unsafe.implicits.global
 import cats.effect.{IO, Sync}
-import io.odin._
+import io.odin.*
 import io.odin.formatter.Formatter
 import io.odin.slf4j.OdinLoggerBinder
 
 /** @see [[https://github.com/valskalla/odin#slf4j-bridge Odin SLF4J Bridge]] */
 class StaticLoggerBinder extends OdinLoggerBinder[IO] {
 
-  implicit val F: Sync[IO] = IO.asyncForIO
-  implicit val dispatcher: Dispatcher[IO] = Dispatcher[IO].allocated.unsafeRunSync()._1
+  override given F: Sync[IO] = IO.asyncForIO
+  override given dispatcher: Dispatcher[IO] = Dispatcher[IO].allocated.unsafeRunSync()._1
 
   val loggers: PartialFunction[String, Logger[IO]] = { case _ =>
     consoleLogger[IO](

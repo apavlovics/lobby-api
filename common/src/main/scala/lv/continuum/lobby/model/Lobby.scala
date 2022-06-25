@@ -1,7 +1,7 @@
 package lv.continuum.lobby.model
 
-import cats.syntax.option._
-import lv.continuum.lobby.protocol.Protocol._
+import cats.syntax.option.*
+import lv.continuum.lobby.protocol.Protocol.*
 
 case class Lobby(
   tables: Vector[Table],

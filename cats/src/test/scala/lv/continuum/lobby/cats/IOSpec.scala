@@ -8,14 +8,14 @@ import io.odin.{Logger, consoleLogger}
 import org.scalatest.Assertions.fail
 
 import scala.concurrent.Future
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 trait IOSpec {
 
-  implicit protected val context: TestContext = TestContext()
-  implicit protected val logger: Logger[IO] = consoleLogger[IO](formatter = Formatter.colorful)
+  protected given context: TestContext = TestContext()
+  protected given logger: Logger[IO] = consoleLogger[IO](formatter = Formatter.colorful)
 
-  def runTimed[A](io: IO[A])(implicit limit: FiniteDuration): A =
+  def runTimed[A](io: IO[A])(using limit: FiniteDuration): A =
     io.unsafeRunTimed(limit).getOrElse(fail(s"Unable to complete test in $limit"))
 
   def runAsFuture[A](

@@ -1,22 +1,22 @@
 package lv.continuum.lobby.cats
 
-import cats.effect._
-import cats.syntax.all._
-import cats.{Applicative, Parallel}
+import cats.effect.*
+import cats.syntax.all.*
+import cats.Parallel
 import com.typesafe.config.ConfigFactory
 import io.odin.formatter.Formatter
 import io.odin.{Logger, consoleLogger}
 import lv.continuum.lobby.auth.{Authenticator => CommonAuthenticator}
 import lv.continuum.lobby.config.LobbyServerConfig
 import lv.continuum.lobby.model.Lobby
-import org.http4s.blaze.server._
+import org.http4s.blaze.server.*
 
 object LobbyServerCats extends IOApp {
 
   private def runF[F[_]: Async: Logger: Parallel]: F[ExitCode] =
     for {
-      config            <- Applicative[F].pure(ConfigFactory.load())
-      lobbyServerConfig <- LobbyServerConfig.load[F](config)
+      config            <- Sync[F].blocking(ConfigFactory.load())
+      lobbyServerConfig <- Sync[F].blocking(LobbyServerConfig.loadOrThrow(config))
 
       authenticator = Authenticator[F](new CommonAuthenticator.InMemory)
       lobbyRef       <- Ref.of[F, Lobby](Lobby())
@@ -32,7 +32,7 @@ object LobbyServerCats extends IOApp {
     } yield ExitCode.Success
 
   override def run(args: List[String]): IO[ExitCode] = {
-    implicit val logger: Logger[IO] = consoleLogger(formatter = Formatter.colorful)
+    given Logger[IO] = consoleLogger(formatter = Formatter.colorful)
     runF[IO]
   }
 }

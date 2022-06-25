@@ -10,7 +10,7 @@ import lv.continuum.lobby.protocol.Protocol.PushOut
 /** An actor and a source for delivering push notifications to subscribed clients. */
 object PushSource {
 
-  def apply()(implicit
+  def apply()(using
     materializer: Materializer,
   ): (ActorRef[PushOut], Source[PushOut, NotUsed]) =
     ActorSource

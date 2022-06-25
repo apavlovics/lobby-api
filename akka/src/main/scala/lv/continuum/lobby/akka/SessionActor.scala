@@ -5,10 +5,10 @@ import akka.actor.typed.{ActorRef, Behavior, Terminated}
 import lv.continuum.lobby.akka.TableActor.TableCommand
 import lv.continuum.lobby.auth.Authenticator
 import lv.continuum.lobby.model.ParsingError
-import lv.continuum.lobby.protocol.Protocol.In._
-import lv.continuum.lobby.protocol.Protocol.Out._
-import lv.continuum.lobby.protocol.Protocol.UserType._
-import lv.continuum.lobby.protocol.Protocol._
+import lv.continuum.lobby.protocol.Protocol.In.*
+import lv.continuum.lobby.protocol.Protocol.Out.*
+import lv.continuum.lobby.protocol.Protocol.UserType.*
+import lv.continuum.lobby.protocol.Protocol.*
 
 object SessionActor {
 
@@ -95,8 +95,8 @@ object SessionActor {
     }
   }
 
-  implicit private class Stopper(behavior: Behaviors.Receive[SessionCommand]) {
-    def stopWhenWatchedActorTerminates: Behavior[SessionCommand] =
+  extension (behavior: Behaviors.Receive[SessionCommand]) {
+    private def stopWhenWatchedActorTerminates: Behavior[SessionCommand] =
       behavior.receiveSignal { case (_, Terminated(_)) => Behaviors.stopped }
   }
 }

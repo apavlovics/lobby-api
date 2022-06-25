@@ -1,15 +1,15 @@
 package lv.continuum.lobby.cats
 
 import cats.effect.Ref
-import cats.instances.vector._
-import cats.syntax.all._
+import cats.instances.vector.*
+import cats.syntax.all.*
 import cats.{Applicative, Monad, Parallel}
 import io.odin.Logger
 import lv.continuum.lobby.model.{Lobby, ParsingError}
-import lv.continuum.lobby.protocol.Protocol.In._
-import lv.continuum.lobby.protocol.Protocol.Out._
-import lv.continuum.lobby.protocol.Protocol.UserType._
-import lv.continuum.lobby.protocol.Protocol._
+import lv.continuum.lobby.protocol.Protocol.In.*
+import lv.continuum.lobby.protocol.Protocol.Out.*
+import lv.continuum.lobby.protocol.Protocol.UserType.*
+import lv.continuum.lobby.protocol.Protocol.*
 
 class LobbySession[F[_]: Logger: Monad: Parallel](
   authenticator: Authenticator[F],

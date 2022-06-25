@@ -3,18 +3,17 @@ package lv.continuum.lobby.akka
 import akka.NotUsed
 import akka.actor.typed.ActorRef
 import akka.http.scaladsl.model.ws.{BinaryMessage, Message, TextMessage}
-import akka.stream._
-import akka.stream.scaladsl._
+import akka.stream.*
+import akka.stream.scaladsl.*
 import akka.stream.typed.scaladsl.ActorFlow
 import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
 import lv.continuum.lobby.akka.SessionActor.SessionCommand
 import lv.continuum.lobby.model.ParsingError
-import lv.continuum.lobby.protocol.Protocol._
-import lv.continuum.lobby.protocol._
-import zio.json.{DecoderOps, EncoderOps}
+import lv.continuum.lobby.protocol.Protocol.*
+import lv.continuum.lobby.protocol.*
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 
 /** A complete lobby flow. */
 object LobbyFlow extends ProtocolFormat with LazyLogging {
@@ -22,13 +21,13 @@ object LobbyFlow extends ProtocolFormat with LazyLogging {
   private val parallelism = Runtime.getRuntime.availableProcessors() * 2 - 1
   logger.info(s"Parallelism is $parallelism")
 
-  implicit private val timeout: Timeout = Timeout(5.seconds)
+  private given timeout: Timeout = Timeout(5.seconds)
   logger.info(s"Timeout is ${timeout.duration}")
 
   def apply(
     pushSource: Source[PushOut, NotUsed],
     sessionActor: ActorRef[SessionCommand],
-  )(implicit
+  )(using
     materializer: Materializer,
   ): Flow[Message, Message, NotUsed] =
     Flow[Message]
@@ -41,11 +40,17 @@ object LobbyFlow extends ProtocolFormat with LazyLogging {
       }
       .collect { case tm: TextMessage => tm }
       .mapAsync(parallelism)(_.textStream.runFold("")(_ ++ _))
-      .map(_.fromJson[In].left.map(ParsingError))
-      .via(ActorFlow.ask[Either[ParsingError, In], SessionCommand, Option[Out]](sessionActor)(SessionCommand))
+      .map(fromJson[In])
+      .via(
+        ActorFlow.ask[Either[ParsingError, In], SessionCommand, Option[Out]](
+          ref = sessionActor,
+        )(
+          makeMessage = SessionCommand.apply,
+        )
+      )
       .collect { case Some(out) => out }
       .merge(pushSource)
-      .map(_.toJson)
+      .map(toJson)
       .map[Message](TextMessage(_))
       .withAttributes(ActorAttributes.supervisionStrategy { e =>
         logger.error("Issue while processing stream", e)

@@ -1,15 +1,13 @@
 package lv.continuum.lobby.config
 
-import cats.effect.Sync
 import com.typesafe.config.Config
-import pureconfig.ConfigSource
-import pureconfig.generic.auto._
-import pureconfig.module.catseffect.syntax._
+import pureconfig.{ConfigReader, ConfigSource}
+import pureconfig.generic.derivation.default.*
 
 case class LobbyServerConfig(
   host: String,
   port: Int,
-)
+) derives ConfigReader
 
 object LobbyServerConfig {
 
@@ -17,7 +15,4 @@ object LobbyServerConfig {
 
   def loadOrThrow(config: Config): LobbyServerConfig =
     ConfigSource.fromConfig(config).at(namespace = namespace).loadOrThrow[LobbyServerConfig]
-
-  def load[F[_]: Sync](config: Config): F[LobbyServerConfig] =
-    ConfigSource.fromConfig(config).at(namespace = namespace).loadF()
 }

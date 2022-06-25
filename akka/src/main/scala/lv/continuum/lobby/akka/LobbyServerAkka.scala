@@ -2,10 +2,10 @@ package lv.continuum.lobby.akka
 
 import java.util.UUID
 
-import akka.actor._
-import akka.actor.typed.scaladsl.adapter._
-import akka.http.scaladsl._
-import akka.http.scaladsl.server.Directives.{Authenticator => _, _}
+import akka.actor.*
+import akka.actor.typed.scaladsl.adapter.*
+import akka.http.scaladsl.*
+import akka.http.scaladsl.server.Directives.{Authenticator => _, *}
 import akka.http.scaladsl.server.Route
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
@@ -15,7 +15,7 @@ import lv.continuum.lobby.config.LobbyServerConfig
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
-class LobbyServerAkka(implicit
+class LobbyServerAkka(using
   system: ActorSystem,
 ) extends LazyLogging {
 
@@ -56,7 +56,7 @@ object LobbyServerAkka extends App {
 
   private def start(): Unit = {
 
-    implicit val system: ActorSystem = ActorSystem("akka-lobby-server")
+    given system: ActorSystem = ActorSystem("akka-lobby-server")
 
     // Start server
     val lobbyServerConfig = LobbyServerConfig.loadOrThrow(ConfigFactory.load())

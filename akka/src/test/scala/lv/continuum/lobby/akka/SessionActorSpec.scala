@@ -3,14 +3,14 @@ package lv.continuum.lobby.akka
 import akka.actor.testkit.typed.Effect.Watched
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox}
 import akka.actor.typed.Terminated
-import cats.syntax.either._
-import cats.syntax.option._
+import cats.syntax.either.*
+import cats.syntax.option.*
 import lv.continuum.lobby.akka.SessionActor.SessionCommand
 import lv.continuum.lobby.akka.SessionActorSpec.StubAuthenticator
 import lv.continuum.lobby.akka.TableActor.TableCommand
 import lv.continuum.lobby.auth.Authenticator
-import lv.continuum.lobby.protocol.Protocol.UserType._
-import lv.continuum.lobby.protocol.Protocol._
+import lv.continuum.lobby.protocol.Protocol.UserType.*
+import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.TestData
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

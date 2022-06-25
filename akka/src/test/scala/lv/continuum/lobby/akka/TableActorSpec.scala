@@ -2,8 +2,8 @@ package lv.continuum.lobby.akka
 
 import akka.actor.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox}
 import lv.continuum.lobby.akka.TableActor.TableCommand
-import lv.continuum.lobby.protocol.Protocol.Out._
-import lv.continuum.lobby.protocol.Protocol._
+import lv.continuum.lobby.protocol.Protocol.Out.*
+import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.TestData
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

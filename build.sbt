@@ -14,17 +14,13 @@ lazy val root = (project in file("."))
 
         // Resolve snapshot releases
         resolvers ++= Seq("public", "snapshots", "releases").map(Resolver.sonatypeRepo),
-        scalaVersion := "2.13.8",
+        scalaVersion := "3.1.3",
         scalacOptions ++= Seq(
           "-deprecation",
           "-feature",
           "-language:higherKinds",
           "-unchecked",
           "-Xfatal-warnings",
-          "-Xlint:_",
-          // Suppress warnings for Shapeless-generated code:
-          // https://github.com/scala/bug/issues/12072
-          "-Xlint:-byname-implicit",
         ),
       )
     ),
@@ -33,13 +29,13 @@ lazy val root = (project in file("."))
 lazy val common = (project in file("common"))
   .settings(
     libraryDependencies ++= Seq(
-      Enumeratum,
+      Cats.Core,
+      JsoniterScala.Core,
+      JsoniterScala.Macros % Provided,
       PureConfig.Core,
-      PureConfig.CatsEffect,
-      ZIO.Json,
+      JsonAssert % Test,
       ScalaTest.WordSpec % Test,
       ScalaTest.ShouldMatchers % Test,
-      ScalaTest.Json % Test,
     ),
   )
 

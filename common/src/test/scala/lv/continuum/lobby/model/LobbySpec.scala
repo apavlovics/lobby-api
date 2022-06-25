@@ -1,6 +1,6 @@
 package lv.continuum.lobby.model
 
-import lv.continuum.lobby.protocol.Protocol._
+import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.TestData
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

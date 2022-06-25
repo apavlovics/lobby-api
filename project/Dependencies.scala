@@ -4,37 +4,46 @@ object Dependencies {
 
   private val akkaVersion = "2.6.19"
   private val akkaHttpVersion = "10.2.9"
+  private val catsVersion = "2.7.0"
   private val catsEffectVersion = "3.3.12"
-  private val enumeratumVersion = "1.7.0"
   private val http4sVersion = "1.0.0-M33"
+  private val jsonAssertVersion = "1.5.0"
+  private val jsoniterScalaVersion = "2.13.32"
   private val logbackVersion = "1.2.11"
   private val odinVersion = "0.13.0"
   private val pureConfigVersion = "0.17.1"
   private val scalaLoggingVersion = "3.9.5"
   private val scalaTestVersion = "3.2.12"
-  private val scalaTestJsonVersion = "0.2.5"
-  private val zioJsonVersion = "0.2.0-M4+15-312a4039-SNAPSHOT"
 
   object Akka {
     val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
     val ActorTestkitTyped = "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion
 
-    val Http = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
-    val HttpTestkit = "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion
+    // TODO Remove `CrossVersion` once Akka HTTP supports Scala 3
+    val Http =
+      "com.typesafe.akka" %% "akka-http" % akkaHttpVersion cross CrossVersion.for3Use2_13
+    val HttpTestkit =
+      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion cross CrossVersion.for3Use2_13
 
     val StreamTyped = "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion
     val StreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion
   }
 
   object Cats {
+    val Core = "org.typelevel" %% "cats-core" % catsVersion
     val EffectTestkit = "org.typelevel" %% "cats-effect-testkit" % catsEffectVersion
   }
-
-  val Enumeratum = "com.beachape" %% "enumeratum" % enumeratumVersion
 
   object Http4s {
     val BlazeServer = "org.http4s" %% "http4s-blaze-server" % http4sVersion
     val Dsl = "org.http4s" %% "http4s-dsl" % http4sVersion
+  }
+
+  val JsonAssert = "org.skyscreamer" % "jsonassert" % jsonAssertVersion
+
+  object JsoniterScala {
+    val Core = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core" % jsoniterScalaVersion
+    val Macros = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % jsoniterScalaVersion
   }
 
   val Logback = "ch.qos.logback" % "logback-classic" % logbackVersion
@@ -45,8 +54,7 @@ object Dependencies {
   }
 
   object PureConfig {
-    val Core = "com.github.pureconfig" %% "pureconfig" % pureConfigVersion
-    val CatsEffect = "com.github.pureconfig" %% "pureconfig-cats-effect" % pureConfigVersion
+    val Core = "com.github.pureconfig" %% "pureconfig-core" % pureConfigVersion
   }
 
   val ScalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion
@@ -54,10 +62,5 @@ object Dependencies {
   object ScalaTest {
     val WordSpec = "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion
     val ShouldMatchers = "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion
-    val Json = "com.stephenn" %% "scalatest-json-jsonassert" % scalaTestJsonVersion
-  }
-
-  object ZIO {
-    val Json = "dev.zio" %% "zio-json" % zioJsonVersion
   }
 }

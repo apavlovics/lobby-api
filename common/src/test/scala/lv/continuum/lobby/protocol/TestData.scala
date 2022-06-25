@@ -1,10 +1,10 @@
 package lv.continuum.lobby.protocol
 
 import lv.continuum.lobby.model.ParsingError
-import lv.continuum.lobby.protocol.Protocol.In._
-import lv.continuum.lobby.protocol.Protocol.Out._
-import lv.continuum.lobby.protocol.Protocol.UserType._
-import lv.continuum.lobby.protocol.Protocol._
+import lv.continuum.lobby.protocol.Protocol.In.*
+import lv.continuum.lobby.protocol.Protocol.Out.*
+import lv.continuum.lobby.protocol.Protocol.UserType.*
+import lv.continuum.lobby.protocol.Protocol.*
 
 trait TestData {
 
