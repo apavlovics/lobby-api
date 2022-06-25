@@ -10,11 +10,14 @@ case class LobbyServerConfig(
   host: String,
   port: Int,
 )
+
 object LobbyServerConfig {
 
+  private val namespace = "lobby-server"
+
   def loadOrThrow(config: Config): LobbyServerConfig =
-    ConfigSource.fromConfig(config).at(namespace = "lobby-server").loadOrThrow[LobbyServerConfig]
+    ConfigSource.fromConfig(config).at(namespace = namespace).loadOrThrow[LobbyServerConfig]
 
   def load[F[_]: Sync](config: Config): F[LobbyServerConfig] =
-    ConfigSource.fromConfig(config).at(namespace = "lobby-server").loadF()
+    ConfigSource.fromConfig(config).at(namespace = namespace).loadF()
 }
