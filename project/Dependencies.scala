@@ -2,8 +2,8 @@ import sbt._
 
 object Dependencies {
 
-  private val akkaVersion = "2.6.17"
-  private val akkaHttpVersion = "10.2.7"
+  private val akkaVersion = "2.6.19"
+  private val akkaHttpVersion = "10.2.9"
   private val catsEffectVersion = "3.2.9"
   private val enumeratumVersion = "1.7.0"
   private val http4sVersion = "1.0.0-M29"
@@ -11,9 +11,10 @@ object Dependencies {
   private val odinVersion = "0.13.0"
   private val pureConfigVersion = "0.17.0"
   private val scalaLoggingVersion = "3.9.4"
-  private val scalaMockVersion = "5.1.0"
-  private val scalaTestVersion = "3.2.10"
+  private val scalaMockVersion = "5.2.0"
+  private val scalaTestVersion = "3.2.12"
   private val scalaTestJsonVersion = "0.2.5"
+  private val zioJsonVersion = "0.2.0-M4+15-312a4039-SNAPSHOT"
 
   object Akka {
     val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
@@ -59,6 +60,6 @@ object Dependencies {
   }
 
   object ZIO {
-    val Json = "dev.zio" %% "zio-json" % "0.2.0-M4+15-312a4039-SNAPSHOT"
+    val Json = "dev.zio" %% "zio-json" % zioJsonVersion
   }
 }
