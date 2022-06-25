@@ -10,7 +10,7 @@ The application uses:
 
 * Java 17
 * Scala 2.13
-* sbt 1.5
+* sbt 1.6
 
 ## Configuration
 
