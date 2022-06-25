@@ -14,7 +14,7 @@ lazy val root = (project in file("."))
 
         // Resolve snapshot releases
         resolvers ++= Seq("public", "snapshots", "releases").map(Resolver.sonatypeRepo),
-        scalaVersion := "2.13.7",
+        scalaVersion := "2.13.8",
         scalacOptions ++= Seq(
           "-deprecation",
           "-feature",
