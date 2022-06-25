@@ -6,19 +6,20 @@ import akka.actor.typed.Terminated
 import cats.syntax.either._
 import cats.syntax.option._
 import lv.continuum.lobby.akka.SessionActor.SessionCommand
+import lv.continuum.lobby.akka.SessionActorSpec.StubAuthenticator
 import lv.continuum.lobby.akka.TableActor.TableCommand
 import lv.continuum.lobby.auth.Authenticator
 import lv.continuum.lobby.protocol.Protocol.UserType._
 import lv.continuum.lobby.protocol.Protocol._
 import lv.continuum.lobby.protocol.TestData
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-class SessionActorSpec extends AnyWordSpec with Matchers with MockFactory with TestData {
+class SessionActorSpec extends AnyWordSpec with Matchers with TestData {
 
-  trait Fixture {
-    val authenticator: Authenticator = mock[Authenticator]
+  abstract class Fixture(
+    authenticator: Authenticator,
+  ) {
     val tableActorInbox: TestInbox[TableCommand] = TestInbox()
     val pushActorInbox: TestInbox[PushOut] = TestInbox()
     val replyToInbox: TestInbox[Option[Out]] = TestInbox()
@@ -57,17 +58,13 @@ class SessionActorSpec extends AnyWordSpec with Matchers with MockFactory with T
     }
   }
 
-  trait NotAuthenticated extends Fixture {
-    (authenticator.authenticate _).expects(*, *).returning(None).noMoreThanOnce()
-  }
+  class NotAuthenticated extends Fixture(new StubAuthenticator(None))
 
-  trait AuthenticatedAsUser extends Fixture {
-    (authenticator.authenticate _).expects(*, *).returning(User.some).once()
+  class AuthenticatedAsUser extends Fixture(new StubAuthenticator(User.some)) {
     verifyLogin(loginSuccessfulUser._2)
   }
 
-  trait AuthenticatedAsAdmin extends Fixture {
-    (authenticator.authenticate _).expects(*, *).returning(Admin.some).once()
+  class AuthenticatedAsAdmin extends Fixture(new StubAuthenticator(Admin.some)) {
     verifyLogin(loginSuccessfulAdmin._2)
   }
 
@@ -135,5 +132,18 @@ class SessionActorSpec extends AnyWordSpec with Matchers with MockFactory with T
         verifyStop()
       }
     }
+  }
+}
+
+object SessionActorSpec {
+
+  class StubAuthenticator(
+    predefinedUserType: Option[UserType],
+  ) extends Authenticator {
+
+    override def authenticate(
+      username: Username,
+      password: Password,
+    ): Option[UserType] = predefinedUserType
   }
 }

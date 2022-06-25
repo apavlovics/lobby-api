@@ -11,7 +11,6 @@ object Dependencies {
   private val odinVersion = "0.13.0"
   private val pureConfigVersion = "0.17.1"
   private val scalaLoggingVersion = "3.9.5"
-  private val scalaMockVersion = "5.2.0"
   private val scalaTestVersion = "3.2.12"
   private val scalaTestJsonVersion = "0.2.5"
   private val zioJsonVersion = "0.2.0-M4+15-312a4039-SNAPSHOT"
@@ -51,7 +50,6 @@ object Dependencies {
   }
 
   val ScalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion
-  val ScalaMock = "org.scalamock" %% "scalamock" % scalaMockVersion
 
   object ScalaTest {
     val WordSpec = "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion

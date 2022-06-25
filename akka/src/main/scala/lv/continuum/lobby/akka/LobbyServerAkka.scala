@@ -23,7 +23,7 @@ class LobbyServerAkka(implicit
 
   // Create one TableActor and Authenticator per server
   private val tableActor = system.spawn(TableActor(), s"TableActor")
-  private val authenticator: Authenticator = new Authenticator
+  private val authenticator: Authenticator = new Authenticator.InMemory
 
   private[akka] val route: Route =
     Route.seal {

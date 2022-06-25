@@ -37,7 +37,6 @@ lazy val common = (project in file("common"))
       PureConfig.Core,
       PureConfig.CatsEffect,
       ZIO.Json,
-      ScalaMock % Test,
       ScalaTest.WordSpec % Test,
       ScalaTest.ShouldMatchers % Test,
       ScalaTest.Json % Test,
