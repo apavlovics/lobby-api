@@ -17,7 +17,7 @@ object Dependencies {
 
   object Akka {
 
-    // TODO Remove once Akka HTTP supports Scala 3
+    // TODO Remove once Akka HTTP supports Scala 3: https://github.com/akka/akka-http/issues/3891
     import CrossVersion.for3Use2_13
 
     val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion cross for3Use2_13
