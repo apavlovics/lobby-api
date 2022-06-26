@@ -16,6 +16,7 @@ lazy val root = (project in file("."))
         resolvers ++= Seq("public", "snapshots", "releases").map(Resolver.sonatypeRepo),
         scalaVersion := "3.1.3",
         scalacOptions ++= Seq(
+          // TODO Detect unused imports: https://github.com/lampepfl/dotty-feature-requests/issues/287
           "-deprecation",
           "-feature",
           "-language:higherKinds",
