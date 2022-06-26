@@ -1,22 +1,46 @@
 package lv.continuum.lobby.protocol
 
+import cats.syntax.option.*
+
 object Protocol {
 
-  case class Username(value: String) extends AnyVal
-  case class Password(value: String) extends AnyVal
-  case class Seq(value: Long) extends AnyVal
-  case class TableId(value: Long) extends AnyVal {
-    def inc: TableId = TableId(value + 1)
+  opaque type Username = String
+  object Username {
+    def apply(value: String): Username = value
+    def unapply(value: Username): Option[String] = value.some
   }
+
+  opaque type Password = String
+  object Password {
+    def apply(value: String): Password = value
+    def unapply(value: Password): Option[String] = value.some
+  }
+
+  opaque type Seq = Long
+  object Seq {
+    def apply(value: Long): Seq = value
+  }
+
+  opaque type TableId = Long
   object TableId {
 
+    def apply(value: Long): TableId = value
+
     /** `TableId` to use as an absent (special, nonexistent) value. */
-    val Absent: TableId = TableId(-1)
+    val Absent: TableId = -1
 
     /** `TableId` to use as the initial value. */
-    val Initial: TableId = TableId(0)
+    val Initial: TableId = 0
   }
-  case class TableName(value: String) extends AnyVal
+  extension (tableId: TableId) {
+    def value: Long = tableId
+    def inc: TableId = tableId + 1
+  }
+
+  opaque type TableName = String
+  object TableName {
+    def apply(value: String): TableName = value
+  }
 
   case class Table(
     id: TableId,

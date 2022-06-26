@@ -2,7 +2,7 @@ package lv.continuum.lobby.auth
 
 import cats.syntax.option.*
 import lv.continuum.lobby.protocol.Protocol.UserType.*
-import lv.continuum.lobby.protocol.Protocol.{Password, UserType, Username}
+import lv.continuum.lobby.protocol.Protocol.*
 
 trait Authenticator {
 

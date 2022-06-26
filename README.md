@@ -9,7 +9,7 @@ There are two implementations available: Akka-based one (see the `akka` module) 
 The application uses:
 
 * Java 17
-* Scala 2.13
+* Scala 3
 * sbt 1.6
 
 ## Configuration

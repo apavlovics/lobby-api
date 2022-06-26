@@ -33,7 +33,7 @@ trait TestData {
 
   // In
 
-  val error: ParsingError = ParsingError("Parsing failed")
+  val error: ParsingError = ParsingError(new Exception("Parsing failed"))
 
   val login: (String, Login) = {
     val json =
