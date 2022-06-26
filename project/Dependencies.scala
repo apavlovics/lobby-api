@@ -16,17 +16,18 @@ object Dependencies {
   private val scalaTestVersion = "3.2.12"
 
   object Akka {
-    val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
-    val ActorTestkitTyped = "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion
 
-    // TODO Remove `CrossVersion` once Akka HTTP supports Scala 3
-    val Http =
-      "com.typesafe.akka" %% "akka-http" % akkaHttpVersion cross CrossVersion.for3Use2_13
-    val HttpTestkit =
-      "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion cross CrossVersion.for3Use2_13
+    // TODO Remove once Akka HTTP supports Scala 3
+    import CrossVersion.for3Use2_13
 
-    val StreamTyped = "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion
-    val StreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion
+    val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion cross for3Use2_13
+    val ActorTestkitTyped = "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion cross for3Use2_13
+
+    val Http = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion cross for3Use2_13
+    val HttpTestkit = "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion cross for3Use2_13
+
+    val StreamTyped = "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion cross for3Use2_13
+    val StreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion cross for3Use2_13
   }
 
   object Cats {
