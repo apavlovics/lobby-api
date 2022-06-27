@@ -24,6 +24,7 @@ lazy val root = (project in file("."))
           "-feature",
           "-language:higherKinds",
           "-new-syntax",
+          "-no-indent",
           "-unchecked",
           "-Xfatal-warnings",
         ),
