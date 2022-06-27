@@ -14,9 +14,6 @@ lazy val root = (project in file("."))
     inThisBuild(
       List(
         organization := "lv.continuum",
-
-        // Resolve snapshot releases
-        resolvers ++= Seq("public", "snapshots", "releases").map(Resolver.sonatypeRepo),
         scalaVersion := "3.1.3",
         scalacOptions ++= Seq(
           // TODO Detect unused imports: https://github.com/lampepfl/dotty-feature-requests/issues/287
@@ -53,11 +50,16 @@ lazy val akka = (project in file("akka"))
       Akka.ActorTyped,
       Akka.Http,
       Akka.StreamTyped,
-      Logback,
-      ScalaLogging,
       Akka.ActorTestkitTyped % Test,
       Akka.HttpTestkit % Test,
       Akka.StreamTestkit % Test,
+    ).map(
+      // TODO Remove once Akka HTTP supports Scala 3: https://github.com/akka/akka-http/issues/3891
+      _ cross CrossVersion.for3Use2_13
+    ),
+    libraryDependencies ++= Seq(
+      Logback,
+      ScalaLogging,
     ),
   )
 

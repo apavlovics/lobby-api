@@ -17,17 +17,14 @@ object Dependencies {
 
   object Akka {
 
-    // TODO Remove once Akka HTTP supports Scala 3: https://github.com/akka/akka-http/issues/3891
-    import CrossVersion.for3Use2_13
+    val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
+    val ActorTestkitTyped = "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion
 
-    val ActorTyped = "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion cross for3Use2_13
-    val ActorTestkitTyped = "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion cross for3Use2_13
+    val Http = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
+    val HttpTestkit = "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion
 
-    val Http = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion cross for3Use2_13
-    val HttpTestkit = "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion cross for3Use2_13
-
-    val StreamTyped = "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion cross for3Use2_13
-    val StreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion cross for3Use2_13
+    val StreamTyped = "com.typesafe.akka" %% "akka-stream-typed" % akkaVersion
+    val StreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion
   }
 
   object Cats {
