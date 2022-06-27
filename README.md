@@ -16,11 +16,11 @@ The application uses:
 
 The default configuration is stored in the *application.conf* files.
 
-## Testing
+## Building
 
-To test the application, go to its root folder and execute:
+To check formatting, compile and test the application, go to its root folder and execute:
 
-    sbt test
+    sbt build
 
 ## Running
 

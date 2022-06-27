@@ -1,5 +1,8 @@
 import Dependencies._
 
+// Check formatting and test
+addCommandAlias("build", ";scalafmtCheckAll;test")
+
 lazy val root = (project in file("."))
   .aggregate(
     common,
