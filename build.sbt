@@ -22,7 +22,6 @@ lazy val root = (project in file("."))
           // TODO Detect unused imports: https://github.com/lampepfl/dotty-feature-requests/issues/287
           "-deprecation",
           "-feature",
-          "-language:higherKinds",
           "-new-syntax",
           "-no-indent",
           "-unchecked",
