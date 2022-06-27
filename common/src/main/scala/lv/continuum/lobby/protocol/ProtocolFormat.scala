@@ -27,11 +27,11 @@ trait ProtocolFormat {
 
   given JsonValueCodec[Out] = JsonCodecMaker.make(codecMakerConfig)
 
-  /** Deserializes JSON string into `A`. */
+  /** Deserializes `A` from the provided JSON string. */
   def fromJson[A](json: String)(using JsonValueCodec[A]): Either[ParsingError, A] =
     Try(readFromString[A](json)).toEither.leftMap(ParsingError.apply)
 
-  /** Serializes `A` into JSON string. */
+  /** Serializes `A` to a JSON string. */
   def toJson[A](a: A)(using JsonValueCodec[A]): String = writeToString[A](a)
 }
 
