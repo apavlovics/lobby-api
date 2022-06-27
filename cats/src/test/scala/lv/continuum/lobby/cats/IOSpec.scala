@@ -23,7 +23,7 @@ trait IOSpec {
     tick: Boolean = true,
   ): Future[A] = {
     val future = io.unsafeToFuture()
-    if (tick) context.tick()
+    if tick then context.tick()
     future
   }
 }

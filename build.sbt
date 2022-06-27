@@ -23,6 +23,7 @@ lazy val root = (project in file("."))
           "-deprecation",
           "-feature",
           "-language:higherKinds",
+          "-new-syntax",
           "-unchecked",
           "-Xfatal-warnings",
         ),

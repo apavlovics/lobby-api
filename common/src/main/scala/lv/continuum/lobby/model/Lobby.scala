@@ -11,15 +11,15 @@ case class Lobby(
   def addTable(afterId: TableId, tableToAdd: TableToAdd): Option[(Lobby, Table)] = {
     lazy val table: Table = tableToAdd.toTable(nextTableId)
     val newTables = {
-      if (afterId == TableId.Absent) {
+      if afterId == TableId.Absent then {
         table +: tables
       } else {
         tables.flatMap { t =>
-          if (t.id == afterId) Vector(t, table) else Vector(t)
+          if t.id == afterId then Vector(t, table) else Vector(t)
         }
       }
     }
-    if (newTables.size != tables.size) {
+    if newTables.size != tables.size then {
       (copy(tables = newTables, nextTableId = nextTableId.inc), table).some
     } else None
   }
@@ -27,17 +27,17 @@ case class Lobby(
   def updateTable(table: Table): Option[Lobby] = {
     var updated = false
     val newTables = tables.map { t =>
-      if (t.id == table.id) {
+      if t.id == table.id then {
         updated = true
         table
       } else t
     }
-    if (updated) copy(tables = newTables).some else None
+    if updated then copy(tables = newTables).some else None
   }
 
   def removeTable(tableId: TableId): Option[Lobby] = {
     val newTables = tables.filterNot(_.id == tableId)
-    if (newTables.size != tables.size) copy(tables = newTables).some else None
+    if newTables.size != tables.size then copy(tables = newTables).some else None
   }
 }
 

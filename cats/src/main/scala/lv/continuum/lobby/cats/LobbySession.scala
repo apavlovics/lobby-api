@@ -51,7 +51,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
     for {
       result <- subscriber.tryOffer(pushOut)
       _ <- {
-        if (!result) {
+        if !result then {
           Logger[F].warn(s"$subscriber seems to be full, cannot enqueue $pushOut")
         } else Applicative[F].unit
       }
@@ -108,7 +108,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
             lobby.updateTable(in.table).fold { (lobby, false) } { (_, true) }
           }
           out <-
-            if (tableUpdated) {
+            if tableUpdated then {
               val tableUpdated = TableUpdated(table = in.table)
               for {
                 subscribers <- subscribersRef.get
@@ -123,7 +123,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
             lobby.removeTable(in.id).fold { (lobby, false) } { (_, true) }
           }
           out <-
-            if (tableRemoved) {
+            if tableRemoved then {
               val tableRemoved = TableRemoved(id = in.id)
               for {
                 subscribers <- subscribersRef.get
