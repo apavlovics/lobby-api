@@ -11,7 +11,7 @@ import scala.util.Try
 
 trait ProtocolFormat {
 
-  given JsonValueCodec[UserType] = new JsonValueCodec {
+  given JsonValueCodec[UserType] = new JsonValueCodec[UserType] {
 
     override def decodeValue(reader: JsonReader, default: UserType): UserType = {
       val value = reader.readString(default = "")
@@ -37,7 +37,7 @@ trait ProtocolFormat {
 
 private object ProtocolFormat {
 
-  inline def codecMakerConfig: CodecMakerConfig =
+  private inline def codecMakerConfig: CodecMakerConfig =
     CodecMakerConfig
       .withDiscriminatorFieldName(Some("$type"))
       .withAdtLeafClassNameMapper(JsonCodecMaker.simpleClassName.andThen(JsonCodecMaker.enforce_snake_case))
