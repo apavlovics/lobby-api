@@ -20,6 +20,7 @@ object SessionLive {
   val layer: ULayer[Session] =
     ZLayer {
       for {
+        _                <- ZIO.logDebug("Creating new session")
         sessionParamsRef <- Ref.make(SessionParams())
       } yield SessionLive(sessionParamsRef)
     }
