@@ -5,7 +5,7 @@ import cats.effect.{Async, IO, Ref, Sync}
 import cats.syntax.all.*
 import cats.{Applicative, Parallel}
 import io.odin.Logger
-import lv.continuum.lobby.auth.{Authenticator => CommonAuthenticator}
+import lv.continuum.lobby.auth.Authenticator as CommonAuthenticator
 import lv.continuum.lobby.cats.LobbySessionSpec.Fixture
 import lv.continuum.lobby.model.{Lobby, ParsingError}
 import lv.continuum.lobby.protocol.Protocol.UserType.*

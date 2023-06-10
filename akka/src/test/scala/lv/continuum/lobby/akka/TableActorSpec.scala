@@ -20,11 +20,13 @@ class TableActorSpec extends AnyWordSpec with Matchers with TestData {
     protected def subscribe(pushActorInbox: TestInbox[PushOut]): Unit = {
       testKit.run(TableCommand(subscribeTables._2, pushActorInbox.ref))
       pushActorInbox.receiveMessage() shouldBe a[TableList]
+      ()
     }
 
     protected def unsubscribe(pushActorInbox: TestInbox[PushOut]): Unit = {
       testKit.run(TableCommand(unsubscribeTables._2, pushActorInbox.ref))
       pushActorInbox.hasMessages shouldBe false
+      ()
     }
   }
 

@@ -5,13 +5,15 @@ import java.util.UUID
 import akka.actor.*
 import akka.actor.typed.scaladsl.adapter.*
 import akka.http.scaladsl.*
-import akka.http.scaladsl.server.Directives.{Authenticator => _, *}
+import akka.http.scaladsl.server.Directives.{Authenticator as _, *}
 import akka.http.scaladsl.server.Route
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
 import lv.continuum.lobby.auth.Authenticator
 import lv.continuum.lobby.config.LobbyServerConfig
 
+import scala.concurrent.Await
+import scala.concurrent.duration.*
 import scala.io.StdIn
 import scala.util.{Failure, Success}
 
@@ -52,8 +54,9 @@ class LobbyServerAkka(using
     }
 }
 
-object LobbyServerAkka extends App {
+object LobbyServerAkka extends LazyLogging {
 
+  @main
   private def start(): Unit = {
 
     given system: ActorSystem = ActorSystem("akka-lobby-server")
@@ -64,8 +67,7 @@ object LobbyServerAkka extends App {
 
     // Terminate server
     StdIn.readLine()
-    system.terminate()
+    Await.result(system.terminate(), atMost = 5.seconds)
+    logger.info("Server terminated successfully")
   }
-
-  start()
 }

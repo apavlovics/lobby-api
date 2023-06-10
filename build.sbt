@@ -27,6 +27,7 @@ lazy val root = (project in file("."))
           "-unchecked",
           "-Xfatal-warnings",
           "-Wunused:all",
+          "-Wvalue-discard",
         ),
       )
     ),

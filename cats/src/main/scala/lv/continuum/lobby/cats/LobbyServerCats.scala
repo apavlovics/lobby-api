@@ -6,7 +6,7 @@ import cats.Parallel
 import com.typesafe.config.ConfigFactory
 import io.odin.formatter.Formatter
 import io.odin.{Logger, consoleLogger}
-import lv.continuum.lobby.auth.{Authenticator => CommonAuthenticator}
+import lv.continuum.lobby.auth.Authenticator as CommonAuthenticator
 import lv.continuum.lobby.config.LobbyServerConfig
 import lv.continuum.lobby.model.Lobby
 import org.http4s.blaze.server.*

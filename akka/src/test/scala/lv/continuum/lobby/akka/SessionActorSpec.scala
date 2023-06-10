@@ -40,6 +40,7 @@ class SessionActorSpec extends AnyWordSpec with Matchers with TestData {
         )
       )
       replyToInbox.expectMessage(invalidMessage._2.some)
+      ()
     }
 
     protected def verifyReplyTo(in: In, out: Option[Out]): Unit = {
@@ -50,11 +51,13 @@ class SessionActorSpec extends AnyWordSpec with Matchers with TestData {
         )
       )
       replyToInbox.expectMessage(out)
+      ()
     }
 
     protected def verifyStop(): Unit = {
       testKit.signal(Terminated(pushActorInbox.ref))
       testKit.isAlive shouldBe false
+      ()
     }
   }
 
