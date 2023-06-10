@@ -10,7 +10,9 @@ object LobbySession {
   def process(
     in: Either[ParsingError, In],
   ): Task[Option[Out]] = in match {
-    case Right(value) => ZIO.succeed(None)
+    case Right(in) =>
+      // TODO Complete implementation
+      ZIO.succeed(None)
     case Left(error) =>
       ZIO.logWarning(s"Issue while parsing JSON: $error") *> ZIO.succeed(Some(InvalidMessage))
   }

@@ -20,13 +20,13 @@ lazy val root = (project in file("."))
         organization := "lv.continuum",
         scalaVersion := "3.3.0",
         scalacOptions ++= Seq(
-          // TODO Detect unused imports: https://github.com/lampepfl/dotty-feature-requests/issues/287
           "-deprecation",
           "-feature",
           "-new-syntax",
           "-no-indent",
           "-unchecked",
           "-Xfatal-warnings",
+          "-Wunused:all",
         ),
       )
     ),
