@@ -61,13 +61,13 @@ class SessionActorSpec extends AnyWordSpec with Matchers with TestData {
     }
   }
 
-  class NotAuthenticated extends Fixture(new StubAuthenticator(None))
+  class NotAuthenticated extends Fixture(StubAuthenticator(None))
 
-  class AuthenticatedAsUser extends Fixture(new StubAuthenticator(User.some)) {
+  class AuthenticatedAsUser extends Fixture(StubAuthenticator(User.some)) {
     verifyLogin(loginSuccessfulUser._2)
   }
 
-  class AuthenticatedAsAdmin extends Fixture(new StubAuthenticator(Admin.some)) {
+  class AuthenticatedAsAdmin extends Fixture(StubAuthenticator(Admin.some)) {
     verifyLogin(loginSuccessfulAdmin._2)
   }
 

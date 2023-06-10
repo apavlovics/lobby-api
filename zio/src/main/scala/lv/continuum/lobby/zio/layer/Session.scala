@@ -1,4 +1,4 @@
-package lv.continuum.lobby.zio
+package lv.continuum.lobby.zio.layer
 
 import lv.continuum.lobby.session.SessionParams
 import zio.*

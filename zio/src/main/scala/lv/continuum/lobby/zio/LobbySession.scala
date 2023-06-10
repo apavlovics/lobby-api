@@ -4,13 +4,14 @@ import lv.continuum.lobby.model.ParsingError
 import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.Protocol.In.*
 import lv.continuum.lobby.protocol.Protocol.Out.*
+import lv.continuum.lobby.zio.layer.{Authenticator, Session}
 import zio.*
 
 object LobbySession {
 
   def process(
     in: Either[ParsingError, In],
-  ): ZIO[Session, Nothing, Option[Out]] = in match {
+  ): ZIO[Session & Authenticator, Nothing, Option[Out]] = in match {
     case Right(in) =>
       for {
         params <- ZIO.serviceWithZIO[Session](_.params())
@@ -25,10 +26,18 @@ object LobbySession {
 
   private def processUnauthenticated(
     in: In,
-  ): UIO[Option[Out]] = {
+  ): ZIO[Authenticator, Nothing, Option[Out]] = {
     in match {
-      case Login(username, password) => ZIO.succeed(None)
-      case _                         => ZIO.succeed(Some(NotAuthenticated))
+      case Login(username, password) =>
+        for {
+          userType <- ZIO.serviceWithZIO[Authenticator](_.authenticate(username, password))
+          out <- userType match {
+            // TODO Update session
+            case Some(userType) => ZIO.succeed(Some(LoginSuccessful(userType)))
+            case None           => ZIO.succeed(Some(LoginFailed))
+          }
+        } yield out
+      case _ => ZIO.succeed(Some(NotAuthenticated))
     }
   }
 

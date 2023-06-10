@@ -25,7 +25,7 @@ class LobbyServerAkka(using
 
   // Create one TableActor and Authenticator per server
   private val tableActor = system.spawn(TableActor(), s"TableActor")
-  private val authenticator: Authenticator = new Authenticator.InMemory
+  private val authenticator: Authenticator = Authenticator.InMemory()
 
   private[akka] val route: Route =
     Route.seal {
@@ -63,7 +63,7 @@ object LobbyServerAkka extends LazyLogging {
 
     // Start server
     val lobbyServerConfig = LobbyServerConfig.loadOrThrow(ConfigFactory.load())
-    new LobbyServerAkka().start(lobbyServerConfig.host, lobbyServerConfig.port)
+    LobbyServerAkka().start(lobbyServerConfig.host, lobbyServerConfig.port)
 
     // Terminate server
     StdIn.readLine()

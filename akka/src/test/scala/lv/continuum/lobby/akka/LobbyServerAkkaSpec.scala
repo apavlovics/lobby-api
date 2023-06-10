@@ -6,7 +6,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class LobbyServerAkkaSpec extends AnyWordSpec with Matchers with ScalatestRouteTest {
 
-  private val route = new LobbyServerAkka().route
+  private val route = LobbyServerAkka().route
 
   "LobbyServerAkka" should {
     "handle WebSocket connections" in {

@@ -18,7 +18,7 @@ object LobbyServerCats extends IOApp {
       config            <- Sync[F].blocking(ConfigFactory.load())
       lobbyServerConfig <- Sync[F].blocking(LobbyServerConfig.loadOrThrow(config))
 
-      authenticator = Authenticator[F](new CommonAuthenticator.InMemory)
+      authenticator = Authenticator[F](CommonAuthenticator.InMemory())
       lobbyRef       <- Ref.of[F, Lobby](Lobby())
       subscribersRef <- Ref.of[F, Subscribers[F]](Set.empty)
 
