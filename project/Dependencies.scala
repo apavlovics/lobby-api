@@ -1,4 +1,4 @@
-import sbt._
+import sbt.*
 
 object Dependencies {
 
@@ -14,6 +14,7 @@ object Dependencies {
   private val pureConfigVersion = "0.17.1"
   private val scalaLoggingVersion = "3.9.5"
   private val scalaTestVersion = "3.2.12"
+  private val zioVersion = "2.0.15"
 
   object Akka {
 
@@ -60,5 +61,9 @@ object Dependencies {
   object ScalaTest {
     val WordSpec = "org.scalatest" %% "scalatest-wordspec" % scalaTestVersion
     val ShouldMatchers = "org.scalatest" %% "scalatest-shouldmatchers" % scalaTestVersion
+  }
+
+  object ZIO {
+    val Core = "dev.zio" %% "zio" % zioVersion
   }
 }

@@ -1,7 +1,10 @@
-import Dependencies._
+import Dependencies.*
 
 // Check formatting and test
 addCommandAlias("build", ";scalafmtCheckAll;test")
+
+// Express that subproject depends on compile and test configuration of another subproject
+val CompileTest = "compile->compile;test->test"
 
 lazy val root = (project in file("."))
   .aggregate(
@@ -14,7 +17,7 @@ lazy val root = (project in file("."))
     inThisBuild(
       List(
         organization := "lv.continuum",
-        scalaVersion := "3.1.3",
+        scalaVersion := "3.3.0",
         scalacOptions ++= Seq(
           // TODO Detect unused imports: https://github.com/lampepfl/dotty-feature-requests/issues/287
           "-deprecation",
@@ -43,7 +46,7 @@ lazy val common = (project in file("common"))
 
 lazy val akka = (project in file("akka"))
   .dependsOn(
-    common % "compile->compile;test->test",
+    common % CompileTest,
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -65,7 +68,7 @@ lazy val akka = (project in file("akka"))
 
 lazy val cats = (project in file("cats"))
   .dependsOn(
-    common % "compile->compile;test->test",
+    common % CompileTest,
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -74,5 +77,15 @@ lazy val cats = (project in file("cats"))
       Odin.Core,
       Odin.Slf4j,
       Cats.EffectTestkit % Test,
+    ),
+  )
+
+lazy val zio = (project in file("zio"))
+  .dependsOn(
+    common % CompileTest,
+  )
+  .settings(
+    libraryDependencies ++= Seq(
+      ZIO.Core,
     ),
   )
