@@ -9,6 +9,7 @@ import io.odin.Logger
 import lv.continuum.lobby.model.{Lobby, ParsingError}
 import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.ProtocolFormat
+import lv.continuum.lobby.session.SessionParams
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits.*
 import org.http4s.server.websocket.WebSocketBuilder

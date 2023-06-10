@@ -68,6 +68,6 @@ object LobbyServerAkka extends LazyLogging {
     // Terminate server
     StdIn.readLine()
     Await.result(system.terminate(), atMost = 5.seconds)
-    logger.info("Server terminated successfully")
+    logger.info("Server terminated")
   }
 }

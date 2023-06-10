@@ -9,7 +9,7 @@ object LobbySession {
 
   def process(
     in: Either[ParsingError, In],
-  ): Task[Option[Out]] = in match {
+  ): ZIO[Session, Nothing, Option[Out]] = in match {
     case Right(in) =>
       // TODO Complete implementation
       ZIO.succeed(None)

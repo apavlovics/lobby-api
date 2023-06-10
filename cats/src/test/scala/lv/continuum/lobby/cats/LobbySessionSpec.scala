@@ -11,6 +11,7 @@ import lv.continuum.lobby.model.{Lobby, ParsingError}
 import lv.continuum.lobby.protocol.Protocol.UserType.*
 import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.TestData
+import lv.continuum.lobby.session.SessionParams
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec

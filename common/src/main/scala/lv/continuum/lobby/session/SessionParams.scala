@@ -1,4 +1,4 @@
-package lv.continuum.lobby.cats
+package lv.continuum.lobby.session
 
 import lv.continuum.lobby.protocol.Protocol.UserType
 

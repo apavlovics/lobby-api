@@ -10,6 +10,7 @@ import lv.continuum.lobby.protocol.Protocol.In.*
 import lv.continuum.lobby.protocol.Protocol.Out.*
 import lv.continuum.lobby.protocol.Protocol.UserType.*
 import lv.continuum.lobby.protocol.Protocol.*
+import lv.continuum.lobby.session.SessionParams
 
 class LobbySession[F[_]: Logger: Monad: Parallel](
   authenticator: Authenticator[F],

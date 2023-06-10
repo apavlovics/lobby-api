@@ -7,12 +7,12 @@ import zio.http.*
 
 object LobbyServerZIO extends ZIOAppDefault {
 
-  override def run: ZIO[Any, Throwable, Unit] = for {
+  override def run: Task[Unit] = for {
     config            <- ZIO.attemptBlocking(ConfigFactory.load())
     lobbyServerConfig <- ZIO.attemptBlocking(LobbyServerConfig.loadOrThrow(config))
 
     _ <- ZIO.logInfo(s"Starting ZIO HTTP server at ${lobbyServerConfig.host}:${lobbyServerConfig.port}...")
-    lobbyServer = Server.defaultWith(_.binding(lobbyServerConfig.host, lobbyServerConfig.port))
-    _ <- Server.serve(LobbyHttpApp.app).provide(lobbyServer)
+    lobbyServerLayer = Server.defaultWith(_.binding(lobbyServerConfig.host, lobbyServerConfig.port))
+    _ <- Server.serve(LobbyHttpApp.app).provide(lobbyServerLayer)
   } yield ()
 }
