@@ -11,6 +11,7 @@ lazy val root = (project in file("."))
     common,
     akka,
     cats,
+    zio,
   )
   .settings(
     name := "lobby-api",
@@ -87,5 +88,6 @@ lazy val zio = (project in file("zio"))
   .settings(
     libraryDependencies ++= Seq(
       ZIO.Core,
+      ZIO.Http,
     ),
   )

@@ -15,6 +15,7 @@ object Dependencies {
   private val scalaLoggingVersion = "3.9.5"
   private val scalaTestVersion = "3.2.12"
   private val zioVersion = "2.0.15"
+  private val zioHttpVersion = "3.0.0-RC2"
 
   object Akka {
 
@@ -65,5 +66,6 @@ object Dependencies {
 
   object ZIO {
     val Core = "dev.zio" %% "zio" % zioVersion
+    val Http = "dev.zio" %% "zio-http" % zioHttpVersion
   }
 }
