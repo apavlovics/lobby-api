@@ -11,7 +11,7 @@ object LobbyServerZIO extends ZIOAppDefault {
     config            <- ZIO.attemptBlocking(ConfigFactory.load())
     lobbyServerConfig <- ZIO.attemptBlocking(LobbyServerConfig.loadOrThrow(config))
 
-    _ <- ZIO.logInfo(message = s"Starting server at ${lobbyServerConfig.host}:${lobbyServerConfig.port}...")
+    _ <- ZIO.logInfo(s"Starting ZIO HTTP server at ${lobbyServerConfig.host}:${lobbyServerConfig.port}...")
     lobbyServer = Server.defaultWith(_.binding(lobbyServerConfig.host, lobbyServerConfig.port))
     _ <- Server.serve(LobbyHttpApp.app).provide(lobbyServer)
   } yield ()

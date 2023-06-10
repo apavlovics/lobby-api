@@ -1,15 +1,22 @@
 package lv.continuum.lobby.zio
 
+import lv.continuum.lobby.protocol.Protocol.In
+import lv.continuum.lobby.protocol.ProtocolFormat
 import zio.ZIO
 import zio.http.*
-import zio.http.ChannelEvent.*
+import zio.http.ChannelEvent.Read
+import zio.http.WebSocketFrame.Text
 
-object LobbyHttpApp {
+object LobbyHttpApp extends ProtocolFormat {
 
   private val socketApp: SocketApp[Any] = Handler.webSocket { channel =>
     channel.receiveAll {
-      case Read(WebSocketFrame.Text(message)) =>
-        channel.send(Read(WebSocketFrame.Text(message)))
+      case Read(Text(message)) =>
+        for {
+          in  <- ZIO.attempt(fromJson[In](message))
+          out <- LobbySession.process(in)
+          _   <- out.fold(ZIO.unit) { out => channel.send(Read(Text(toJson(out)))) }
+        } yield ()
       case _ => ZIO.unit
     }
   }
