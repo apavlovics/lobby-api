@@ -67,7 +67,8 @@ object Dependencies {
 
   object ZIO {
     val Core = "dev.zio" %% "zio" % zioVersion
-    val Slf4j = "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion
     val Http = "dev.zio" %% "zio-http" % zioHttpVersion
+    val LoggingSlf4j = "dev.zio" %% "zio-logging-slf4j" % zioLoggingVersion
+    val TestSbt = "dev.zio" %% "zio-test-sbt" % zioVersion
   }
 }
