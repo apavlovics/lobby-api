@@ -4,22 +4,23 @@ import lv.continuum.lobby.model.ParsingError
 import lv.continuum.lobby.protocol.Protocol.*
 import lv.continuum.lobby.protocol.Protocol.In.*
 import lv.continuum.lobby.protocol.Protocol.Out.*
-import lv.continuum.lobby.zio.layer.{Authenticator, LobbyHolder, SessionHolder}
+import lv.continuum.lobby.zio.layer.{Authenticator, LobbyHolder, SessionHolder, Subscriber, SubscribersHolder}
 import zio.*
 
 object LobbySession {
 
-  private type Env = Authenticator & LobbyHolder & SessionHolder
+  private type Env = Authenticator & LobbyHolder & SessionHolder & SubscribersHolder
 
   def process(
     in: Either[ParsingError, In],
+    subscriber: Subscriber,
   ): ZIO[Env, Nothing, Option[Out]] = in match {
     case Right(in) =>
       for {
         params <- ZIO.serviceWithZIO[SessionHolder](_.params())
         out <- params.userType match {
           case None           => processUnauthenticated(in)
-          case Some(userType) => processAuthenticated(userType, in)
+          case Some(userType) => processAuthenticated(userType, in, subscriber)
         }
       } yield out
     case Left(error) =>
@@ -36,14 +37,17 @@ object LobbySession {
   private def processAuthenticated(
     userType: UserType,
     in: In,
+    subscriber: Subscriber,
   ): ZIO[Env, Nothing, Option[Out]] = (userType, in) match {
     case (_, Login(username, password)) => login(username, password)
 
     case (_, Ping(seq)) => ZIO.succeed(Some(Pong(seq = seq)))
 
     case (_, SubscribeTables) =>
-      // TODO Update subscribers
-      ZIO.serviceWithZIO[LobbyHolder](_.tables).map(tables => Some(TableList(tables)))
+      for {
+        _   <- ZIO.serviceWithZIO[SubscribersHolder](_.add(subscriber))
+        out <- ZIO.serviceWithZIO[LobbyHolder](_.tables).map(tables => Some(TableList(tables)))
+      } yield out
 
     // TODO Complete implementation
     case _ => ZIO.succeed(None)
