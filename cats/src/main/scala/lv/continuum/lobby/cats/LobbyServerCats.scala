@@ -22,6 +22,7 @@ object LobbyServerCats extends IOApp {
       lobbyRef       <- Ref.of[F, Lobby](Lobby())
       subscribersRef <- Ref.of[F, Subscribers[F]](Set.empty)
 
+      // TODO Migrate from Blaze to Ember
       _ <-
         BlazeServerBuilder[F]
           .bindHttp(lobbyServerConfig.port, lobbyServerConfig.host)

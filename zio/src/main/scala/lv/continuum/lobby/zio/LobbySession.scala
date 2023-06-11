@@ -42,6 +42,7 @@ object LobbySession {
     case (_, Ping(seq)) => ZIO.succeed(Some(Pong(seq = seq)))
 
     case (_, SubscribeTables) =>
+      // TODO Update subscribers
       ZIO.serviceWithZIO[LobbyHolder](_.tables).map(tables => Some(TableList(tables)))
 
     // TODO Complete implementation

@@ -45,6 +45,7 @@ class LobbyHttpApp[F[_]: Concurrent: Logger: Parallel](
         lobbySession = LobbySession(
           authenticator = authenticator,
           lobbyRef = lobbyRef,
+          // TODO Investigate whether subscribers leak when client disconnects
           subscribersRef = subscribersRef,
           sessionParamsRef = sessionParamsRef,
           subscriber = subscriber,
