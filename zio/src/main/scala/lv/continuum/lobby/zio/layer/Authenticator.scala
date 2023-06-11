@@ -12,7 +12,7 @@ trait Authenticator {
   ): UIO[Option[UserType]]
 }
 
-class AuthenticatorLive(
+class AuthenticatorLive private (
   commonAuthenticator: CommonAuthenticator,
 ) extends Authenticator {
 

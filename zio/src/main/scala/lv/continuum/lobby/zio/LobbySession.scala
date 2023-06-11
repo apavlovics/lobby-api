@@ -11,7 +11,7 @@ object LobbySession {
 
   def process(
     in: Either[ParsingError, In],
-  ): ZIO[Session & Authenticator, Nothing, Option[Out]] = in match {
+  ): ZIO[Authenticator & Session, Nothing, Option[Out]] = in match {
     case Right(in) =>
       for {
         params <- ZIO.serviceWithZIO[Session](_.params())
@@ -26,17 +26,16 @@ object LobbySession {
 
   private def processUnauthenticated(
     in: In,
-  ): ZIO[Authenticator, Nothing, Option[Out]] = {
+  ): ZIO[Authenticator & Session, Nothing, Option[Out]] = {
     in match {
       case Login(username, password) =>
         for {
           userType <- ZIO.serviceWithZIO[Authenticator](_.authenticate(username, password))
-          out <- userType match {
-            // TODO Update session
-            case Some(userType) => ZIO.succeed(Some(LoginSuccessful(userType)))
-            case None           => ZIO.succeed(Some(LoginFailed))
-          }
-        } yield out
+          _        <- ZIO.serviceWithZIO[Session](_.updateUserType(userType))
+        } yield userType match {
+          case Some(userType) => Some(LoginSuccessful(userType))
+          case None           => Some(LoginFailed)
+        }
       case _ => ZIO.succeed(Some(NotAuthenticated))
     }
   }
@@ -45,6 +44,7 @@ object LobbySession {
     in: In,
   ): UIO[Option[Out]] = {
     in match {
+      // TODO Complete implementation
       case _ => ZIO.succeed(None)
     }
   }
