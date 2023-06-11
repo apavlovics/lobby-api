@@ -17,7 +17,7 @@ object LobbySession {
         params <- ZIO.serviceWithZIO[Session](_.params())
         out <- params.userType match {
           case None           => processUnauthenticated(in)
-          case Some(userType) => processAuthenticated(in)
+          case Some(userType) => processAuthenticated(userType, in)
         }
       } yield out
     case Left(error) =>
@@ -26,26 +26,30 @@ object LobbySession {
 
   private def processUnauthenticated(
     in: In,
-  ): ZIO[Authenticator & Session, Nothing, Option[Out]] = {
-    in match {
-      case Login(username, password) =>
-        for {
-          userType <- ZIO.serviceWithZIO[Authenticator](_.authenticate(username, password))
-          _        <- ZIO.serviceWithZIO[Session](_.updateUserType(userType))
-        } yield userType match {
-          case Some(userType) => Some(LoginSuccessful(userType))
-          case None           => Some(LoginFailed)
-        }
-      case _ => ZIO.succeed(Some(NotAuthenticated))
-    }
+  ): ZIO[Authenticator & Session, Nothing, Option[Out]] = in match {
+    case Login(username, password) => login(username, password)
+    case _                         => ZIO.succeed(Some(NotAuthenticated))
   }
 
   private def processAuthenticated(
+    userType: UserType,
     in: In,
-  ): UIO[Option[Out]] = {
-    in match {
-      // TODO Complete implementation
-      case _ => ZIO.succeed(None)
-    }
+  ): ZIO[Authenticator & Session, Nothing, Option[Out]] = (userType, in) match {
+    case (_, Login(username, password)) => login(username, password)
+    case (_, Ping(seq))                 => ZIO.succeed(Some(Pong(seq = seq)))
+
+    // TODO Complete implementation
+    case _ => ZIO.succeed(None)
+  }
+
+  private def login(
+    username: Username,
+    password: Password,
+  ): ZIO[Authenticator & Session, Nothing, Option[Out]] = for {
+    userType <- ZIO.serviceWithZIO[Authenticator](_.authenticate(username, password))
+    _        <- ZIO.serviceWithZIO[Session](_.updateUserType(userType))
+  } yield userType match {
+    case Some(userType) => Some(LoginSuccessful(userType))
+    case None           => Some(LoginFailed)
   }
 }
