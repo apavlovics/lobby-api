@@ -2,7 +2,7 @@ package lv.continuum.lobby.zio
 
 import com.typesafe.config.ConfigFactory
 import lv.continuum.lobby.config.LobbyServerConfig
-import lv.continuum.lobby.zio.layer.AuthenticatorLive
+import lv.continuum.lobby.zio.layer.{AuthenticatorLive, LobbyHolderLive}
 import zio.*
 import zio.http.*
 
@@ -19,6 +19,7 @@ object LobbyServerZIO extends ZIOAppDefault {
       .provide(
         lobbyServerLayer,
         AuthenticatorLive.layer,
+        LobbyHolderLive.layer,
       )
   } yield ()
 }

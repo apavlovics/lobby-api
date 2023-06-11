@@ -16,7 +16,7 @@ class AuthenticatorLive private (
   commonAuthenticator: CommonAuthenticator,
 ) extends Authenticator {
 
-  def authenticate(
+  override def authenticate(
     username: Username,
     password: Password,
   ): UIO[Option[UserType]] = ZIO.succeed(

@@ -4,30 +4,30 @@ import lv.continuum.lobby.protocol.Protocol.UserType
 import lv.continuum.lobby.session.SessionParams
 import zio.*
 
-trait Session {
+trait SessionHolder {
 
   def params(): UIO[SessionParams]
 
   def updateUserType(userType: Option[UserType]): UIO[Unit]
 }
 
-class SessionLive private (
+class SessionHolderLive private (
   sessionParamsRef: Ref[SessionParams],
-) extends Session {
+) extends SessionHolder {
 
-  def params(): UIO[SessionParams] = sessionParamsRef.get
+  override def params(): UIO[SessionParams] = sessionParamsRef.get
 
-  def updateUserType(userType: Option[UserType]): UIO[Unit] =
+  override def updateUserType(userType: Option[UserType]): UIO[Unit] =
     sessionParamsRef.update(_.copy(userType = userType))
 }
 
-object SessionLive {
+object SessionHolderLive {
 
-  val layer: ULayer[Session] =
+  val layer: ULayer[SessionHolder] =
     ZLayer {
       for {
-        _                <- ZIO.logDebug("Creating new session")
+        _                <- ZIO.logDebug("Creating new session holder")
         sessionParamsRef <- Ref.make(SessionParams())
-      } yield SessionLive(sessionParamsRef)
+      } yield SessionHolderLive(sessionParamsRef)
     }
 }
