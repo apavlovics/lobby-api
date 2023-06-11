@@ -9,5 +9,5 @@ import zio.http.WebSocketFrame.Text
 
 class Subscriber(channel: WebSocketChannel) extends ProtocolFormat {
 
-  def push(out: Out): Task[Unit] = channel.send(Read(Text(toJson(out))))
+  def send(out: Out): Task[Unit] = channel.send(Read(Text(toJson(out))))
 }

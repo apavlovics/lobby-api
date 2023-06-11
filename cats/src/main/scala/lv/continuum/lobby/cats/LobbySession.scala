@@ -84,13 +84,10 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
       case (Admin, Right(in: AddTable)) =>
         for {
           tableAdded <- lobbyRef.modify { lobby =>
-            lobby
-              .addTable(in.afterId, in.table)
-              .fold {
-                (lobby, Option.empty[Table])
-              } { result =>
-                (result._1, result._2.some)
-              }
+            lobby.addTable(in.afterId, in.table) match {
+              case Some((lobby, table)) => (lobby, table.some)
+              case None                 => (lobby, None)
+            }
           }
           out <- tableAdded.fold {
             Applicative[F].pure(TableAddFailed.some)

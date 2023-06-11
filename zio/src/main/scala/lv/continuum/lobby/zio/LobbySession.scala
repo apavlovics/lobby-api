@@ -2,6 +2,7 @@ package lv.continuum.lobby.zio
 
 import lv.continuum.lobby.model.ParsingError
 import lv.continuum.lobby.protocol.Protocol.*
+import lv.continuum.lobby.protocol.Protocol.UserType.{Admin, User}
 import lv.continuum.lobby.protocol.Protocol.In.*
 import lv.continuum.lobby.protocol.Protocol.Out.*
 import lv.continuum.lobby.zio.layer.{Authenticator, LobbyHolder, SessionHolder, Subscriber, SubscribersHolder}
@@ -48,6 +49,20 @@ object LobbySession {
         _   <- ZIO.serviceWithZIO[SubscribersHolder](_.add(subscriber))
         out <- ZIO.serviceWithZIO[LobbyHolder](_.tables).map(tables => Some(TableList(tables)))
       } yield out
+
+    case (_, UnsubscribeTables) =>
+      ZIO.serviceWithZIO[SubscribersHolder](_.remove(subscriber)).as(None)
+
+    case (User, _: AdminTableIn) =>
+      ZIO.succeed(Some(NotAuthorized))
+
+    case (Admin, in: AddTable) =>
+      for {
+        table <- ZIO.serviceWithZIO[LobbyHolder](_.addTable(in.afterId, in.table))
+        _ <- table.fold(ZIO.unit) { table =>
+          ZIO.serviceWithZIO[SubscribersHolder](_.broadcast(TableAdded(in.afterId, table)))
+        }
+      } yield table.map(TableAdded(in.afterId, _))
 
     // TODO Complete implementation
     case _ => ZIO.succeed(None)

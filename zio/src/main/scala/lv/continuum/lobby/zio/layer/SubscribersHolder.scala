@@ -10,7 +10,7 @@ trait SubscribersHolder {
 
   def remove(subscriber: Subscriber): UIO[Unit]
 
-  def broadcast(out: Out): Task[Unit]
+  def broadcast(out: Out): UIO[Unit]
 }
 
 class SubscribersHolderLive private (
@@ -24,9 +24,11 @@ class SubscribersHolderLive private (
   override def remove(subscriber: Subscriber): UIO[Unit] =
     subscribersRef.update(_ - subscriber)
 
-  override def broadcast(out: Out): Task[Unit] = for {
+  override def broadcast(out: Out): UIO[Unit] = for {
     channels <- subscribersRef.get
-    _        <- ZIO.foreachPar(channels) { _.push(out) }
+    _ <- ZIO.foreachPar(channels) { _.send(out) }.catchAll { throwable =>
+      ZIO.logWarningCause(s"Failed to broadcast $out", Cause.fail(throwable))
+    }
   } yield ()
 }
 
