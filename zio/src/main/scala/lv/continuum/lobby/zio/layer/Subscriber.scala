@@ -7,7 +7,15 @@ import zio.http.ChannelEvent.Read
 import zio.http.WebSocketChannel
 import zio.http.WebSocketFrame.Text
 
-class Subscriber(channel: WebSocketChannel) extends ProtocolFormat {
+trait Subscriber {
+
+  def send(out: Out): Task[Unit]
+}
+
+case class WebSocketSubscriber(
+  channel: WebSocketChannel,
+) extends Subscriber
+    with ProtocolFormat {
 
   def send(out: Out): Task[Unit] = channel.send(Read(Text(toJson(out))))
 }

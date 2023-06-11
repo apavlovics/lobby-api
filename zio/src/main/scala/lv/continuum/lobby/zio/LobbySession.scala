@@ -59,10 +59,13 @@ object LobbySession {
     case (Admin, in: AddTable) =>
       for {
         table <- ZIO.serviceWithZIO[LobbyHolder](_.addTable(in.afterId, in.table))
-        _ <- table.fold(ZIO.unit) { table =>
-          ZIO.serviceWithZIO[SubscribersHolder](_.broadcast(TableAdded(in.afterId, table)))
+        out <- table match {
+          case Some(table) =>
+            ZIO.serviceWithZIO[SubscribersHolder](_.broadcast(TableAdded(in.afterId, table))).as(None)
+          case None =>
+            ZIO.succeed(Some(TableAddFailed))
         }
-      } yield table.map(TableAdded(in.afterId, _))
+      } yield out
 
     // TODO Complete implementation
     case _ => ZIO.succeed(None)
