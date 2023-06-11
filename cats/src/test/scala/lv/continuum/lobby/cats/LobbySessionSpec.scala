@@ -80,7 +80,7 @@ class LobbySessionSpec extends AsyncWordSpec with IOSpec with Matchers with Test
     verifyInOut(fixtureF, ping._2.asRight, pong._2.some)
 
   private def verifyReportInvalidMessages[F[_]: Sync](fixtureF: F[Fixture[F]]): F[Assertion] =
-    verifyInOut(fixtureF, error.asLeft, invalidMessage._2.some)
+    verifyInOut(fixtureF, parsingError.asLeft, invalidMessage._2.some)
 
   private def verifyPushOut[F[_]: Sync](
     fixture: Fixture[F],

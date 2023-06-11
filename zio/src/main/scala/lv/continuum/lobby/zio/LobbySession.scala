@@ -10,7 +10,7 @@ import zio.*
 
 object LobbySession {
 
-  private type Env = Authenticator & LobbyHolder & SessionHolder & SubscribersHolder
+  private[zio] type Env = Authenticator & LobbyHolder & SessionHolder & SubscribersHolder
 
   def process(
     in: Either[ParsingError, In],

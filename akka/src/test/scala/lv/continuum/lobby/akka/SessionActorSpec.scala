@@ -35,7 +35,7 @@ class SessionActorSpec extends AnyWordSpec with Matchers with TestData {
     protected def verifyReportInvalidMessages(): Unit = {
       testKit.run(
         SessionCommand(
-          in = error.asLeft,
+          in = parsingError.asLeft,
           replyTo = replyToInbox.ref,
         )
       )

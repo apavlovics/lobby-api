@@ -11,6 +11,8 @@ trait SubscribersHolder {
   def remove(subscriber: Subscriber): UIO[Unit]
 
   def broadcast(out: Out): UIO[Unit]
+
+  def subscribers: UIO[Set[Subscriber]]
 }
 
 class SubscribersHolderLive private (
@@ -34,6 +36,8 @@ class SubscribersHolderLive private (
       ZIO.logWarningCause(s"Failed to broadcast $out", Cause.fail(throwable))
     }
   } yield ()
+
+  override def subscribers: UIO[Set[Subscriber]] = subscribersRef.get
 }
 
 object SubscribersHolderLive {
