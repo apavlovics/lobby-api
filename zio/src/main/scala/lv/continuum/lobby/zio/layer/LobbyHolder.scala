@@ -9,6 +9,8 @@ trait LobbyHolder {
   def tables: UIO[Vector[Table]]
 
   def addTable(afterId: TableId, tableToAdd: TableToAdd): UIO[Option[Table]]
+
+  def updateTable(table: Table): UIO[Boolean]
 }
 
 class LobbyHolderLive private (
@@ -23,6 +25,11 @@ class LobbyHolderLive private (
         case Some((lobby, table)) => (Some(table), lobby)
         case None                 => (None, lobby)
       }
+    }
+
+  override def updateTable(table: Table): UIO[Boolean] =
+    lobbyRef.modify { lobby =>
+      lobby.updateTable(table).fold { (false, lobby) } { (true, _) }
     }
 }
 

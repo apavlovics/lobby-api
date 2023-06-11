@@ -71,6 +71,7 @@ class LobbySession[F[_]: Logger: Monad: Parallel](
 
       case (_, Right(SubscribeTables)) =>
         for {
+          // TODO Investigate whether subscribers leak when client disconnects without unsubscribing
           _     <- subscribersRef.update(_ + subscriber)
           lobby <- lobbyRef.get
         } yield TableList(tables = lobby.tables).some

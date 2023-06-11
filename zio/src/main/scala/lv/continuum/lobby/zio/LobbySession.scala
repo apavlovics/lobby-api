@@ -46,6 +46,7 @@ object LobbySession {
 
     case (_, SubscribeTables) =>
       for {
+        // TODO Investigate whether subscribers leak when client disconnects without unsubscribing
         _   <- ZIO.serviceWithZIO[SubscribersHolder](_.add(subscriber))
         out <- ZIO.serviceWithZIO[LobbyHolder](_.tables).map(tables => Some(TableList(tables)))
       } yield out
@@ -65,6 +66,15 @@ object LobbySession {
           case None =>
             ZIO.succeed(Some(TableAddFailed))
         }
+      } yield out
+
+    case (Admin, in: UpdateTable) =>
+      for {
+        tableUpdated <- ZIO.serviceWithZIO[LobbyHolder](_.updateTable(in.table))
+        out <-
+          if tableUpdated then {
+            ZIO.serviceWithZIO[SubscribersHolder](_.broadcast(TableUpdated(in.table))).as(None)
+          } else ZIO.succeed(Some(TableUpdateFailed(in.table.id)))
       } yield out
 
     // TODO Complete implementation
