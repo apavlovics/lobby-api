@@ -89,6 +89,8 @@ lazy val zio = (project in file("zio"))
   .settings(
     libraryDependencies ++= Seq(
       ZIO.Core,
+      ZIO.Slf4j,
       ZIO.Http,
+      Logback,
     ),
   )

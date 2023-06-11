@@ -18,15 +18,19 @@ class SubscribersHolderLive private (
 ) extends SubscribersHolder
     with ProtocolFormat {
 
-  override def add(subscriber: Subscriber): UIO[Unit] =
-    subscribersRef.update(_ + subscriber)
+  override def add(subscriber: Subscriber): UIO[Unit] = for {
+    subscribers <- subscribersRef.updateAndGet(_ + subscriber)
+    _           <- ZIO.logDebug(s"Added a subscriber, now there are ${subscribers.size}")
+  } yield ()
 
-  override def remove(subscriber: Subscriber): UIO[Unit] =
-    subscribersRef.update(_ - subscriber)
+  override def remove(subscriber: Subscriber): UIO[Unit] = for {
+    subscribers <- subscribersRef.updateAndGet(_ - subscriber)
+    _           <- ZIO.logDebug(s"Removed a subscriber, now there are ${subscribers.size}")
+  } yield ()
 
   override def broadcast(out: Out): UIO[Unit] = for {
-    channels <- subscribersRef.get
-    _ <- ZIO.foreachPar(channels) { _.send(out) }.catchAll { throwable =>
+    subscribers <- subscribersRef.get
+    _ <- ZIO.foreachPar(subscribers) { _.send(out) }.catchAll { throwable =>
       ZIO.logWarningCause(s"Failed to broadcast $out", Cause.fail(throwable))
     }
   } yield ()
