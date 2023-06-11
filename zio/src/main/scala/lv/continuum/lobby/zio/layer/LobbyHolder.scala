@@ -11,6 +11,8 @@ trait LobbyHolder {
   def addTable(afterId: TableId, tableToAdd: TableToAdd): UIO[Option[Table]]
 
   def updateTable(table: Table): UIO[Boolean]
+
+  def removeTable(tableId: TableId): UIO[Boolean]
 }
 
 class LobbyHolderLive private (
@@ -30,6 +32,11 @@ class LobbyHolderLive private (
   override def updateTable(table: Table): UIO[Boolean] =
     lobbyRef.modify { lobby =>
       lobby.updateTable(table).fold { (false, lobby) } { (true, _) }
+    }
+
+  override def removeTable(tableId: TableId): UIO[Boolean] =
+    lobbyRef.modify { lobby =>
+      lobby.removeTable(tableId).fold { (false, lobby) } { (true, _) }
     }
 }
 

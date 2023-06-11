@@ -77,8 +77,14 @@ object LobbySession {
           } else ZIO.succeed(Some(TableUpdateFailed(in.table.id)))
       } yield out
 
-    // TODO Complete implementation
-    case _ => ZIO.succeed(None)
+    case (Admin, in: RemoveTable) =>
+      for {
+        tableRemoved <- ZIO.serviceWithZIO[LobbyHolder](_.removeTable(in.id))
+        out <-
+          if tableRemoved then {
+            ZIO.serviceWithZIO[SubscribersHolder](_.broadcast(TableRemoved(in.id))).as(None)
+          } else ZIO.succeed(Some(TableRemoveFailed(in.id)))
+      } yield out
   }
 
   private def login(
