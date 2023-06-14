@@ -99,21 +99,21 @@ object LobbySessionSpec extends ZIOSpecDefault with TestData {
           )
         ),
         test("handle failure upon AddTable message")(
-          processSubscribeAndUnsubscribeWhenLoggedIn(mockSubscriber =>
+          processSubscribeAndUnsubscribeWhenLoggedIn(_ =>
             for {
               out <- LobbySession.process(Right(addTableInvalid), stubSubscriber)
             } yield Some(assert(out)(isSome(equalTo(tableAddFailed._2))))
           )
         ),
         test("handle failure upon UpdateTable message")(
-          processSubscribeAndUnsubscribeWhenLoggedIn(mockSubscriber =>
+          processSubscribeAndUnsubscribeWhenLoggedIn(_ =>
             for {
               out <- LobbySession.process(Right(updateTableInvalid), stubSubscriber)
             } yield Some(assert(out)(isSome(equalTo(tableUpdateFailed._2))))
           )
         ),
         test("handle failure upon RemoveTable message")(
-          processSubscribeAndUnsubscribeWhenLoggedIn(mockSubscriber =>
+          processSubscribeAndUnsubscribeWhenLoggedIn(_ =>
             for {
               out <- LobbySession.process(Right(removeTableInvalid), stubSubscriber)
             } yield Some(assert(out)(isSome(equalTo(tableRemoveFailed._2))))
