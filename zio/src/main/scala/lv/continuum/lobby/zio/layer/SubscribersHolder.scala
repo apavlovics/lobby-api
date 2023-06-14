@@ -1,6 +1,6 @@
 package lv.continuum.lobby.zio.layer
 
-import lv.continuum.lobby.protocol.Protocol.Out
+import lv.continuum.lobby.protocol.Protocol.PushOut
 import lv.continuum.lobby.protocol.ProtocolFormat
 import zio.*
 
@@ -10,7 +10,7 @@ trait SubscribersHolder {
 
   def remove(subscriber: Subscriber): UIO[Unit]
 
-  def broadcast(out: Out): UIO[Unit]
+  def broadcast(pushOut: PushOut): UIO[Unit]
 
   def subscribers: UIO[Set[Subscriber]]
 }
@@ -30,10 +30,10 @@ class SubscribersHolderLive private (
     _           <- ZIO.logDebug(s"Removed a subscriber, now there are ${subscribers.size}")
   } yield ()
 
-  override def broadcast(out: Out): UIO[Unit] = for {
+  override def broadcast(pushOut: PushOut): UIO[Unit] = for {
     subscribers <- subscribersRef.get
-    _ <- ZIO.foreachPar(subscribers) { _.send(out) }.catchAll { throwable =>
-      ZIO.logWarningCause(s"Failed to broadcast $out", Cause.fail(throwable))
+    _ <- ZIO.foreachPar(subscribers) { _.send(pushOut) }.catchAll { throwable =>
+      ZIO.logWarningCause(s"Failed to broadcast $pushOut", Cause.fail(throwable))
     }
   } yield ()
 
