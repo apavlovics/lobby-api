@@ -11,7 +11,7 @@ import io.odin.slf4j.OdinLoggerBinder
 class StaticLoggerBinder extends OdinLoggerBinder[IO] {
 
   override given F: Sync[IO] = IO.asyncForIO
-  override given dispatcher: Dispatcher[IO] = Dispatcher[IO].allocated.unsafeRunSync()._1
+  override given dispatcher: Dispatcher[IO] = Dispatcher.parallel[IO].allocated.unsafeRunSync()._1
 
   val loggers: PartialFunction[String, Logger[IO]] = { case _ =>
     consoleLogger[IO](

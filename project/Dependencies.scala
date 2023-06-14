@@ -4,9 +4,9 @@ object Dependencies {
 
   private val akkaVersion = "2.6.20"
   private val akkaHttpVersion = "10.2.10"
-  private val catsVersion = "2.7.0"
-  private val catsEffectVersion = "3.3.12"
-  private val http4sVersion = "1.0.0-M33"
+  private val catsVersion = "2.9.0"
+  private val catsEffectVersion = "3.5.0"
+  private val http4sVersion = "1.0.0-M38"
   private val jsonAssertVersion = "1.5.1"
   private val jsoniterScalaVersion = "2.23.1"
   private val logbackVersion = "1.4.8"
