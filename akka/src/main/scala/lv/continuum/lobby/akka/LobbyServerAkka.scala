@@ -63,7 +63,7 @@ object LobbyServerAkka extends LazyLogging {
 
     // Start server
     val lobbyServerConfig = LobbyServerConfig.loadOrThrow(ConfigFactory.load())
-    LobbyServerAkka().start(lobbyServerConfig.host, lobbyServerConfig.port)
+    LobbyServerAkka().start(lobbyServerConfig.host.toString, lobbyServerConfig.port.value)
 
     // Terminate server
     StdIn.readLine()

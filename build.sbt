@@ -37,6 +37,7 @@ lazy val common = (project in file("common"))
   .settings(
     libraryDependencies ++= Seq(
       Cats.Core,
+      Ip4s.Core,
       JsoniterScala.Core,
       JsoniterScala.Macros % Provided,
       PureConfig.Core,
@@ -74,8 +75,8 @@ lazy val cats = (project in file("cats"))
   )
   .settings(
     libraryDependencies ++= Seq(
-      Http4s.BlazeServer,
       Http4s.Dsl,
+      Http4s.EmberServer,
       Odin.Core,
       Odin.Slf4j,
       Cats.EffectTestkit % Test,

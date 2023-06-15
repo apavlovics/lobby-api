@@ -7,6 +7,7 @@ object Dependencies {
   private val catsVersion = "2.9.0"
   private val catsEffectVersion = "3.5.0"
   private val http4sVersion = "1.0.0-M38"
+  private val ip4sVersion = "3.2.0"
   private val jsonAssertVersion = "1.5.1"
   private val jsoniterScalaVersion = "2.23.1"
   private val logbackVersion = "1.4.8"
@@ -36,8 +37,12 @@ object Dependencies {
   }
 
   object Http4s {
-    val BlazeServer = "org.http4s" %% "http4s-blaze-server" % http4sVersion
     val Dsl = "org.http4s" %% "http4s-dsl" % http4sVersion
+    val EmberServer = "org.http4s" %% "http4s-ember-server" % http4sVersion
+  }
+
+  object Ip4s {
+    val Core = "com.comcast" %% "ip4s-core" % ip4sVersion
   }
 
   val JsonAssert = "org.skyscreamer" % "jsonassert" % jsonAssertVersion
