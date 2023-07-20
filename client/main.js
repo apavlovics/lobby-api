@@ -1,49 +1,49 @@
 $(document).ready(() => {
-  const select = $('#outgoing-message-type')
-  const textArea = $('#outgoing-message')
-  const list = $('#incoming-messages')
+  const select = $("#outgoing-message-type");
+  const textArea = $("#outgoing-message");
+  const list = $("#incoming-messages");
 
-  select.change(() => updateOutgoingMessage(select, textArea))
-  updateOutgoingMessage(select, textArea)
-  openWebSocket(textArea, list)
-})
+  select.change(() => updateOutgoingMessage(select, textArea));
+  updateOutgoingMessage(select, textArea);
+  openWebSocket(textArea, list);
+});
 
 function updateOutgoingMessage(select, textArea) {
-  const outgoingMessageType = select.children('option:selected').val()
-  let message
+  const outgoingMessageType = select.children("option:selected").val();
+  let message;
   switch (outgoingMessageType) {
-    case 'login':
+    case "login":
       message = `
 {
   "$type": "login",
   "username": "admin",
   "password": "admin"
 }
-`
-      break
-    case 'ping':
+`;
+      break;
+    case "ping":
       message = `
 {
   "$type": "ping",
   "seq": 12345
 }
-`
-      break
-    case 'subscribe_tables':
+`;
+      break;
+    case "subscribe_tables":
       message = `
 {
   "$type": "subscribe_tables"
 }
-`
-      break
-    case 'unsubscribe_tables':
+`;
+      break;
+    case "unsubscribe_tables":
       message = `
 {
   "$type": "unsubscribe_tables"
 }
-`
-      break
-    case 'add_table':
+`;
+      break;
+    case "add_table":
       message = `
 {
   "$type": "add_table",
@@ -53,9 +53,9 @@ function updateOutgoingMessage(select, textArea) {
     "participants": 4
   }
 }
-`
-      break
-    case 'update_table':
+`;
+      break;
+    case "update_table":
       message = `
 {
   "$type": "update_table",
@@ -65,50 +65,50 @@ function updateOutgoingMessage(select, textArea) {
     "participants": 4
   }
 }
-`
-      break
-    case 'remove_table':
+`;
+      break;
+    case "remove_table":
       message = `
 {
   "$type": "remove_table",
   "id": 2
 }
-`
-      break
+`;
+      break;
     default:
-      console.log(`Outgoing message type ${outgoingMessageType} is invalid`)
+      console.log(`Outgoing message type ${outgoingMessageType} is invalid`);
   }
-  textArea.val(message.trim())
+  textArea.val(message.trim());
 }
 
 function openWebSocket(textArea, list) {
-  const webSocket = new WebSocket('ws://localhost:9000/lobby_api')
+  const webSocket = new WebSocket("ws://localhost:9000/lobby_api");
   webSocket.onopen = () => {
-    const sendButton = $('#send')
-    sendButton.removeAttr('disabled')
+    const sendButton = $("#send");
+    sendButton.removeAttr("disabled");
     sendButton.click(() => {
-      const outgoingMessageFormat = $('input[name=outgoing-message-format]:checked').val()
+      const outgoingMessageFormat = $("input[name=outgoing-message-format]:checked").val();
       switch (outgoingMessageFormat) {
-        case 'text':
-          webSocket.send(textArea.val())
-          break
-        case 'binary':
-          webSocket.send(new Blob([textArea.val()]))
-          break
+        case "text":
+          webSocket.send(textArea.val());
+          break;
+        case "binary":
+          webSocket.send(new Blob([textArea.val()]));
+          break;
         default:
-          console.log(`Outgoing message format ${outgoingMessageFormat} is invalid`)
+          console.log(`Outgoing message format ${outgoingMessageFormat} is invalid`);
       }
-    })
-    list.prepend($('<li>Connected via WebSocket</li>'))
-  }
-  webSocket.onerror = error => {
-    console.log('Issue with WebSocket connection', error)
-  }
-  webSocket.onmessage = event => {
-    if (typeof event.data === 'string') {
-      list.prepend($(`<li>${event.data}</li>`))
+    });
+    list.prepend($("<li>Connected via WebSocket</li>"));
+  };
+  webSocket.onerror = (error) => {
+    console.log("Issue with WebSocket connection", error);
+  };
+  webSocket.onmessage = (event) => {
+    if (typeof event.data === "string") {
+      list.prepend($(`<li>${event.data}</li>`));
     } else {
-      console.log(`Data ${event.data} is not supported`)
+      console.log(`Data ${event.data} is not supported`);
     }
-  }
+  };
 }

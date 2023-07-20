@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="main.css">
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="main.css" />
     <title>WebSocket Client</title>
-  
+
     <!-- jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="main.js"></script>
@@ -22,8 +22,12 @@
     </select>
     <textarea id="outgoing-message"></textarea>
     <div>
-      <input type="radio" id="text" name="outgoing-message-format" value="text" checked><label for="text"> Text</label>
-      <input type="radio" id="binary" name="outgoing-message-format" value="binary"><label for="binary"> Binary</label>
+      <!-- prettier-ignore -->
+      <input type="radio" id="text" name="outgoing-message-format"
+        value="text" checked /><label for="text"> Text</label>
+      <!-- prettier-ignore -->
+      <input type="radio" id="binary" name="outgoing-message-format"
+        value="binary" /><label for="binary"> Binary</label>
     </div>
     <button id="send" disabled>Send</button>
     <ul id="incoming-messages"></ul>
