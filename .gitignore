@@ -1,3 +1,14 @@
-.bsp/
+# IntelliJ IDEA
 .idea/
+
+# Metals
+.bloop/
+.metals/
+metals.sbt
+
+# SBT
+.bsp/
 target/
+
+# Visual Studio Code
+.vscode/
