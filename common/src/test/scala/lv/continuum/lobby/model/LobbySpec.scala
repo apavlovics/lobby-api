@@ -53,7 +53,7 @@ class LobbySpec extends AnyWordSpec with Matchers with TestData {
     }
 
     "update a table" in {
-      val tableJamesBondUpdated = tableJamesBond.copy(name = TableName("table - 007"))
+      val tableJamesBondUpdated = tableJamesBond.copy(name = TableName("007"))
       val result = lobby.updateTable(tableJamesBondUpdated)
       result should contain(
         Lobby(

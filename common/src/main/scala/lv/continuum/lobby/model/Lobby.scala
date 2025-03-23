@@ -56,12 +56,12 @@ object Lobby {
       tables = Vector(
         Table(
           id = TableId(1),
-          name = TableName("table - James Bond"),
+          name = TableName("James Bond"),
           participants = 7,
         ),
         Table(
           id = TableId(2),
-          name = TableName("table - Mission Impossible"),
+          name = TableName("Mission Impossible"),
           participants = 9,
         ),
       ),

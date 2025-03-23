@@ -13,21 +13,21 @@ trait TestData {
   val tableIdInvalid: TableId = TableId(99999)
   val tableJamesBond: Table = Table(
     id = TableId(1),
-    name = TableName("table - James Bond"),
+    name = TableName("James Bond"),
     participants = 7,
   )
   val tableMissionImpossible: Table = Table(
     id = TableId(2),
-    name = TableName("table - Mission Impossible"),
+    name = TableName("Mission Impossible"),
     participants = 9,
   )
   val tableFooFighters: Table = Table(
     id = TableId(3),
-    name = TableName("table - Foo Fighters"),
+    name = TableName("Foo Fighters"),
     participants = 4,
   )
   val tableToAddFooFighters: TableToAdd = TableToAdd(
-    name = TableName("table - Foo Fighters"),
+    name = TableName("Foo Fighters"),
     participants = 4,
   )
 
@@ -89,7 +89,7 @@ trait TestData {
         |  "$type": "add_table",
         |  "after_id": -1,
         |  "table": {
-        |    "name": "table - Foo Fighters",
+        |    "name": "Foo Fighters",
         |    "participants": 4
         |  }
         |}""".stripMargin
@@ -111,7 +111,7 @@ trait TestData {
         |  "$type": "update_table",
         |  "table": {
         |    "id": 3,
-        |    "name": "table - Foo Fighters",
+        |    "name": "Foo Fighters",
         |    "participants": 4
         |  }
         |}""".stripMargin
@@ -203,11 +203,11 @@ trait TestData {
         |  "tables": [
         |    {
         |      "id": 1,
-        |      "name": "table - James Bond",
+        |      "name": "James Bond",
         |      "participants": 7
         |    }, {
         |      "id": 2,
-        |      "name": "table - Mission Impossible",
+        |      "name": "Mission Impossible",
         |      "participants": 9
         |    }
         |  ]
@@ -230,7 +230,7 @@ trait TestData {
         |  "after_id": -1,
         |  "table": {
         |    "id": 3,
-        |    "name": "table - Foo Fighters",
+        |    "name": "Foo Fighters",
         |    "participants": 4
         |  }
         |}""".stripMargin
@@ -249,7 +249,7 @@ trait TestData {
         |  "$type": "table_updated",
         |  "table": {
         |    "id": 3,
-        |    "name": "table - Foo Fighters",
+        |    "name": "Foo Fighters",
         |    "participants": 4
         |  }
         |}""".stripMargin

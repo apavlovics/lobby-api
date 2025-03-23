@@ -49,7 +49,7 @@ function updateOutgoingMessage(select, textArea) {
   "$type": "add_table",
   "after_id": 2,
   "table": {
-    "name": "table - Foo Fighters",
+    "name": "Foo Fighters",
     "participants": 4
   }
 }
@@ -61,7 +61,7 @@ function updateOutgoingMessage(select, textArea) {
   "$type": "update_table",
   "table": {
     "id": 1,
-    "name": "table - Pink Floyd",
+    "name": "Pink Floyd",
     "participants": 4
   }
 }
